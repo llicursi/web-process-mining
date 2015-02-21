@@ -20,10 +20,39 @@
 		<version>1.2.17</version>
 	</dependency>
 	<dependency>
+		<groupId>org.apache.tomcat</groupId>
+		<artifactId>tomcat-catalina</artifactId>
+		<version>7.0.50</version>
+	</dependency>
+	<dependency>
 		<groupId>org.json</groupId>
 		<artifactId>json</artifactId>
 		<version>20141113</version>
 	</dependency>
 		
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
   </dependencies>
+  
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>1.1.9.RELEASE</version>
+    <relativePath></relativePath>
+  </parent>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.tomcat.maven</groupId>
+        <artifactId>tomcat7-maven-plugin</artifactId>
+        <version>2.3-SNAPSHOT</version>
+        <configuration>
+          <url>http://www.mydomain.com:1234/mymanager</url>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
