@@ -7,17 +7,21 @@ $(function() {
     resize();
 
     isIE = $.browser.msie;
+	$.ajax({
+		 url: config.jsonUrl,
+		 method: "POST",
+		 datatype: "json",
+		 success: function(data) {
+	        if (data.errors.length) {
+	            alert('Data error(s):\n\n' + data.errors.join('\n'));
+	            return;
+	        }
 
-    d3.json(config.jsonUrl, function(data) {
-        if (data.errors.length) {
-            alert('Data error(s):\n\n' + data.errors.join('\n'));
-            return;
-        }
-
-        graph.data = data.data;
-        drawGraph();
-    });
-
+	        graph.data = data.data;
+	        drawGraph();
+		 }
+	});
+    
     $('#docs-close').on('click', function() {
         deselectObject();
         return false;
