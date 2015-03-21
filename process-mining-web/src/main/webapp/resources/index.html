@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=Edge">
@@ -23,7 +23,8 @@
             <div id="docs-container" style="display: none;"></div>
             </div>
         </div>
-        <script src="resources/js/jquery-1.10.2.min.js"></script>
+        
+        <script th-src="resources/js/jquery-1.10.2.min.js"></script>
         <script src="resources/js/jquery.browser.min.js"></script>
         <script src="resources/js/d3.v3.min.js"></script>
         <script src="resources/js/colorbrewer.js"></script>
@@ -213,4 +214,5 @@
         <script src="resources/js/script.js"></script>
     
 
-</body></html>
+</body>
+</html>

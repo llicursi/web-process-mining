@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+        <meta charset="utf-8" />
+        <title>Database process documentation</title>
+        <link rel="stylesheet" th:src="@{css/bootstrap.css}"/>
+        <link rel="stylesheet" th:src="@{css/style.css}"/>
+        <link rel="stylesheet" th:src="@{css/svg.css}"/>
+    </head>
+    <body>
+        <!--[if lt IE 9]>
+        <div class="unsupported-browser">
+            This website does not fully support your browser.  Please get a
+            better browser (Firefox or <a href="/chrome/">Chrome</a>, or if you
+            must use Internet Explorer, make it version 9 or greater).
+        </div>
+        <![endif]-->
+        <div id="split-container">
+            <div id="graph-container" style="height: 460px; visibility: visible;">
+                <div id="graph" style="display: block; height: 1500px;"></div>
+            <div id="docs-container" style="display: none;"></div>
+            teste
+            </div>
+        </div>
+        <script th:src="@{/js/jquery-1.10.2.min.js}"></script>
+        <script th:src="@{/js/jquery.browser.min.js}"></script>
+        <script th:src="@{/js/d3.v3.min.js}"></script>
+        <script th:src="@{/js/colorbrewer.js}"></script>
+        <script th:src="@{/js/geometry.js}"></script>
+        
+        <script th:src="@{/js/script.js}"></script>
+    
+
+</body></html>
