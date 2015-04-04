@@ -1,4 +1,4 @@
-package br.com.licursi.init.controller;
+package br.com.licursi.home.controller;
 
 import java.util.Date;
 import java.util.Map;
@@ -7,18 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
-public class InitController {
+public class HomeController {
 
 	@Autowired
 	private MongoTemplate mongoTemplate;
 
-	@ResponseBody
-	@RequestMapping(value={"/","/index"})
+	@RequestMapping(value={"/","/index","/home"})
 	public String index() {
-		return "Greetings from Spring Boot!";
+		return "home";
 	}
 
 	@RequestMapping("/welcome")

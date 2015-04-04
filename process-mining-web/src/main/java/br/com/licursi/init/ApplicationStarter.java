@@ -4,12 +4,15 @@ import java.util.Arrays;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+
+import br.com.licursi.config.ServerCustomization;
 
 @SpringBootApplication
 @EnableMongoRepositories("br.com.licursi.core")
@@ -19,6 +22,11 @@ public class ApplicationStarter extends SpringBootServletInitializer {
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
 		return application.sources(ApplicationStarter.class);
+	}
+	
+	@Bean
+	public ServerProperties getServerProperties() {
+	    return new ServerCustomization();
 	}
 	
 	public static void main(String[] args) {

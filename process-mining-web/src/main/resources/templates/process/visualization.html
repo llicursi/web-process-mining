@@ -6,6 +6,7 @@
         <meta charset="utf-8" />
         <title>Database process documentation</title>
         <link rel="stylesheet" th:href="@{/css/bootstrap.css}"/>
+        <link rel="stylesheet" th:href="@{/css/all.css}"/>
         <link rel="stylesheet" th:href="@{/css/jquery-ui.accordion.min.css}"/>
         <link rel="stylesheet" th:href="@{/css/jquery.nouislider.min.css}"/>
         <link rel="stylesheet" th:href="@{/css/svg.css}"/>
@@ -13,14 +14,7 @@
         
     </head>
     <body>
-    	<div class="nav"><a href="#content">Ir para conteudo</a> 	</div>
-    	<div class="nav fixed">
-  			<div class="nav-title">Web Process <br/><span>Miner</span></div>
-			  <a class="nav-button" href="#">Upload</a>
-			  <a class="nav-button" href="#">Select Data</a>
-			  <a class="nav-button active" href="#">Analyse</a>
-		</div>
-    
+    	<span th:include="commun/header :: process-menu (active=2)"></span>
     
  		<div id="split-container">
             
@@ -69,11 +63,7 @@
             
             </div>
             <div id="graph-container">
-                <div id="graph" style="margin-right: 200px;"></div>
-            </div>
-            <div id="docs-container">
-                <a id="docs-close" href="#">&times;</a>
-                <div id="docs" class="docs"></div>
+                <div id="graph" ></div>
             </div>
             
             
