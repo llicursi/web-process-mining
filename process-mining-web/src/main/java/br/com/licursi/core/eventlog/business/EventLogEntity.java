@@ -18,8 +18,13 @@ public class EventLogEntity {
 	public String refExecutor;
 	public String refEndDate;
 	public String refCust;
-	
+	public List<EventLogRefOther> refOthers;
+	public List<String> headers;
 	public List<DBObject> rawData;
+	
+	public EventLogEntity(){
+		
+	}
 	
 
 }

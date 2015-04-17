@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import br.com.licursi.core.eventlog.business.EventLogBO;
+import br.com.licursi.core.eventlog.exception.EventLogNotAcceptedException;
 import br.com.licursi.upload.exception.InvalidExtensionException;
 import br.com.licursi.upload.exception.UniqueFileException;
 
@@ -24,21 +25,24 @@ public class UploadController {
 	private static final String RESPONSE_SUCCESS = "sucess";
 	private static final String RESPONSE_ERROR_NONUNIQUE = "nonunique";
 	private static final String RESPONSE_ERROR_INVALIDEXTENSION = "invalidextension";
+	private static final String RESPONSE_ERROR_AT_EVENTO_LOG = "eventlogerror";
 
 	@RequestMapping(value="/upload", method=RequestMethod.POST)
     public @ResponseBody String handleFileUpload(MultipartHttpServletRequest request){
 		@SuppressWarnings("unused")
 		Iterator<String> fileNames = request.getFileNames();
-		List<MultipartFile> files = request.getFiles("rawdata");
+		List<MultipartFile> files = request.getFiles("file");
 		try {
-			eventLogBO.generateEventoLogFromFiles(files);
-			return RESPONSE_SUCCESS;
+			return eventLogBO.generateEventoLogFromFiles(files);
 		} catch (UniqueFileException e) {
 			e.printStackTrace();
 			return RESPONSE_ERROR_NONUNIQUE;
 		} catch (InvalidExtensionException e) {
 			e.printStackTrace();
 			return RESPONSE_ERROR_INVALIDEXTENSION;
+		} catch (EventLogNotAcceptedException e) {
+			e.printStackTrace();
+			return RESPONSE_ERROR_AT_EVENTO_LOG;
 		}
 	}
 }

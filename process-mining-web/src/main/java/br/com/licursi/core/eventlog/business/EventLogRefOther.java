@@ -26,5 +26,11 @@ public class EventLogRefOther {
 	public void setRefValue(String refValue) {
 		this.refValue = refValue;
 	}
-
+	
+	public String toString(){
+		return "{name:" + refName + ", value:" + refValue+  "}";
+	}
 }
+
+
+
