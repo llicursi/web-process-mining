@@ -1,3 +1,11 @@
+var CONSTRAINTS = { 
+	RESPONSE_SUCCESS : "sucess",
+	RESPONSE_ERROR_NONUNIQUE : "nonunique",
+	RESPONSE_ERROR_INVALIDEXTENSION : "invalidextension",
+	RESPONSE_ERROR_AT_EVENTO_LOG : "eventlogerror"
+};
+
+
 Dropzone.options.processDropzone = { 
 	 url: "/upload"
 	, method: "POST"
@@ -6,7 +14,7 @@ Dropzone.options.processDropzone = {
 	, maxFiles : 1
 	, maxFilesize : 1048576
 	//, acceptedFiles : ".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-	, autoProcessQueue : false
+	//, autoProcessQueue : false
 	, dictDefaultMessage: "Arraste arquivos aqui. <span class='dz-sub-message'>( ... ou clique e selecione-o )</span>"
 	, init: function () {
 		
@@ -22,7 +30,18 @@ Dropzone.options.processDropzone = {
 		});
 
 		this.on("complete", function(file, xhr, formData){
-			alert("complete");
+			var response = file.xhr.response;
+			if (response == CONSTRAINTS.RESPONSE_ERROR_NONUNIQUE){
+				
+			} else if (response == CONSTRAINTS.RESPONSE_ERROR_AT_EVENTO_LOG) {
+				
+			} else if (response == CONSTRAINTS.RESPONSE_ERROR_INVALIDEXTENSION) {
+				
+			} else {
+				window.location.href = response + "/adjust/";
+			}
+				
+			debugger;
 		});
 	}
 };

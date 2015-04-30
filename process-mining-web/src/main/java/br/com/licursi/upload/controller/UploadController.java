@@ -22,7 +22,6 @@ public class UploadController {
 	@Autowired
 	private EventLogBO eventLogBO;
 	
-	private static final String RESPONSE_SUCCESS = "sucess";
 	private static final String RESPONSE_ERROR_NONUNIQUE = "nonunique";
 	private static final String RESPONSE_ERROR_INVALIDEXTENSION = "invalidextension";
 	private static final String RESPONSE_ERROR_AT_EVENTO_LOG = "eventlogerror";
@@ -31,7 +30,7 @@ public class UploadController {
     public @ResponseBody String handleFileUpload(MultipartHttpServletRequest request){
 		@SuppressWarnings("unused")
 		Iterator<String> fileNames = request.getFileNames();
-		List<MultipartFile> files = request.getFiles("file");
+		List<MultipartFile> files = request.getFiles("rawdata");
 		try {
 			return eventLogBO.generateEventoLogFromFiles(files);
 		} catch (UniqueFileException e) {
