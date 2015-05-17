@@ -7,11 +7,13 @@ import java.util.List;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.stereotype.Component;
 
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
+@Component
 public class EventLogAggregator {
 
 	private static final String COLLECTION = "eventlog";
@@ -20,7 +22,7 @@ public class EventLogAggregator {
 	private MongoTemplate mongoTemplate;
 	
 	public List<DBObject> getTop100RecordsFromEventLogRawData(String id){
-		
+		long startTime = System.currentTimeMillis();
 		List<DBObject> pipeline = new ArrayList<DBObject>();
 		pipeline.add(BasicDBObjectBuilder.start("$match",  BasicDBObjectBuilder.start("_id",new ObjectId(id)).get()).get());
 		pipeline.add(BasicDBObjectBuilder.start("$unwind", "$rawData").get());
@@ -44,6 +46,8 @@ public class EventLogAggregator {
 			
 			System.out.println("data ["+count+"] : " + data);
 		}
+		long endTime = System.currentTimeMillis();
+		System.out.println("Time reading and unwinding the eventLog : " + (endTime - startTime));
 		
 		return rawDataList;
 				

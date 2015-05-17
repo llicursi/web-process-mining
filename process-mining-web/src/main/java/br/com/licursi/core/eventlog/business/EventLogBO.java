@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +19,7 @@ import br.com.licursi.upload.exception.UniqueFileException;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 
 @Component
 public class EventLogBO {
@@ -29,6 +31,9 @@ public class EventLogBO {
 	
 	@Autowired
 	private EventLogRepository eventLogRepository;
+	
+	@Autowired
+	private EventLogAggregator eventLogAggregator;
 
 	public String generateEventoLogFromFiles(List<MultipartFile> files) throws UniqueFileException, InvalidExtensionException, EventLogNotAcceptedException {
 		if (files.size() > 1){
@@ -90,6 +95,19 @@ public class EventLogBO {
 		} catch (Exception e) {
 			throw new EventLogNotAcceptedException(e);
 		}
+	}
+	
+	
+	
+	public String getTop100RecordsFromEventLog(String processID){
+		List<DBObject> top100RecordsFromEventLogRawData = eventLogAggregator.getTop100RecordsFromEventLogRawData(processID);
+		long startTime = System.currentTimeMillis();
+		String serialized = JSON.serialize(top100RecordsFromEventLogRawData);
+				
+		long endTime = System.currentTimeMillis();
+		System.out.println("Time serializing the data : " + (endTime - startTime));
+		
+		return serialized;
 	}
 	
 }

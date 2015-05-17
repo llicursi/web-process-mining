@@ -10,6 +10,9 @@
 	<link rel="stylesheet" th:href="@{/css/jquery-ui.accordion.min.css}" />
 	<link rel="stylesheet" th:href="@{/css/jquery.nouislider.min.css}" />
 	<link rel="stylesheet" th:href="@{/css/adjust.css}" />
+	<link rel="stylesheet" th:href="@{http://cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css}" />
+	
+	
 </head>
 <body>
 	<span th:include="commun/header :: process-menu (active=2)"></span>
@@ -17,36 +20,35 @@
 	<div id="split-container">
 
 		<div id="doc-menus">
+			<div style="
+			    background: transparent;
+			    color: white;
+			    text-shadow: 1px 1px black;
+			    position: relative;
+			    float: left;
+			    display: block;
+			    padding: 11px;
+			">
+				<h4 style="text-align: center;">Variáveis obrigatórias para mineração.</h4> 
+				<div style="color: white;text-shadow: 0px 0px;">Selecionadas <span>3</span>/5</div>
+			</div>
+		
 			<div id="accordion">
-				<h3>UID Processo</h3>
-				<div>Este é um indicador único que representa a instancia do
-					processo.</div>
-				<h3>Atividade</h3>
-				<div>Selecione a coluna representando as atividades do
-					processo.</div>
-
-				<h3>Data/hora de término</h3>
-				<div>Selecione a coluna que represente o término da atividade.
-				</div>
-
-				<h3>Executor</h3>
-				<div>Defina o executor responsável pela atividade.</div>
-
-				<h3>Data/hora de inicio</h3>
-				<div>Selecione a coluna que represente o ínicio da atividade.
-				</div>
-
+				
 			</div>
 
 		</div>
 
 
 	</div>
-		<div id="adjust-container"> aaa </div>
+	<div id="adjust-container"> 
+	</div>
 
 	<script th:src="@{/js/jquery-1.10.2.min.js}"></script>
+	<script th:src="@{http://cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js}"></script>
 	<script th:src="@{/js/jquery.browser.min.js}"></script>
 	<script th:src="@{/js/jquery-ui.accordion.min.js}"></script>
+	<script th:src="@{/js/all.js}"></script>
 	<script th:src="@{/js/view/adjust.js}"></script>
 
 </body>
