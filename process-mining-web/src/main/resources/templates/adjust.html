@@ -10,7 +10,7 @@
 	<link rel="stylesheet" th:href="@{/css/jquery-ui.accordion.min.css}" />
 	<link rel="stylesheet" th:href="@{/css/jquery.nouislider.min.css}" />
 	<link rel="stylesheet" th:href="@{/css/adjust.css}" />
-	<link rel="stylesheet" th:href="@{http://cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css}" />
+	<link rel="stylesheet" th:href="@{/css/jquery.dataTables.min.css}" />
 	
 	
 </head>
@@ -20,22 +20,12 @@
 	<div id="split-container">
 
 		<div id="doc-menus">
-			<div style="
-			    background: transparent;
-			    color: white;
-			    text-shadow: 1px 1px black;
-			    position: relative;
-			    float: left;
-			    display: block;
-			    padding: 11px;
-			">
-				<h4 style="text-align: center;">Variáveis obrigatórias para mineração.</h4> 
-				<div style="color: white;text-shadow: 0px 0px;">Selecionadas <span>3</span>/5</div>
-			</div>
 		
-			<div id="accordion">
+			<a class="btn btn-primary btn-lg btn-block disabled" href="#" id="process-data" role="button">0/4 variables selected</a>
+			<hr/>		 
+			<form id="accordion" >
 				
-			</div>
+			</form>
 
 		</div>
 
@@ -45,7 +35,7 @@
 	</div>
 
 	<script th:src="@{/js/jquery-1.10.2.min.js}"></script>
-	<script th:src="@{http://cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/js/jquery.dataTables.min.js}"></script>
 	<script th:src="@{/js/jquery.browser.min.js}"></script>
 	<script th:src="@{/js/jquery-ui.accordion.min.js}"></script>
 	<script th:src="@{/js/all.js}"></script>

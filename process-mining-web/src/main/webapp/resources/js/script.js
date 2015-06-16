@@ -16,12 +16,13 @@ $(function() {
 		 method: "POST",
 		 datatype: "json",
 		 success: function(data) {
-	        if (data.errors.length) {
+	        if (data.errors && data.errors.length) {
 	            alert('Data error(s):\n\n' + data.errors.join('\n'));
 	            return;
 	        }
 
-	        graph.data = data.data;
+	        graph.activities = data.activities;
+	        graph.arcs = data.arcs;
 	        drawGraph();
 		 }
 	});
@@ -32,7 +33,7 @@ $(function() {
     });
 
     $(document).on('click', '.select-object', function() {
-        var obj = graph.data[$(this).data('name')];
+        var obj = graph.activities[$(this).data('name')];
         if (obj) {
             selectObject(obj);
         }
@@ -63,48 +64,82 @@ function drawGraph() {
     graph.height = $('#graph').height() - graph.margin.top - graph.margin.bottom;
     $('#graph').css('display', display);
 
-    for (var name in graph.data) {
-        var obj = graph.data[name];
-        obj.positionConstraints = [];
-        obj.linkStrength = 1;
-
-        config.constraints.forEach(function(c) {
-            for (var k in c.has) {
-                if (c.has[k] !== obj[k]) {
-                    return true;
-                }
-            }
-
-            switch (c.type) {
-                case 'position':
-                    obj.positionConstraints.push({
-                        weight: c.weight,
-                        x: c.x * graph.width,
-                        y: c.y * graph.height
-                    });
-                    break;
-
-                case 'linkStrength':
-                    obj.linkStrength *= c.strength;
-                    break;
-            }
-        });
-    }
-
-    graph.links = [];
-   
-    for (var name in graph.data) {
-        var obj = graph.data[name];
-        for (var depIndex in obj.depends) {
-            var link = {
-                source: graph.data[obj.depends[depIndex]],
-                target: obj
-            };
-            link.strength = (link.source.linkStrength || 1) * (link.target.linkStrength || 1);
-            graph.links.push(link);
+    var starterLinkList = [];
+    var endsLinkList = [];
+    var startNodeCircle = {
+        	x : graph.width/2,
+        	y : 30,
+        	strength : 1,weight : 0.5,
+            name: 'start',
+            type: "starter",
+            next: starterLinkList,
+            previous : [],
+        	fixed : true
+        };
+    
+    var endNodeCircle = {
+        	x : graph.width/2,
+        	y : graph.height - 50,
+        	strength : 1,
+        	weight : 0.5,
+            name: 'end',
+            type: "ender",
+            next: [],
+            previous : endsLinkList,
+        	fixed : true
+        };
+    
+    for (var name in graph.activities) {
+        var obj = graph.activities[name];
+        obj.strength = 1.4;
+        obj.weight = 5.2;
+        obj.name = name;
+        obj.type = "activity";
+        
+        if (obj.previous && obj.previous.length == 0){
+        	starterLinkList.push(name);
+        	obj.previous.push('start');
+        } else if (obj.next && obj.next.length == 0){
+        	endsLinkList.push(name);
+        	obj.next.push('end');
         }
     }
-
+    
+    // Create start activity
+    
+    
+    graph.activities.start = startNodeCircle;
+    graph.activities.end = endNodeCircle;
+    
+    graph.links = [];
+    
+    for (var arcName in graph.arcs){
+    	var arc = graph.arcs[arcName];
+    	arc.target = graph.activities[arc.target];
+    	arc.source = graph.activities[arc.source];
+    	graph.links.push(arc);
+    }
+    
+    // Add start activity lines
+    for (var i = 0; i < starterLinkList.length; i ++){
+	    graph.links.push({
+	    	target : graph.activities[starterLinkList[i]],
+	    	source : graph.activities['start'],
+	    	strength : 1,
+	    	count : 1
+	    });
+    }
+    
+    // Add start activity lines
+    for (var i = 0; i < endsLinkList.length; i ++){
+	    graph.links.push({
+	    	target : graph.activities['end'],
+	    	source : graph.activities[endsLinkList[i]],
+	    	strength : 1,
+	    	count : 1
+	    });
+    }
+    
     graph.activitiesSelector = new ActivitiesSelector(graph);
     
     graph.colors = colorbrewer.Set3[config.graph.numColors];
@@ -120,7 +155,7 @@ function drawGraph() {
     graph.strokeColor = getColorScale(0.7);
     graph.fillColor = getColorScale(-0.1);
 
-    graph.nodeValues = d3.values(graph.data);
+    graph.nodeValues = d3.values(graph.activities);
 
     graph.force = d3.layout.force()
         .nodes(graph.nodeValues)
@@ -224,9 +259,9 @@ function drawGraph() {
     graph.node = graph.svg.selectAll('.node')
         .data(graph.force.nodes())
         .enter().append('g')
-        .attr('class', 'node')
+        .attr('class', function (d){ return d.type + " node"}) 
         .on('mouseover', function(d) {
-            if (!selected.obj) {
+            if (!selected.obj && d.type != 'starter') {
                 if (graph.mouseoutTimeout) {
                     clearTimeout(graph.mouseoutTimeout);
                     graph.mouseoutTimeout = null;
@@ -245,29 +280,16 @@ function drawGraph() {
                 }, 300);
             }
         });
-
-    graph.nodeRect = graph.node.append('rect')
-        .attr('rx', 5)
-        .attr('ry', 5)
-        .attr('stroke', function(d) {
-            return graph.strokeColor(d.activityKey);
-        })
-        .attr('fill', function(d) {
-            return graph.fillColor(d.activityKey);
-        })
-        .attr('width', 120)
-        .attr('height', 30)
-        .on("click", function (d){
-        	selectObject(d, this);
-        });
+    
 
     graph.node.each(function(d) {
         var node = d3.select(this),
-            rect = node.select('rect'),
             lines = wrap(d.name),
             ddy = 1.1,
             dy = -ddy * lines.length / 2 + .5;
-
+       
+        node.call(drowObjectBackground);
+       
         lines.forEach(function(line) {
             var text = node.append('text')
                 .text(line)
@@ -312,11 +334,17 @@ function drawGraph() {
             bounds.x2 += padding.left + padding.right;
             bounds.y2 += padding.top + padding.bottom;
 
-            node.select('rect')
-                .attr('x', bounds.x1)
-                .attr('y', bounds.y1)
-                .attr('width', bounds.x2 - bounds.x1)
-                .attr('height', bounds.y2 - bounds.y1);
+            var rect = node.select('rect');
+            
+            if (d.type != 'starter'){
+            	rect.attr('x', bounds.x1)
+	                .attr('y', bounds.y1)
+	                .attr('width', bounds.x2 - bounds.x1)
+	            	.attr('height', bounds.y2 - bounds.y1);
+            } else {
+            	rect.attr('x', -20)
+                	.attr('y', -23);
+            }
 
             d.extent = {
                 left: bounds.x1 - margin.left,
@@ -335,6 +363,8 @@ function drawGraph() {
 
         graph.numTicks = 0;
         graph.preventCollisions = false;
+        
+        
         graph.force.start();
         for (var i = 0; i < config.graph.ticksWithoutCollisions; i++) {
             graph.force.tick();
@@ -344,7 +374,56 @@ function drawGraph() {
     });
 }
 
+function drowObjectBackground(node){
+	var data = node.data()[0];
+	if (data.type == 'starter') {
+		node.append('rect')
+			.attr('rx', 20)
+			.attr('ry', 20)
+			.attr('stroke', function(d) {
+				return graph.strokeColor(d.type);
+			})
+			 .attr('fill', function(d) {
+			     return graph.fillColor(d.type);
+			 })
+			.attr('width', 40)
+			.attr('height', 40);
+	 
+	
+	} else if (data.type == 'end') {
+		node.append('rect')
+			.attr('rx', 20)
+			.attr('ry', 20)
+			.attr('stroke', function(d) {
+				return graph.strokeColor(d.type);
+			})
+			 .attr('fill', function(d) {
+			     return graph.fillColor(d.type);
+			 })
+			.attr('width', 40)
+			.attr('height', 40);
+	 
 
+	} else {
+		
+		node.append('rect')
+			.attr('rx', 5)
+			.attr('ry', 5)
+			.attr('stroke', function(d) {
+				return graph.strokeColor(d.type);
+			})
+			 .attr('fill', function(d) {
+			     return graph.fillColor(d.type);
+			 })
+			 .attr('width', 120)
+			 .attr('height', 30)
+			 .on("click", function (d){
+			 	selectObject(d, this);
+			 });
+		
+	
+	}
+}
 
 var maxLineChars = 26,
     wrapChars = ' /_-.'.split('');
@@ -370,8 +449,8 @@ function wrap(text) {
 function preventCollisions() {
     var quadtree = d3.geom.quadtree(graph.nodeValues);
 
-    for (var name in graph.data) {
-        var obj = graph.data[name],
+    for (var name in graph.activities) {
+        var obj = graph.activities[name],
             ox1 = obj.x + obj.extent.left,
             ox2 = obj.x + obj.extent.right,
             oy1 = obj.y + obj.extent.top,
@@ -416,18 +495,8 @@ function preventCollisions() {
 function tick(e) {
     graph.numTicks++;
 
-    for (var name in graph.data) {
-        var obj = graph.data[name];
-
-        obj.positionConstraints.forEach(function(c) {
-            var w = c.weight * e.alpha;
-            if (!isNaN(c.x)) {
-                obj.x = (c.x * w + obj.x * (1 - w));
-            }
-            if (!isNaN(c.y)) {
-                obj.y = (c.y * w + obj.y * (1 - w));
-            }
-        });
+    for (var name in graph.activities) {
+        var obj = graph.activities[name];
     }
 
     if (graph.preventCollisions) {
@@ -439,39 +508,10 @@ function tick(e) {
     		var dx = d.target.x - d.source.x,
     	      dy = d.target.y - d.source.y,
     	      dr = Math.sqrt(dx * dx + dy * dy);
-    		return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+    		var adjustTargetY = ((d.target.y > d.source.y) ? -1 : 1) * (17/2);
+    		
+    		return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,0 " + d.target.x + "," + (d.target.y + adjustTargetY) ;
     	});
-//    	});
-//        .attr('x1', function(d) {
-//            return d.source.x;
-//        })
-//        .attr('y1', function(d) {
-//            return d.source.y;
-//        })
-//        .each(function(d) {
-//            if (isIE) {
-//                // Work around IE bug regarding paths with markers
-//                // Credit: #6 and http://stackoverflow.com/a/18475039/106302
-//                this.parentNode.insertBefore(this, this);
-//            }
-//
-//            var x = d.target.x,
-//                y = d.target.y,
-//                line = new geo.LineSegment(d.source.x, d.source.y, x, y);
-//
-//            for (var e in d.target.edge) {
-//                var ix = line.intersect(d.target.edge[e].offset(x, y));
-//                if (ix.in1 && ix.in2) {
-//                    x = ix.x;
-//                    y = ix.y;
-//                    break;
-//                }
-//            }
-//
-//            d3.select(this)
-//                .attr('x2', x)
-//                .attr('y2', y);
-//        });
 
     graph.node
         .attr('transform', function(d) {
@@ -548,7 +588,7 @@ function highlightObject(obj) {
     if (obj) {
         if (obj !== highlighted) {
             graph.node.classed('inactive', function(d) {
-                return (obj !== d && d.depends.indexOf(obj.name) == -1 && d.dependedOnBy.indexOf(obj.name) == -1);
+            	return (obj !== d && d.next.indexOf(obj.name) == -1 && d.previous.indexOf(obj.name) == -1);
             });
             graph.line.classed('inactive', function(d) {
                 return (obj !== d.source && obj !== d.target);

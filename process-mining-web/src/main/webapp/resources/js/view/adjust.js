@@ -17,11 +17,11 @@ ADJUST = function (){
 		optional:false
 	},{
 		name:"Resource",
-		desc:"Selecione que represente o executor responsável pela atividade.",
+		desc:"Selecione a coluna que represente o executor responsável pela atividade.",
 		optional:false
 	},{
 		name:"Start Time",
-		desc:"Selecione que represente o executor responsável pela atividade.",
+		desc:"Selecione a coluna que represente o término da atividade.",
 		optional:true
 	},{
 		name:"Cost",
@@ -127,6 +127,7 @@ ADJUST = function (){
 	function thClickEvent(index, th, o, e){
 		if ((th.selected === undefined || !th.selected) && _selectedVariable != null){
 			_selectedVariable.thBind = th;
+			_selectedVariable.value = th.innerHTML;
 			_selectedVariable.h3Bind.className = _selectedVariable.h3Bind.className.replace("ui-state-default", "ui-state-disabled");
 			th.className = "selected";
 			
@@ -135,19 +136,20 @@ ADJUST = function (){
 			domI.innerHTML = "\"" + _selectedVariable.name + "\"";
 			th.appendChild(domI);
 			th.selected = true;
-
+			
+			updateCounterOfSelectedMandatory();
 			
 			selectDeselectColumn(index, true);
 			
+			// Select next H3 and hide description
 			var nextH3 = getNextSibling(_selectedVariable.h3Bind);
-			if (nextH3) 
+			if (nextH3){
+				_selectedVariable = null;
 				nextH3.click();
-			else 
+			} else { 
 				hideH3descrition(_selectedVariable.h3Bind);
-			
-			_selectedVariable = null;
-			
-			
+				_selectedVariable = null;
+			}
 		}
 	}
 	
@@ -162,7 +164,7 @@ ADJUST = function (){
 	// ========================================================================
 	
 	
-	// id = accordion
+	
 	function construcVariablesList(accordeonId){
 		var domAccordion = document.getElementById(accordeonId);
 		domAccordion.innerHtml = "";
@@ -180,8 +182,9 @@ ADJUST = function (){
 	
 	function buildDomAccordeon(domAccordion, variable){
 		var h3 = document.createElement("h3");
-		h3.innerHTML = variable.name + getDomImageCheck();
+		h3.innerHTML = variable.name + (variable.optional ? " (optional) " : "") + getDomImageCheck();
 		h3.appendChild(getCloseLinkToSelected());
+		h3.appendChild(createInputHidden(variable.name));
 		
 		domAccordion.appendChild(h3);
 		h3.className = variable.optional ? "optional" : "";
@@ -210,16 +213,32 @@ ADJUST = function (){
 		return a;
 	}
 	
+	function createInputHidden(name){
+		var input = document.createElement("input");
+		input.setAttribute("type", "hidden");
+		
+		var name_urlified = name.toLowerCase().replace(" ", "_");
+		
+		input.setAttribute("name", name_urlified);
+		return input;
+		
+	}
+	
 	function eventCloseUnbind(){
 		this.parentNode.variableBind.thBind.selected = false;
-		this.parentNode.variableBind.thBind.innerHTML = this.parentNode.variableBind.name;
 		this.parentNode.variableBind.thBind.className = "";
+		
+		
+		var i = this.parentNode.variableBind.thBind.getElementsByTagName("i")[0];
+		i.parentNode.removeChild(i);
+		
 		var index = this.parentNode.variableBind.thBind.index;
 		this.parentNode.variableBind.thBind = null;
 		
 		selectDeselectColumn(index, false);
 		
 		this.parentNode.className = this.parentNode.className.replace("ui-state-disabled", "ui-state-default");
+		updateCounterOfSelectedMandatory();
 		
 	}
 	
@@ -232,7 +251,62 @@ ADJUST = function (){
 	function hideH3descrition(h3){
 		$(h3.contentDiv).slideUp();
 	}
+
+	// ========================================================================
 	
+	// Atualizar o status
+	function updateCounterOfSelectedMandatory(){
+		var counter = 0;
+		var total = 0;
+		for (var i = 0; i < _variables.length; i ++){
+			var variable = _variables[i];
+			if (!variable.optional){
+				if (variable.thBind != null){
+					counter ++;
+				}
+				total ++;
+			}
+		}
+		var processDataBtn = document.getElementById("process-data");
+		if (counter == total){
+			processDataBtn.innerHTML = "<span class=\"glyphicon glyphicon-th\" aria-hidden=\"true\"></span> Process data";
+			processDataBtn.onclick = processData;
+			remClass(processDataBtn, "disabled");
+		} else {
+			processDataBtn.innerHTML = counter + "/" + total + " variables selected";
+			addClass(processDataBtn, "disabled");
+			processDataBtn.onclick = function (){};
+		}
+		
+	}
+	
+	
+	function processData(){
+		
+		var variablesToProcess = [];
+		for (var i = 0; i < _variables.length; i ++){
+			var variable = _variables[i];
+			if (variable.thBind != null){
+				variablesToProcess.push(variable.name + "|||" + variable.value);
+			}
+		}
+		
+		$.ajax({
+			method: "post", 
+			dataType:'json',
+			data : {variables : variablesToProcess},
+			url: "minner/"
+		}).done(function (retorno){
+				
+			if (retorno.status == true){
+				window.location.href = window.location.href.replace("adjust", "process").replace("#", "");
+			} else {
+				alert("falha : " + retorno);
+			}
+			
+		});
+	}
+		
 		
 }
 

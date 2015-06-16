@@ -38,7 +38,7 @@ Dropzone.options.processDropzone = {
 			} else if (response == CONSTRAINTS.RESPONSE_ERROR_INVALIDEXTENSION) {
 				
 			} else {
-				window.location.href = response + "/adjust/";
+				window.location.href = "adjust/" + response + "/";
 			}
 				
 			debugger;

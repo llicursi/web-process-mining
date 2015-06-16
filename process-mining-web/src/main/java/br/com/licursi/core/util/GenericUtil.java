@@ -24,7 +24,7 @@ public class GenericUtil {
 			key = key.substring(1);
 		}
 		
-		return key.replace(".", "");
+		return key.replace(".", "°");
 	}
 
 }

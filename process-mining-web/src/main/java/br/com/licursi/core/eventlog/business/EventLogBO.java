@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,6 +110,25 @@ public class EventLogBO {
 		System.out.println("Time serializing the data : " + (endTime - startTime));
 		
 		return serialized;
+	}
+	
+	public List<DBObject> getMappedRawData(String processID, String[] variables){
+		
+		Map<String, String> convertToMapped = convertToMapped(variables);
+		
+		List<DBObject> activitiesFromRowData = eventLogAggregator.getActivitiesFromRowData(processID,convertToMapped);
+		
+		return activitiesFromRowData;
+	}
+	
+	private Map<String, String> convertToMapped(String[] variables) {
+		
+		Map<String, String> mapped = new HashMap<String, String>();
+		for (int i =0; i < variables.length; i ++){
+			String[] partialVar = variables[i].split("[|][|][|]");
+			mapped.put(partialVar[0], partialVar[1]);
+		}
+		return mapped;
 	}
 	
 }
