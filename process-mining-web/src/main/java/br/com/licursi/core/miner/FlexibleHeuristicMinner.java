@@ -33,7 +33,8 @@ public class FlexibleHeuristicMinner {
 		
 		dependencyGraph.computeParalellism();
 		dependencyGraph.computeDependencyMeasure();
-		
+
+		processEntity.setBorderEvents(dependencyGraph.getBorderEvents());
 		processEntity.setActivities(dependencyGraph.getActivities());
 		processEntity.setArcs(dependencyGraph.getArcs());
 		

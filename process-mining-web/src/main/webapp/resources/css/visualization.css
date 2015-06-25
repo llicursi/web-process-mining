@@ -158,7 +158,13 @@ ul.list-activities li{
 .sliders{
 	display:block; 
 	height: 180px;
-	margin: 20px 100px;
+	margin: 20px 44px;
 	padding-top:10px;
+	float:left;
+}
+
+.sliders span{
+  margin-top: 20px;
+  display: block;
 }
 

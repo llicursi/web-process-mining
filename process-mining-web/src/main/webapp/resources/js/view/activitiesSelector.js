@@ -6,7 +6,7 @@ ActivitiesSelector = function (graph){
 	var _activitiesKeys = undefined;
 	
 	function init(){
-		_activities = _graph.activities;
+		_activities = _graph.rawNodes;
 	    _activitiesKeys = d3.keys(_activities);
 	}
 	init();

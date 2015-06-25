@@ -4,6 +4,8 @@ import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBObject;
 
 public class ArcEntity {
+	
+	public static final String SPLIT_CHAR = ">";
 
 	private String ref;
 	private String source;
@@ -25,10 +27,10 @@ public class ArcEntity {
 		this.setStrength(1);
 	}
 	
-	public ArcEntity(String ref, String source, String to){
+	public ArcEntity(String ref, String source, String target){
 		this.ref = ref;
 		this.source = source;
-		this.target = to;
+		this.target = target;
 		this.count = 0;
 		this.dependencyMeasure = 0f;
 	}
@@ -66,7 +68,6 @@ public class ArcEntity {
 
 	public void increment() {
 		this.count ++;
-		
 	}
 
 	public DBObject toDBObject(){

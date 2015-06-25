@@ -8,13 +8,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
-import org.thymeleaf.util.StringUtils;
-
 import br.com.licursi.core.process.ActivityEntity;
+import br.com.licursi.core.process.ActivityType;
 import br.com.licursi.core.process.ArcEntity;
+import br.com.licursi.core.process.BorderEventEntity;
+import br.com.licursi.core.process.BorderEventType;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -24,11 +24,12 @@ public class DependencyGraph {
 	private SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm");
 	
 	// Character used to compute the next Char alias for Activity
-	private char aliasChar = 64; // 'A'
-	
+	private char aliasCharActivity = 64; // 'A'
+	private int aliasKeyEvents = 0;
 	
 	private BiMap<String, Character> activityAlias = null;
 	private Map<String, ActivityEntity> activityMap = null;
+	private Map<String, BorderEventEntity> borderEventMap = null;
 	private Map<String, ArcEntity> arcsMap = null;
 	private Map<String, Integer> tupleOcurrency = null;
 
@@ -41,6 +42,7 @@ public class DependencyGraph {
 		arcsMap = new HashMap<String, ArcEntity>();
 		tupleOcurrency = new HashMap<String, Integer>();
 		activityMap = new HashMap<String, ActivityEntity>();
+		borderEventMap = new HashMap<String, BorderEventEntity>();
 	}
 
 	public void start(){
@@ -100,20 +102,23 @@ public class DependencyGraph {
 		activityEntity.addResource(resource, activityDuration);
 		
 		if (lastActivity != null){
-			appendArc(lastActivity.getUniqueLetter() + "" + activityChar);
+			appendArc(lastActivity.getUniqueLetter() + ArcEntity.SPLIT_CHAR + activityChar);
 
 			// Updates previous Activity dependences
 			activityEntity.addPrev(lastActivity.getName());
 			// Updates last Activity dependences
 			lastActivity.addNext(activity);
 			
-		}
+		} else {
+			appendEventBorder(activityEntity, BorderEventType.START);
+		} 
 		
 		lastActivity = activityEntity;
 		currentTuple += activityChar;
 	}
 
 	public String end(){
+		appendEventBorder(lastActivity, BorderEventType.END);
 		appendTuple(currentTuple);
 		return currentTuple;
 	}
@@ -146,22 +151,71 @@ public class DependencyGraph {
 			return activityAlias.get(activity);
 		}
 
-		activityAlias.put(activity, ++aliasChar);
-		if (aliasChar == 91){ 	// Change from '[' to 'a'
-			aliasChar+=6; 		// Jump 6 char 
+		activityAlias.put(activity, ++aliasCharActivity);
+		if (aliasCharActivity == 91){ 	// Change from '[' to 'a'
+			aliasCharActivity+=6; 		// Jump 6 char 
 		}
 
-		return aliasChar;
+		return aliasCharActivity;
 	}
 
 	private String padronizeActivity(String activity){
 		return activity.trim().toUpperCase();
 	}
+	
+	/////////////////////// EVENT BORDERS
+	/**
+	 * Loads the processed border events
+	 * @return Map of border events
+	 */
+	public Map<String, BorderEventEntity> getBorderEvents(){
+		return borderEventMap;
+	}
 
+
+	private void appendEventBorder(ActivityEntity activityEntity, BorderEventType type){
+
+		if (activityEntity.getType() == ActivityType.NORMAL){
+			String name = type.name() + aliasKeyEvents;
+			String boderEventKey = getBoderEventKey();
+			BorderEventEntity borderEventEntity = new BorderEventEntity(name, boderEventKey);
+			borderEventEntity.setType(type);
+			borderEventMap.put(name, borderEventEntity);
+	
+			String arcRef = null;
+			ArcEntity arcEntity = null;
+	
+			if (type == BorderEventType.START){
+				arcRef = boderEventKey + ArcEntity.SPLIT_CHAR + activityEntity.getUniqueLetter();
+				
+				arcEntity = new ArcEntity(arcRef, name, activityEntity.getName());
+				activityEntity.setType(ActivityType.START);
+				activityEntity.addPrev(name);
+				borderEventEntity.addNext(activityEntity.getName());
+	
+			} else {
+				arcRef = activityEntity.getUniqueLetter() + ArcEntity.SPLIT_CHAR + boderEventKey ;
+				
+				arcEntity = new ArcEntity(arcRef, activityEntity.getName(), name);
+				activityEntity.setType(ActivityType.END);
+				activityEntity.addNext(name);
+				borderEventEntity.addPrev(activityEntity.getName());
+	
+			}
+			arcEntity.increment();
+			arcsMap.put(arcRef, arcEntity);
+		}
+	}
+
+	private String getBoderEventKey(){
+		int borderKey = aliasKeyEvents ++;
+		return (borderKey > 9 ? "" : "0") + borderKey;
+	}
+	
 	/////////////////////// ARC
 
 	private void appendArc(String arc){
-		if (arc != null && arc.length() == 2){
+		if (arc != null && arc.length() == 3){
 			ArcEntity arcEntity = arcsMap.get(arc);
 			if (arcEntity == null){
 				arcEntity = new ArcEntity(arc);
@@ -169,11 +223,13 @@ public class DependencyGraph {
 				// Gets the from and to activity name;
 				BiMap<Character, String> inverse = activityAlias.inverse();
 				
-				Character fromChar = arc.charAt(0);
-				String from = inverse.get(fromChar);
+				String[] splitArc = arc.split(ArcEntity.SPLIT_CHAR);
+				
+				Character fromChar = splitArc[0].charAt(0);
+				String from = inverse.get(fromChar).toString();
 				arcEntity.setSource(from);
-				Character toChar = arc.charAt(1);
-				String to = inverse.get(toChar);
+				Character toChar = splitArc[1].charAt(0);
+				String to = inverse.get(toChar).toString();
 				arcEntity.setTarget(to);
 
 			}
@@ -199,9 +255,6 @@ public class DependencyGraph {
 		value++;
 		tupleOcurrency.put(tuple, value);
 	}
-	
-	
-	
 	
 	/////////////////////// Tables
 	
@@ -232,7 +285,7 @@ public class DependencyGraph {
 	}
 	
 	private String activityRelation(Character c1, Character c2){
-		return arcsMap.containsKey(c1 + "" + c2) ? ">>" : "  "; 
+		return arcsMap.containsKey(c1 + ArcEntity.SPLIT_CHAR + c2) ? ">>" : "  "; 
 	}
 	
 	public void printOcurrancyTable(){
@@ -254,7 +307,7 @@ public class DependencyGraph {
 		for (Character c1 : activityChars){
 			middleLines = c1 + " |";
 			for (Character c2 : activityChars){
-				ArcEntity arcEntity = arcsMap.get(c1 + "" + c2);
+				ArcEntity arcEntity = arcsMap.get(c1 + ArcEntity.SPLIT_CHAR + c2);
 				if (arcEntity != null){
 					Integer count = arcEntity.getCount();
 					middleLines += " " + count + (count > 9 ? "" : " ") + " |";
@@ -276,6 +329,7 @@ public class DependencyGraph {
 	//============================================================= 
 	public void computeParalellism() {
 		Set<Character> activitySetChars = activityAlias.values();
+		BiMap<Character, String> inverse = activityAlias.inverse();
 		List<Character> activityChars = new ArrayList<Character>();
 		activityChars.addAll(activitySetChars);
 		Collections.sort(activityChars);
@@ -284,16 +338,30 @@ public class DependencyGraph {
 		for (Character c1 : activityChars){
 			for (Character c2 : activityChars){
 				if (!c1.equals(c2)){
-					if (arcsMap.containsKey(c1 + ""+ c2) && arcsMap.containsKey(c2 + ""+ c1)){
+					
+					if (arcsMap.containsKey(c1 + ArcEntity.SPLIT_CHAR+ c2) && arcsMap.containsKey(c2 + ArcEntity.SPLIT_CHAR+ c1)){
+					
 						// find A->B and A->C
 						Character previous = getMutualPredecessor(c1, c2, activityChars);
 						if (previous != null){
 							// Find B->D  and C->D
 							Character mutualSucessor = getMutualSucessor(c1, c2, activityChars);
+							
 							if (mutualSucessor != null){
-								arcsMap.remove(c1 + ""+ c2);
-								arcsMap.remove(c2 + ""+ c1);
+								System.out.println("Simple paralellism found : ");
+								System.out.println(" " + previous + " < " + c1 + " " + c2 + " > " + mutualSucessor +  "  " );
+								String activtyC1 = inverse.get(c1);
+								String activtyC2 = inverse.get(c2);
+								activityMap.get(c1 + "").getNext().remove(activtyC2);
+								activityMap.get(c2 + "").getNext().remove(activtyC1);
+								activityMap.get(c1 + "").getPrevious().remove(activtyC2);
+								activityMap.get(c2 + "").getPrevious().remove(activtyC1);
+								
+								// Remove Arcs
+								arcsMap.remove(c1 + ArcEntity.SPLIT_CHAR + c2);
+								arcsMap.remove(c2 + ArcEntity.SPLIT_CHAR + c1);
 							}
+							
 						}
 					}
 				}
@@ -304,7 +372,7 @@ public class DependencyGraph {
 	private Character getMutualPredecessor(Character c1, Character c2, List<Character> activityChars) {
 		for (Character previous : activityChars){
 			if (!previous.equals(c1) && !previous.equals(c2)){
-				if (arcsMap.containsKey(previous + "" + c1) && arcsMap.containsKey(previous + "" + c2)){
+				if (arcsMap.containsKey(previous + ArcEntity.SPLIT_CHAR + c1) && arcsMap.containsKey(previous + ArcEntity.SPLIT_CHAR + c2)){
 					return previous;
 				}
 			}
@@ -315,7 +383,7 @@ public class DependencyGraph {
 	private Character getMutualSucessor(Character c1, Character c2, List<Character> activityChars) {
 		for (Character next : activityChars){
 			if (!next.equals(c1) && !next.equals(c2)){
-				if (arcsMap.containsKey(c1 + "" + next) && arcsMap.containsKey(c2 + "" + next)){
+				if (arcsMap.containsKey(c1 + ArcEntity.SPLIT_CHAR + next) && arcsMap.containsKey(c2 + ArcEntity.SPLIT_CHAR + next)){
 					return next;
 				}
 			}
@@ -338,7 +406,8 @@ public class DependencyGraph {
 	}
 
 	private Integer getOppositeCount(ArcEntity arc) {
-		String refReversed = arc.getRef().charAt(1) + "" + arc.getRef().charAt(0);
+		String[] split = arc.getRef().split(ArcEntity.SPLIT_CHAR);
+		String refReversed = split[1] + ArcEntity.SPLIT_CHAR + split[0];
 		ArcEntity arcEntity = arcsMap.get(refReversed);
 		if (arcEntity == null){
 			return 0;
@@ -346,4 +415,6 @@ public class DependencyGraph {
 		return arcEntity.getCount();
 	}
 	
+	
+
 }

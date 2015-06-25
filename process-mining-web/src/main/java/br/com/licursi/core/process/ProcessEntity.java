@@ -15,11 +15,11 @@ public class ProcessEntity {
 	private String id;
 	private String name;
 	
-	private  Map<String,ArcEntity> arcs;
+	private Map<String,ArcEntity> arcs;
 	private Map<String, ActivityEntity> activities;
+	private Map<String, BorderEventEntity> borderEvents;
 	
 	public ProcessEntity(){
-		
 	}
 	
 	public ProcessEntity(String id){
@@ -45,6 +45,14 @@ public class ProcessEntity {
 
 	public void setActivities(Map<String, ActivityEntity> activities) {
 		this.activities = activities;
+	}
+	
+	public Map<String, BorderEventEntity> getBorderEvents() {
+		return borderEvents;
+	}
+
+	public void setBorderEvents(Map<String, BorderEventEntity> borderEvents) {
+		this.borderEvents = borderEvents;
 	}
 	
 	private DBObject getArcsToDBObject(){

@@ -1,7 +1,6 @@
 package br.com.licursi.core.process;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +33,7 @@ public class ActivityEntity {
 		this.name = name;
 		this.count = 0;
 		this.avgTime = 0L;
+		this.type = ActivityType.NORMAL;
 		setUniqueLetter(uniqueLetter);
 		this.setIndex(uniqueLetter.charAt(0) - 64);
 	}

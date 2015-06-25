@@ -34,6 +34,7 @@ public class ProcessAggregator {
 		DBObject filter = BasicDBObjectBuilder
 				.start("arcs", 1)
 				.add("activities", 1)
+				.add("borderEvents", 1)
 				//.add("name", 1)
 				.get();
 		

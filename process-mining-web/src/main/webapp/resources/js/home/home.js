@@ -41,7 +41,6 @@ Dropzone.options.processDropzone = {
 				window.location.href = "adjust/" + response + "/";
 			}
 				
-			debugger;
 		});
 	}
 };

@@ -1,7 +1,6 @@
 package br.com.licursi.core.process;
 
-public enum ActivityType {
+public enum BorderEventType {
 	START,
-	NORMAL,
 	END
 }

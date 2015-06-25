@@ -29,10 +29,6 @@ marker#end {
     pointer-events: none;
 }
 
-.node.selected rect {
-    filter: url(#blue-glow);
-}
-
 .link.inactive,
 .node.inactive rect,
 .node.inactive text {
