@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+	<meta charset="utf-8" />
+	<title>Event log adjusts</title>
+	<link rel="stylesheet" th:href="@{/css/bootstrap.css}" />
+	<link rel="stylesheet" th:href="@{/css/all.css}" />
+	<link rel="stylesheet" th:href="@{/css/jquery-ui.accordion.min.css}" />
+	<link rel="stylesheet" th:href="@{/css/jquery.nouislider.min.css}" />
+	<link rel="stylesheet" th:href="@{/css/adjust.css}" />
+	<link rel="stylesheet" th:href="@{/css/jquery.dataTables.min.css}" />
+	
+	
+</head>
+<body>
+	<span th:include="commun/header :: process-menu (active=2)"></span>
+
+	<div id="split-container">
+
+		<div id="doc-menus">
+		
+			<a class="btn btn-primary btn-lg btn-block disabled" href="#" id="process-data" role="button">0/4 variables selected</a>
+			<hr/>		 
+			<form id="accordion" >
+				
+			</form>
+
+		</div>
+
+
+	</div>
+	<div id="adjust-container"> 
+	</div>
+
+	<script th:src="@{/js/jquery-1.10.2.min.js}"></script>
+	<script th:src="@{/js/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/js/jquery.browser.min.js}"></script>
+	<script th:src="@{/js/jquery-ui.accordion.min.js}"></script>
+	<script th:src="@{/js/all.js}"></script>
+	<script th:src="@{/js/view/adjust.js}"></script>
+
+</body>
+</html>
