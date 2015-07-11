@@ -21,7 +21,6 @@ public class FlexibleHeuristicMinner {
 	
 	public ProcessEntity process(List<DBObject> mappedData){
 		
-		ProcessEntity processEntity = new ProcessEntity(this._id);
 		
 		// Process Tuple per Tuple
 		for (DBObject instance : mappedData){
@@ -31,12 +30,8 @@ public class FlexibleHeuristicMinner {
 		System.out.println("========================================================");
 		dependencyGraph.printOcurrancyTable();
 		
-		dependencyGraph.computeParalellism();
-		dependencyGraph.computeDependencyMeasure();
-
-		processEntity.setBorderEvents(dependencyGraph.getBorderEvents());
-		processEntity.setActivities(dependencyGraph.getActivities());
-		processEntity.setArcs(dependencyGraph.getArcs());
+		ProcessEntity processEntity = dependencyGraph.getProcessedData(this._id);
+		
 		
 		return processEntity;
 		

@@ -18,6 +18,7 @@ public class ProcessEntity {
 	private Map<String,ArcEntity> arcs;
 	private Map<String, ActivityEntity> activities;
 	private Map<String, BorderEventEntity> borderEvents;
+	private Map<String, TupleEntity> tuples;
 	
 	public ProcessEntity(){
 	}
@@ -82,6 +83,14 @@ public class ProcessEntity {
 	
 	public String toString() {
 		return toDBObject().toString();
+	}
+
+	public Map<String, TupleEntity> getTuples() {
+		return tuples;
+	}
+
+	public void setTuples(Map<String, TupleEntity> tuples) {
+		this.tuples = tuples;
 	}
 	
 }
