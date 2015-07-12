@@ -145,11 +145,12 @@ Node.types = {
 	
 };
 
-var Graph = function() {
+var Graph = function(importedData) {
     // Default values for internal variables
     this.nodelist = [];
     this.nodes = {};
     this.edges = [];
+    this._importedData = importedData;
 };
 
 Graph.prototype.addNode = function(node) {
@@ -306,12 +307,18 @@ Graph.prototype.getVisibleLinks = function() {
     
     var nodes = this.nodes;
     var ret = [];
+    var arcs = this._importedData.arcs;
     var visible_nodes = this.getVisibleNodes();
     for (var i = 0; i < visible_nodes.length; i++) {
         var node = visible_nodes[i];
         var parentids = visible_parent_map[node.id];
         Object.keys(parentids).forEach(function(pid) {
-            ret.push({ref: getRef(nodes[pid],node) ,source: nodes[pid], target: node, label :  getRef(nodes[pid],node)});
+        	var ref = getRef(nodes[pid],node);
+        
+        	var arc = arcs[ref];
+        	var stroke = getEdgeStroke(arc.dependencyMeasure);
+        	
+            ret.push({ref: ref ,source: nodes[pid], target: node, label : ref, strokeWidth : stroke, count : arc.count, dependencyMeasure : arc.depedencyMeasure });
         });
     }
     this.edges = ret;
@@ -321,6 +328,25 @@ Graph.prototype.getVisibleLinks = function() {
 /*
  * The functions below are just simple utility functions
  */
+
+function getEdgeStroke(dependencyMeasure){
+	var d = parseFloat(dependencyMeasure);
+	if (d < 0.55){
+		return 1;
+	} else if (d < 0.70){
+		return 1.5;
+	} else if (d < 0.76){
+		return 2.0;
+	} else if (d < 0.80){
+		return 3;
+	} else if (d < 0.85){
+		return 4;
+	} else if (d < 0.89){
+		return 5;
+	} else {
+		return 6;
+	}
+}
 
 function getNodesBetween(a, b) {
     // Returns a list containing all the nodes between a and b, including a and b

@@ -69,7 +69,10 @@ function DirectedAcyclicGraph() {
             }
             
             new_nodes.each(newnodetransition);
-            new_edges.attr("d", graph.splineGenerator).classed("visible", true);
+            new_edges
+            	.attr("d", graph.splineGenerator)
+            	.classed("visible", true)
+            	.attr("stroke-width", function (d){return d.strokeWidth;});
             existing_nodes.classed("visible", true);
             window.setTimeout(function() {
                 new_edges.classed("entering", false);
@@ -78,8 +81,6 @@ function DirectedAcyclicGraph() {
         });
         
     }
-
-
     
     var drawnode = function(d) {
         // Attach the DOM elements

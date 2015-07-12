@@ -246,7 +246,7 @@ var createGraphFromNodes = function(data) {
     }
     
     // Create the graph and add the nodes
-    var graph = new Graph();
+    var graph = new Graph(data);
     for (var id in nodes) {
         graph.addNode(nodes[id]);
     }

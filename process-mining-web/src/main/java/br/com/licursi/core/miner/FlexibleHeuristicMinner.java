@@ -24,7 +24,7 @@ public class FlexibleHeuristicMinner {
 		
 		// Process Tuple per Tuple
 		for (DBObject instance : mappedData){
-			String tuple = processActivities((BasicDBList) instance.get(ACTIVITIES));
+			processActivities((BasicDBList) instance.get(ACTIVITIES));
 		}
 		dependencyGraph.printRelationalTable();
 		System.out.println("========================================================");
@@ -37,7 +37,7 @@ public class FlexibleHeuristicMinner {
 		
 	}
 
-	private String processActivities(BasicDBList activityList) {
+	private void processActivities(BasicDBList activityList) {
 		System.out.println("========================================================");
 		if (activityList != null){
 			dependencyGraph.start();
@@ -52,10 +52,7 @@ public class FlexibleHeuristicMinner {
 			String end = dependencyGraph.end();
 			
 			System.out.println("tuple : " + end);
-			return end;
 		}
-		return null;
-		
 	}
 	
 }

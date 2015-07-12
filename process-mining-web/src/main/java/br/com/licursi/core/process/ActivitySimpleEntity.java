@@ -7,7 +7,6 @@ public class ActivitySimpleEntity {
 	private Long endTime;
 	private String resource;
 	
-	
 	public String getUniqueLetter() {
 		return uniqueLetter;
 	}

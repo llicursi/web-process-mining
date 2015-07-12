@@ -3,6 +3,7 @@ package br.com.licursi.core.miner;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 import br.com.licursi.core.process.ActivityEntity;
+import br.com.licursi.core.process.ActivitySimpleEntity;
 import br.com.licursi.core.process.ActivityType;
 import br.com.licursi.core.process.ArcEntity;
 import br.com.licursi.core.process.BorderEventEntity;
@@ -32,9 +34,13 @@ public class DependencyGraph {
 	private BiMap<String, Character> activityAlias = null;
 	private Map<String, ActivityEntity> activityMap = null;
 	private Map<String, BorderEventEntity> borderEventMap = null;
+	
 	private Map<String, ArcEntity> arcsMap = null;
+	private Map<String, List<ArcEntity>> arcsEndedWith = null;
+	
 	private Map<String, Integer> tupleOcurrency = null;
 	private Map<String, TupleEntity> tuplesMap = null;
+	
 
 	private ActivityEntity lastActivity = null;
 	private TupleEntity currentTuple = null;
@@ -43,19 +49,19 @@ public class DependencyGraph {
 	private String textTuple = "";
 
 	public DependencyGraph(){
-		activityAlias = HashBiMap.create();
-		arcsMap = new HashMap<String, ArcEntity>();
-		tupleOcurrency = new HashMap<String, Integer>();
-		activityMap = new HashMap<String, ActivityEntity>();
-		borderEventMap = new HashMap<String, BorderEventEntity>();
-		tuplesMap = new HashMap<String, TupleEntity>();
+		this.activityAlias = HashBiMap.create();
+		this.arcsMap = new HashMap<String, ArcEntity>();
+		this.tupleOcurrency = new HashMap<String, Integer>();
+		this.activityMap = new HashMap<String, ActivityEntity>();
+		this.borderEventMap = new HashMap<String, BorderEventEntity>();
+		this.tuplesMap = new HashMap<String, TupleEntity>();
 	}
 
 	public void start(){
-		lastActivity = null;
-		currentTuple = new TupleEntity();
-		textTuple = "";
-		lastActivityEndTime = 0L;
+		this.lastActivity = null;
+		this.currentTuple = new TupleEntity();
+		this.textTuple = "";
+		this.lastActivityEndTime = 0L;
 	}
 	
 	/////////////////////// ACTIVITIES
@@ -99,14 +105,8 @@ public class DependencyGraph {
 			activityMap.put(activityChar+"", activityEntity);
 		}
 		
-		long activityDuration = (lastActivityEndTime != 0L) ? endTime - lastActivityEndTime : 0L;
 		lastActivityEndTime = endTime;
-		if (activityDuration < 0){
-			activityDuration *= -1;
-		}
-		
-		// Adds the resource and increments counter
-		activityEntity.addResource(resource, activityDuration);
+		currentTuple.putActivity(activityChar, activity, endTime, resource);
 		
 		if (lastActivity != null){
 			appendArc(lastActivity.getUniqueLetter() + ArcEntity.SPLIT_CHAR + activityChar);
@@ -126,14 +126,14 @@ public class DependencyGraph {
 	}
 
 	public String end(){
-		appendEventBorder(lastActivity, BorderEventType.END);
-		appendTuple(textTuple);
+		appendEventBorder(this.lastActivity, BorderEventType.END);
+		appendTuple(this.textTuple);
 		
-		currentTuple.setName(textTuple);
-		currentTuple.setEnd(lastActivityEndTime);
+		this.currentTuple.setName(this.textTuple);
+		this.currentTuple.setEnd(this.lastActivityEndTime);
 		
-		tuplesMap.put("case " + caseIndex, currentTuple);
-		caseIndex++;
+		this.tuplesMap.put("case " + this.caseIndex, this.currentTuple);
+		this.caseIndex++;
 		
 		return textTuple;
 	}
@@ -336,24 +336,89 @@ public class DependencyGraph {
 	}
 	
 	public ProcessEntity getProcessedData(String id){
-		computeParalellism();
-		computeDependencyMeasure();
-		computeArcsTimes();
+		long startProcessing = System.currentTimeMillis();
+		
+		long computeParalellism = computeParalellism();
+		long computeDependencyMeasure = computeDependencyMeasure();
+		long computeArcsTimes = computeArcsTimes();
 		
 		ProcessEntity processEntity = new ProcessEntity(id);
 		
 		processEntity.setBorderEvents(this.getBorderEvents());
 		processEntity.setActivities(this.getActivities());
 		processEntity.setArcs(this.getArcs());
+		processEntity.setTuples(this.tuplesMap);
+		
+		long endProcessing = System.currentTimeMillis();
+		long totalProcessing = (endProcessing - startProcessing);
+		System.out.println("=============================================");
+		System.out.println("= Tempo processando :                       ");
+		System.out.println("= Paralelismo.......: "+ computeParalellism + " ms (" + (Math.floor((computeParalellism/totalProcessing)*10000)/100) + " %)");
+		System.out.println("= Dependencia.......: "+ computeDependencyMeasure + " ms (" + (Math.floor((computeDependencyMeasure/totalProcessing)*10000)/100) + " %)");
+		System.out.println("= Tempo dos arcos...: "+ computeArcsTimes + " ms (" + (Math.floor((computeArcsTimes/totalProcessing)*10000)/100) + " %)");
+		System.out.println("= ");
+		System.out.println("= Total.......: "+ totalProcessing + " ms (" + (Math.floor((computeParalellism/totalProcessing)*10000)/100) + " %)");
 		
 		return processEntity;
 	}
 
 	
 	
-	private void computeArcsTimes() {
+	private long computeArcsTimes() {
+		long startTime = System.currentTimeMillis();
 		
+		arcsEndedWith = new HashMap<String, List<ArcEntity>>();
+		for (ArcEntity arc : arcsMap.values()){
+			 String uniqueLetter = activityAlias.get(arc.getTarget()) + "";
+			 List<ArcEntity> list = arcsEndedWith.get(uniqueLetter);
+			 if (list == null){
+				 list = new ArrayList<ArcEntity>();
+			 }
+			 if (!list.contains(arc)){
+				list.add(arc); 
+			 }
+			 arcsEndedWith.put(uniqueLetter, list);
+		}
 		
+		for (String key : tuplesMap.keySet()){
+			TupleEntity tupleEntity = tuplesMap.get(key);
+			
+			// Recover the list of activities, avoiding the first one, 
+			// for the purpouse of calculating of arcs time
+			for (int i = 1 ; i < tupleEntity.getActivities().size(); i++){
+				ActivitySimpleEntity activitySimple = tupleEntity.getActivities().get(i);
+				List<ArcEntity> possibleArcs = getPossibleArcs(activitySimple.getUniqueLetter());
+				
+				for (ArcEntity arc : possibleArcs){
+					ActivitySimpleEntity activity = getValidaArcStartActivity(arc, i, tupleEntity.getActivities()); 
+					if (activity != null){
+						tupleEntity.putArc(arc.getRef(), activity.getEndTime(), activitySimple.getEndTime(), activitySimple.getResource(), 0f);
+					}
+				}
+			}
+			
+		}
+		long endTime = System.currentTimeMillis();
+		
+		return (endTime - startTime);
+		
+	}
+	
+
+	private ActivitySimpleEntity getValidaArcStartActivity(ArcEntity arc,int i, List<ActivitySimpleEntity> activities) {
+		for (int f = i-1; f >= 0; f--){
+			ActivitySimpleEntity activitySimpleEntity = activities.get(f);
+			String source = activitySimpleEntity.getName();
+			if (source != null && source.toUpperCase().equals(arc.getSource())){
+				return activitySimpleEntity;
+			}
+		}
+		return null;
+	}
+
+	private List<ArcEntity> getPossibleArcs(String activitiyUniqueLetter) {
+		String uniqueLetter = activitiyUniqueLetter;
+		return arcsEndedWith.get(uniqueLetter);
 	}
 
 	//============================================================= 
@@ -364,7 +429,7 @@ public class DependencyGraph {
 	//		   \   /
 	//			 C
 	//============================================================= 
-	public void computeParalellism() {
+	private long computeParalellism() {
 		long startTime = System.currentTimeMillis();
 		
 		Set<Character> activitySetChars = activityAlias.values();
@@ -407,7 +472,7 @@ public class DependencyGraph {
 			}
 		}
 		long endTime = System.currentTimeMillis();
-		System.out.println("Tempo computando Paralelismos : " + (endTime - startTime) + " ms");
+		return (endTime - startTime);
 	}
 
 	private Character getMutualPredecessor(Character c1, Character c2, List<Character> activityChars) {
@@ -433,12 +498,11 @@ public class DependencyGraph {
 	}
 	
 	//============================================================= 
-	// Computa a medida de dependencia
+	// Computa a medida de dependencia dos arcos
 	//	
-	//
 	//============================================================= 
 
-	public void computeDependencyMeasure() {
+	private long computeDependencyMeasure() {
 		long startTime = System.currentTimeMillis();
 		for (ArcEntity arc : arcsMap.values()){
 			Integer inverseCount = getOppositeCount(arc); 
@@ -448,7 +512,7 @@ public class DependencyGraph {
 			arc.setDependencyMeasure(dividendus != 0f ? divisor/dividendus : dividendus);
 		}
 		long endTime = System.currentTimeMillis();
-		System.out.println("Tempo computando medida de dependencia : " + (endTime - startTime) + " ms");
+		return (endTime - startTime);
 	}
 
 	private Integer getOppositeCount(ArcEntity arc) {

@@ -11,8 +11,8 @@
         <link rel="stylesheet" th:href="@{/css/jquery.nouislider.min.css}"/>
         <link rel="stylesheet" th:href="@{/css/svg.css}"/>
         <link rel="stylesheet" th:href="@{/css/visualization.css}"/>
-		<link rel="stylesheet" th:href="@{/css/dagre/xtrace.css}" type="text/css"/>
-		<link rel="stylesheet" th:href="@{/css/dagre/tipsy.css}" type="text/css"/>
+		<link rel="stylesheet" th:href="@{/css/process/xtrace.css}" type="text/css"/>
+		<link rel="stylesheet" th:href="@{/css/process/tipsy.css}" type="text/css"/>
         
     </head>
     <body>
@@ -80,74 +80,20 @@
         <script th:src="@{/js/colorbrewer.js}"></script>
         <script th:src="@{/js/geometry.js}"></script>
         
-		<script type="text/javascript" th:src="@{/js/dagre/dagre.js}"></script>
-		<script type="text/javascript" th:src="@{/js/dagre/Minimap.js}"></script>
-		<script type="text/javascript" th:src="@{/js/dagre/MinimapZoom.js}"></script>
-		<script type="text/javascript" th:src="@{/js/dagre/DirectedAcyclicGraph.js}"></script>
-		<script type="text/javascript" th:src="@{/js/dagre/List.js}"></script>
-		<script type="text/javascript" th:src="@{/js/dagre/Selectable.js}"></script>
-		<script type="text/javascript" th:src="@{/js/dagre/Graph.js}"></script>
-		<script type="text/javascript" th:src="@{/js/dagre/History.js}"></script>
-		<script type="text/javascript" th:src="@{/js/dagre/jquery.tipsy.js}"></script>
-		<script type="text/javascript" th:src="@{/js/dagre/Tooltip.js}"></script>
-		<script type="text/javascript" th:src="@{/js/dagre/ContextMenu.js}"></script>
-		<script type="text/javascript" th:src="@{/js/dagre/xtrace_utils.js}"></script>
-		<script type="text/javascript" th:src="@{/js/dagre/xtrace_graph.js}"></script>
-        
-        
-        <script>
-        
-        $(document).ready(function(){
-        	
-        	$( "#accordion" ).accordion({
-    		    heightStyle: "fill"
-    		});
-        	
-//         	var config = {
-//        			"title" : "Database process documentation",
-//        			"graph" : {
-//        				"linkDistance" : 200,
-//        				"charge" : -300,
-//        				"height" : 550,
-//        				"numColors" : 12,
-//        				"labelPadding" : {
-//        					"left" : 3,
-//        					"right" : 3,
-//        					"top" : 2,
-//        					"bottom" : 2
-//        				},
-//        				"labelMargin" : {
-//        					"left" : 45,
-//        					"right" : 45,
-//        					"top" : 60,
-//        					"bottom" : 60
-//        				},
-//        				"ticksWithoutCollisions" : 120
-//        			},
-//        			"jsonUrl" : "data/",
-//        			pathSliderContainer : "densitySlider",
-//        			activitySliderContainer : "activitySlider"
-//        		};
-        	
-        	
-//         	forceLGraph = new ForceLayoutGraph(config);
-//         	forceLGraph.start();
-        	
-        	var data = { "_id" : { "$oid" : "5580c75af18f38cd969f1a47"} , "arcs" : { "B>D" : { "ref" : "B>D" , "source" : "EXAMINE CASUALLY" , "target" : "DECIDE" , "count" : 2 , "strength" : 1 , "dependencyMeasure" : 0.6666666865348816} , "A>B" : { "ref" : "A>B" , "source" : "REGISTER REQUEST" , "target" : "EXAMINE CASUALLY" , "count" : 3 , "strength" : 1 , "dependencyMeasure" : 0.75} , "A>C" : { "ref" : "A>C" , "source" : "REGISTER REQUEST" , "target" : "CHECK TICKET" , "count" : 2 , "strength" : 1 , "dependencyMeasure" : 0.6666666865348816} , "D>G" : { "ref" : "D>G" , "source" : "DECIDE" , "target" : "REJECT REQUEST" , "count" : 3 , "strength" : 1 , "dependencyMeasure" : 0.75} , "D>F" : { "ref" : "D>F" , "source" : "DECIDE" , "target" : "REINITIATE REQUEST" , "count" : 3 , "strength" : 1 , "dependencyMeasure" : 0.75} , "D>E" : { "ref" : "D>E" , "source" : "DECIDE" , "target" : "PAY COMPENSATION" , "count" : 3 , "strength" : 1 , "dependencyMeasure" : 0.75} , "E>01" : { "ref" : "E>01" , "source" : "PAY COMPENSATION" , "target" : "END1" , "count" : 1 , "dependencyMeasure" : 0.5} , "C>D" : { "ref" : "C>D" , "source" : "CHECK TICKET" , "target" : "DECIDE" , "count" : 6 , "strength" : 1 , "dependencyMeasure" : 0.8571428656578064} , "F>B" : { "ref" : "F>B" , "source" : "REINITIATE REQUEST" , "target" : "EXAMINE CASUALLY" , "count" : 1 , "strength" : 1 , "dependencyMeasure" : 0.5} , "A>H" : { "ref" : "A>H" , "source" : "REGISTER REQUEST" , "target" : "EXAMINE THOROUGHLY" , "count" : 1 , "strength" : 1 , "dependencyMeasure" : 0.5} , "F>C" : { "ref" : "F>C" , "source" : "REINITIATE REQUEST" , "target" : "CHECK TICKET" , "count" : 1 , "strength" : 1 , "dependencyMeasure" : 0.5} , "H>D" : { "ref" : "H>D" , "source" : "EXAMINE THOROUGHLY" , "target" : "DECIDE" , "count" : 1 , "strength" : 1 , "dependencyMeasure" : 0.5} , "F>H" : { "ref" : "F>H" , "source" : "REINITIATE REQUEST" , "target" : "EXAMINE THOROUGHLY" , "count" : 1 , "strength" : 1 , "dependencyMeasure" : 0.5} , "G>02" : { "ref" : "G>02" , "source" : "REJECT REQUEST" , "target" : "END2" , "count" : 1 , "dependencyMeasure" : 0.5} , "00>A" : { "ref" : "00>A" , "source" : "START0" , "target" : "REGISTER REQUEST" , "count" : 1 , "dependencyMeasure" : 0.5}} , "activities" : { "EXAMINE CASUALLY" : { "name" : "EXAMINE CASUALLY" , "uniqueLetter" : "B" , "count" : 6 , "previous" : [ "REINITIATE REQUEST" , "REGISTER REQUEST"] , "next" : [ "DECIDE"] , "resources" : { "Ellen" : [ 3840000] , "Sue" : [ 116280000] , "Mike" : [ 90840000 , 177420000 , 2040000] , "Sean" : [ 50640000]} , "avgTime" : 73510000 , "index" : 2 , "type" : "NORMAL"} , "PAY COMPENSATION" : { "name" : "PAY COMPENSATION" , "uniqueLetter" : "E" , "count" : 3 , "previous" : [ "DECIDE"] , "next" : [ "END1"] , "resources" : { "Ellen" : [ 218580000 , 521400000] , "Mike" : [ 759300000]} , "avgTime" : 499760000 , "index" : 5 , "type" : "END"} , "CHECK TICKET" : { "name" : "CHECK TICKET" , "uniqueLetter" : "C" , "count" : 9 , "previous" : [ "REINITIATE REQUEST" , "REGISTER REQUEST"] , "next" : [ "DECIDE"] , "resources" : { "Pete" : [ 90360000 , 8880000 , 167820000] , "Ellen" : [ 252900000 , 5280000] , "Mike" : [ 87360000 , 32640000 , 40800000 , 450360000]} , "avgTime" : 126266666 , "index" : 3 , "type" : "NORMAL"} , "REINITIATE REQUEST" : { "name" : "REINITIATE REQUEST" , "uniqueLetter" : "F" , "count" : 3 , "previous" : [ "DECIDE"] , "next" : [ "EXAMINE CASUALLY" , "CHECK TICKET" , "EXAMINE THOROUGHLY"] , "resources" : { "Sara" : [ 96600000 , 48600000 , 32400000]} , "avgTime" : 59200000 , "index" : 6 , "type" : "NORMAL"} , "DECIDE" : { "name" : "DECIDE" , "uniqueLetter" : "D" , "count" : 9 , "previous" : [ "EXAMINE CASUALLY" , "CHECK TICKET" , "EXAMINE THOROUGHLY"] , "next" : [ "PAY COMPENSATION" , "REINITIATE REQUEST" , "REJECT REQUEST"] , "resources" : { "Sara" : [ 1800000 , 180360000 , 242880000 , 178680000 , 33540000 , 507960000 , 578640000 , 79920000 , 72360000]} , "avgTime" : 208460000 , "index" : 4 , "type" : "NORMAL"} , "EXAMINE THOROUGHLY" : { "name" : "EXAMINE THOROUGHLY" , "uniqueLetter" : "H" , "count" : 3 , "previous" : [ "REINITIATE REQUEST" , "REGISTER REQUEST"] , "next" : [ "DECIDE"] , "resources" : { "Sue" : [ 83040000] , "Sean" : [ 139020000 , 46080000]} , "avgTime" : 89380000 , "index" : 8 , "type" : "NORMAL"} , "REJECT REQUEST" : { "name" : "REJECT REQUEST" , "uniqueLetter" : "G" , "count" : 3 , "previous" : [ "DECIDE"] , "next" : [ "END2"] , "resources" : { "Pete" : [ 97560000] , "Ellen" : [ 315720000] , "Mike" : [ 92640000]} , "avgTime" : 168640000 , "index" : 7 , "type" : "END"} , "REGISTER REQUEST" : { "name" : "REGISTER REQUEST" , "uniqueLetter" : "A" , "count" : 6 , "previous" : [ "START0"] , "next" : [ "EXAMINE CASUALLY" , "CHECK TICKET" , "EXAMINE THOROUGHLY"] , "resources" : { "Pete" : [ 0 , 0 , 0] , "Ellen" : [ 0] , "Mike" : [ 0 , 0]} , "avgTime" : 0 , "index" : 1 , "type" : "START"}} , "borderEvents" : { "END1" : { "name" : "END1" , "ref" : "01" , "previous" : [ "PAY COMPENSATION"] , "next" : [ ] , "type" : "END"} , "END2" : { "name" : "END2" , "ref" : "02" , "previous" : [ "REJECT REQUEST"] , "next" : [ ] , "type" : "END"} , "START0" : { "name" : "START0" , "ref" : "00" , "previous" : [ ] , "next" : [ "REGISTER REQUEST"] , "type" : "START"}}};
-        	
-        	var algumacoisa = new XTraceDAG("graph", data);
-        	algumacoisa.draw();
-        	
-        	algumacoisa.computePointInsideEdge(10);
-        });
-		
-		</script>
-        
-        <script th:src="@{/js/view/nodeActivity.js}"></script>
-        <script th:src="@{/js/view/nodeBorder.js}"></script>
-        <script th:src="@{/js/view/sliderHandler.js}"></script>
-        <script th:src="@{/js/view/activitiesSelector.js}"></script>
-        <script th:src="@{/js/view/forceLayoutGraph.js}"></script>
-    
+		<script type="text/javascript" th:src="@{/js/process/dagre.js}"></script>
+		<script type="text/javascript" th:src="@{/js/process/Graph.js}"></script>
+		<script type="text/javascript" th:src="@{/js/process/DirectedAcyclicGraph.js}"></script>
+		<script type="text/javascript" th:src="@{/js/process/DirectedAcyclicGraphMinimap.js}"></script>
+		<script type="text/javascript" th:src="@{/js/process/DirectedAcyclicGraphAnimationBar.js}"></script>
+		<script type="text/javascript" th:src="@{/js/process/DirectedAcyclicGraphHistory.js}"></script>
+		<script type="text/javascript" th:src="@{/js/process/DirectedAcyclicGraphTooltip.js}"></script>
+		<script type="text/javascript" th:src="@{/js/process/DirectedAcyclicGraphContextMenu.js}"></script>
+		<script type="text/javascript" th:src="@{/js/process/utils/MinimapZoom.js}"></script>
+		<script type="text/javascript" th:src="@{/js/process/utils/List.js}"></script>
+		<script type="text/javascript" th:src="@{/js/process/utils/Selectable.js}"></script>
+		<script type="text/javascript" th:src="@{/js/process/utils/jquery.tipsy.js}"></script>
+		<script type="text/javascript" th:src="@{/js/process/ProcessMiningUtils.js}"></script>
+		<script type="text/javascript" th:src="@{/js/process/ProcessMiningViewportController.js}"></script>
+     
 
 </body></html>
