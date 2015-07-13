@@ -7,10 +7,12 @@ ProcessMiningViewportController = function (attachPoint, data) {
 	// SVG elements
 	var _d3SVG = null, 
 		minimapSVG = null, 
-		rootSVG = null;
+		rootSVG = null,
+		_d3GraphG = null;
 	
 	var containerDOM = document.getElementById(attachPoint);
 	var lightweight = false;
+	var _status = "densidade";
 	var _graph = null, _data = data;
 
 	function init(){
@@ -42,7 +44,10 @@ ProcessMiningViewportController = function (attachPoint, data) {
 		DAG = DirectedAcyclicGraph().animate(!lightweight);
 		DAGMinimap = DirectedAcyclicGraphMinimap(DAG).width("19.5%").height("19.5%").x("80%").y("80%");
 		DAGTooltip = DirectedAcyclicGraphTooltip(undefined, ["name", "count", "type", "avgTime"]);
-		DAGAnimationBar = DirectedAcyclicGraphAnimationBar();
+		DAGAnimationBar = new DirectedAcyclicGraphAnimationBar(minimapSVG);
+		DAGAnimationBar.build(rootSVG);
+		
+		
 		
 	//	var DAGHistory = List().width("15%").height("99%").x("0.5%").y("0.5%");
 	//	var DAGContextMenu = DirectedAcyclicGraphContextMenu(_graph, _d3SVG);
@@ -204,8 +209,10 @@ ProcessMiningViewportController = function (attachPoint, data) {
 
 		if (!lightweight) {
 			nodes.on("mouseover", function(d) {
-				_d3SVG.classed("hovering", true);
-				highlightPath(d);
+				if (_status == "densidade"){
+					_d3SVG.classed("hovering", true);
+					highlightPath(d);
+				}
 			}).on("mouseout", function(d){
 				_d3SVG.classed("hovering", false);
 				edges.classed("hovered", false).classed("immediate", false);
@@ -289,6 +296,32 @@ ProcessMiningViewportController = function (attachPoint, data) {
 		console.log("draw complete, total time=", new Date().getTime() - begin);
 		
 		resetViewport();
+		
+		_d3GraphG = _d3SVG.select("g.graph");
+	};
+	
+	var accordionEventChange = function(event, ui){
+		if (ui.newHeader[0].id == "h3Densidade"){
+			_d3GraphG.classed("density", true);
+		} else if (ui.newHeader[0].id == "h3Conformidade"){
+			_d3GraphG.classed("replay", true);
+			DAGAnimationBar.load("tuples/")
+			
+		}
+		
+		_status = ui.newHeader[0].id.replace("h3", "").toLowerCase();
+		
+		if (ui.oldHeader[0].id == "h3Densidade"){
+			_d3GraphG.classed("density", false);
+		} else if (ui.oldHeader[0].id == "h3Conformidade"){
+			_d3GraphG.classed("replay", false);
+		}
+		
+		_graph;
+	}
+	
+	this.attachAccordionEvent = function (){
+		return accordionEventChange;
 	};
 
 	
@@ -296,9 +329,14 @@ ProcessMiningViewportController = function (attachPoint, data) {
 
 var procMiningController;
 (function (){
-	
+	var accordionChangeFunction = null;
 	$("#accordion" ).accordion({
-	    heightStyle: "fill"
+	    heightStyle: "fill",
+	    beforeActivate : function (event, ui) {
+	    	if (accordionChangeFunction != null){
+	    		accordionChangeFunction(event, ui);
+	    	}
+	    }
 	});
 	
 	$.ajax({
@@ -312,6 +350,7 @@ var procMiningController;
 	        }
 	        procMiningController = new ProcessMiningViewportController("graph", data);
 	    	procMiningController.draw();
+	    	accordionChangeFunction = procMiningController.attachAccordionEvent();
 		 }
 	});
 	

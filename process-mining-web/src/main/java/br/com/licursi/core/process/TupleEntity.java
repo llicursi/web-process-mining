@@ -3,6 +3,12 @@ package br.com.licursi.core.process;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * TODO -> Melhorar a entidade pai, de forma a ja processar o menor tempo e o maior
+ * @author Lucas Licursi
+ *
+ */
 public class TupleEntity {
 
 	private String name;

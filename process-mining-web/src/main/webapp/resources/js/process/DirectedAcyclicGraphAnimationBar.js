@@ -1,36 +1,121 @@
-AnimationBar = function(){
+DirectedAcyclicGraphAnimationBar = function(_DAGMinimap){
 	
-	this.build = function(){
-		createPlayButton();
+	this.build = function(rootSVG){
+		createAnimationBarHidden(rootSVG);
 	};
 	
+	this.load = function(url, containerIdForButton){
+		if (_tuples == null){
+			if (url.indexOf("/") != (url.length - 1)){
+				url = url + "/";
+			}
+			$.ajax({
+				 url: url ,
+				 method: "POST",
+				 datatype: "json",
+				 success: function(data) {
+					show();
+					createPlayButton(containerIdForButton);
+					_data = adjustData(data);
+				 }
+			});
+		} else {
+			show();
+		}
+	} 
+	
+	var _tuples = null;
+	var _barSVG;
+	var _data;
+	
+	function createAnimationBarHidden (rootSVG) {
+		
+		_barSVG = rootSVG.append("svg")
+			.classed("animation-bar", true)
+			.attr("x", "0.5%")
+			.attr("y", "94%")
+			.attr("height", "5%")
+			.attr("width", "99%")
+			.attr("opacity", "0");
+		_barSVG.append("rect")
+			.attr("height", "100%")
+			.attr("width", "100%")
+			.attr("fill", "#BBA484")
+			.attr("stroke", "#999");
+		
+		var data = getHundred();
+		_barSVG.append("g")
+			.selectAll("line")
+			.data(data)
+			.enter()
+			.append("line")
+			.attr("x1", function (d){return d;})
+			.attr("x2", function (d){return d;})
+			.attr("y1", "75%")
+			.attr("y2", "100%")
+			.attr("stroke-width", "1px")
+			.attr("stroke","#555");
+					
+	}
+	
+	function getHundred(){
+		var data = [];
+		for (var i = 1; i < 200; i ++){data.push((i/2).toFixed(1) + "%");}
+		return data;
+	}
+	
+	
 	function show(){
+		d3.select("#DAGMinimap").transition().delay(200).attr("y", "0.5%").attr("opacity","0.5");
+		_barSVG.transition().delay(200).attr("opacity", "1");
 		
 	}
 	
 	function hide(){
-		
+		d3.select("#DAGMinimap").transition().delay(200).attr("y", "95.5%").attr("opacity","1");
+		_barSVG.transition().delay(200).attr("opacity", "0");
 	}
 	
-	function createPlayButton () {
-		
-		//	Add a play button
-		var playbutton = rootSVG.append("svg")
-			.attr("x", "0.5%")
-			.attr("y", "0.5%")
-			.append("text")
-			.attr("text-anchor", "left")
-			.append("tspan")
-			.attr("x", 0)
-			.attr("dy", "1em")
-			.text("Play")
-			.on("click",function(d) {
-				animate();
-			});
-	
-		
+	function createPlayButton(containerIdForButton){
+		if (containerIdForButton != null && containerIdForButton != undefined){
+			var buttonPlaceholder = document.getElementById(containerIdForButton);
+			if (buttonPlaceholder != null && buttonPlaceholder != undefined){
+				var playButton = document.createElement("a");
+				playButton.className = "btn btn-default";
+				playButton.setAttribute("href", "javascipt:;");
+				playButton.id = "Replay";
+				playButton.innerHTML = "Replay";
+				playButton.onClick = animate;
+			}
+		}
 	}
 	
+	function adjustData(data){
+		var preData = {
+			max : 0,
+			min : 0,
+		}
+		var index = 1;
+		while (data["case " + index] != null && index < 100){
+			var caseN = data["case " + index];
+			if (preData.min == 0 || caseN.start < preData.min){
+				preData.min = caseN.start;
+			}
+			
+			if (preData.max == 0 || caseN.end < preData.max){
+				preData.max = caseN.end;
+			} 
+			preData.cases.push(caseN);
+			index ++;
+		}
+		preData.size = index -1;
+		console.log(preData);
+		return;
+	}
+	
+	function animate(){
+		
+	}
 	
 	//===============================================
 	// Animation equations

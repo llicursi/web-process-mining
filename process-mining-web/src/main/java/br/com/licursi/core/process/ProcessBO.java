@@ -23,5 +23,17 @@ public class ProcessBO {
 		
 		return serialized;
 	}
+
+
+	public String getProcessTuplesByObjectId(String processID){
+		DBObject result = eventLogAggregator.getProcessTuplesById(processID);
+		long startTime = System.currentTimeMillis();
+		String serialized = (result != null) ? JSON.serialize(result) : "";
+				
+		long endTime = System.currentTimeMillis();
+		System.out.println("Time serializing the data : " + (endTime - startTime));
+		
+		return serialized;
+	}
 	
 }

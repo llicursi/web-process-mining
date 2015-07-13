@@ -49,6 +49,14 @@ public class ProcessDisplayController {
 		return processBO.getProcessByObjectId(processId).toString();
 	}
 	
+	@RequestMapping(value={"/{processId}/tuples/"}, method=RequestMethod.POST,  produces=MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String dataJsonTuples(@PathVariable("processId") String processId) {
+//		List<ProcessEntity> findAllById = processRepository.findAllById(processId);
+//		return findAllById.get(0).toDBObject().toString();
+		return processBO.getProcessTuplesByObjectId(processId).toString();
+	}
+	
 	@RequestMapping(value="/data/", method=RequestMethod.POST,  produces=MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String dataJsonProcessFromFile() throws JSONException{

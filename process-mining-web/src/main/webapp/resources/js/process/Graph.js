@@ -127,6 +127,7 @@ Node.prototype.draw = function(d3D){
         text.attr("x", -text_bbox.width/2).attr("y", -text_bbox.height/2);
 	} else if (this.type == Node.types.end || this.type == Node.types.start){
 		var text = d3D.select('text');
+			text.remove();
 		var rect = d3D.select('rect');
 		var node_bbox = {"height": 40, "width": 40};
         rect.attr("x", -node_bbox.width/2)
@@ -134,7 +135,8 @@ Node.prototype.draw = function(d3D){
         	.attr("width", node_bbox.width)
         	.attr("height", node_bbox.height)
         	.attr("rx", 20)
-        	.attr("ry", 20);
+        	.attr("ry", 20)
+        	.classed("node-"+ this.type.toLowerCase().replace("_", "-"), true);
 	}
 };
 
