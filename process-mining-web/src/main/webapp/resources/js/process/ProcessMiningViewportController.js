@@ -44,10 +44,8 @@ ProcessMiningViewportController = function (attachPoint, data) {
 		DAG = DirectedAcyclicGraph().animate(!lightweight);
 		DAGMinimap = DirectedAcyclicGraphMinimap(DAG).width("19.5%").height("19.5%").x("80%").y("80%");
 		DAGTooltip = DirectedAcyclicGraphTooltip(undefined, ["name", "count", "type", "avgTime"]);
-		DAGAnimationBar = new DirectedAcyclicGraphAnimationBar(minimapSVG);
-		DAGAnimationBar.build(rootSVG);
-		
-		
+		DAGAnimationBar = new DirectedAcyclicGraphAnimationBar(_graph);
+		DAGAnimationBar.build(rootSVG, _d3SVG);
 		
 	//	var DAGHistory = List().width("15%").height("99%").x("0.5%").y("0.5%");
 	//	var DAGContextMenu = DirectedAcyclicGraphContextMenu(_graph, _d3SVG);
@@ -305,7 +303,7 @@ ProcessMiningViewportController = function (attachPoint, data) {
 			_d3GraphG.classed("density", true);
 		} else if (ui.newHeader[0].id == "h3Conformidade"){
 			_d3GraphG.classed("replay", true);
-			DAGAnimationBar.load("tuples/")
+			DAGAnimationBar.load("tuples/", "conformidadeContent");
 			
 		}
 		
@@ -315,9 +313,9 @@ ProcessMiningViewportController = function (attachPoint, data) {
 			_d3GraphG.classed("density", false);
 		} else if (ui.oldHeader[0].id == "h3Conformidade"){
 			_d3GraphG.classed("replay", false);
+			DAGAnimationBar.hide();
 		}
 		
-		_graph;
 	}
 	
 	this.attachAccordionEvent = function (){

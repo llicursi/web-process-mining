@@ -19,7 +19,6 @@ import br.com.licursi.config.ServerCustomization;
 @ComponentScan(basePackages={"br.com.licursi.*", "br.com.licursi.core.*"})
 public class ApplicationStarter extends SpringBootServletInitializer {
 	
-	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
 		return application.sources(ApplicationStarter.class);
 	}

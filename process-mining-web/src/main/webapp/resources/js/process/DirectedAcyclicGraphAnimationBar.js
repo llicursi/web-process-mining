@@ -1,7 +1,15 @@
-DirectedAcyclicGraphAnimationBar = function(_DAGMinimap){
+DirectedAcyclicGraphAnimationBar = function(graph){
+	var _graph = graph;
+	var _tuples = null;
+	var _barSVG;
+	var _d3SVG;
+	var _data = null;
+	var _dimensions;
 	
-	this.build = function(rootSVG){
+	this.build = function(rootSVG, d3SVG){
 		createAnimationBarHidden(rootSVG);
+		_d3SVG = d3SVG;
+		
 	};
 	
 	this.load = function(url, containerIdForButton){
@@ -15,8 +23,13 @@ DirectedAcyclicGraphAnimationBar = function(_DAGMinimap){
 				 datatype: "json",
 				 success: function(data) {
 					show();
+					
+					// Initiate the 
+					_d3SVG.select(".graph").append("g").classed("animations", true);
+					
 					createPlayButton(containerIdForButton);
 					_data = adjustData(data);
+					drawStartTimes();
 				 }
 			});
 		} else {
@@ -24,9 +37,49 @@ DirectedAcyclicGraphAnimationBar = function(_DAGMinimap){
 		}
 	} 
 	
-	var _tuples = null;
-	var _barSVG;
-	var _data;
+	function show(){
+		d3.select("#DAGMinimap").transition().delay(200).attr("opacity","0.0");
+		_barSVG.transition().delay(200).attr("opacity", "1");
+		
+	}
+	
+	this.hide = function(){
+		d3.select("#DAGMinimap").transition().delay(200).attr("opacity","1");
+		_barSVG.transition().delay(200).attr("opacity", "0");
+	}
+	
+	function adjustData(data){
+		var preData = {
+			max : 0,
+			min : 0,
+			cases : [],
+			size : 0, 
+			original : data
+		}
+		var index = 1;
+		while (data.tuples["case " + index] != null && index < 100){
+			// Clone cases for future use
+			var caseN = jQuery.extend({}, data.tuples["case " + index]);
+			if (preData.min == 0 || caseN.start < preData.min){
+				preData.min = caseN.start;
+			}
+			
+			if (preData.max == 0 || caseN.end > preData.max){
+				preData.max = caseN.end;
+			} 
+			preData.cases.push(caseN);
+			index ++;
+		}
+		preData.size = index -1;
+		
+		// Create a gap in the start of 1% of the total
+		if (preData.min > 0){
+			preData.min -= ((preData.max - preData.min)*0.01).toFixed(0);
+		} 
+		
+		return preData;
+	}
+	
 	
 	function createAnimationBarHidden (rootSVG) {
 		
@@ -36,12 +89,16 @@ DirectedAcyclicGraphAnimationBar = function(_DAGMinimap){
 			.attr("y", "94%")
 			.attr("height", "5%")
 			.attr("width", "99%")
-			.attr("opacity", "0");
-		_barSVG.append("rect")
+			.attr("opacity", "0")
+		
+		var rect = _barSVG.append("rect")
 			.attr("height", "100%")
 			.attr("width", "100%")
-			.attr("fill", "#BBA484")
-			.attr("stroke", "#999");
+			.attr("fill", "#CBCBCB")
+			.attr("stroke", "#999")
+			.on('mousemove', handleClick);
+		
+		_dimensions = rect[0][0].getBBox()
 		
 		var data = getHundred();
 		_barSVG.append("g")
@@ -58,64 +115,276 @@ DirectedAcyclicGraphAnimationBar = function(_DAGMinimap){
 					
 	}
 	
+	function handleClick(o, e, d){
+		var start = (new Date()).getTime();
+		var left = d3.mouse(this)[0];
+		var currentTime = selectTime(left);
+		//console.log(_acontrol.cases);
+		drawPointsInTime(currentTime)
+		var end = (new Date()).getTime();
+		//console.log("Processando os pontos : " + (end - start) + "ms");
+	}
+	
 	function getHundred(){
 		var data = [];
 		for (var i = 1; i < 200; i ++){data.push((i/2).toFixed(1) + "%");}
 		return data;
 	}
 	
-	
-	function show(){
-		d3.select("#DAGMinimap").transition().delay(200).attr("y", "0.5%").attr("opacity","0.5");
-		_barSVG.transition().delay(200).attr("opacity", "1");
-		
-	}
-	
-	function hide(){
-		d3.select("#DAGMinimap").transition().delay(200).attr("y", "95.5%").attr("opacity","1");
-		_barSVG.transition().delay(200).attr("opacity", "0");
-	}
-	
+	var _playButton;
 	function createPlayButton(containerIdForButton){
 		if (containerIdForButton != null && containerIdForButton != undefined){
 			var buttonPlaceholder = document.getElementById(containerIdForButton);
 			if (buttonPlaceholder != null && buttonPlaceholder != undefined){
-				var playButton = document.createElement("a");
-				playButton.className = "btn btn-default";
-				playButton.setAttribute("href", "javascipt:;");
-				playButton.id = "Replay";
-				playButton.innerHTML = "Replay";
-				playButton.onClick = animate;
+				_playButton = document.createElement("a");
+				_playButton.className = "btn btn-default";
+				_playButton.setAttribute("href", "javascipt:;");
+				_playButton.id = "Replay";
+				_playButton.innerHTML = "Replay";
+				_playButton.onclick = animate;
+				buttonPlaceholder.innerHTML = "";
+				buttonPlaceholder.appendChild(_playButton);
 			}
 		}
 	}
 	
-	function adjustData(data){
-		var preData = {
-			max : 0,
-			min : 0,
+	function changeButton(){
+		if (_playButton.innerHTML == "Replay"){
+			_playButton.innerHTML = "Stop";
+			_playButton.onclick = stopAnimate;
+		} else {
+			_playButton.innerHTML = "Replay";
+			_playButton.onclick = animate;
 		}
-		var index = 1;
-		while (data["case " + index] != null && index < 100){
-			var caseN = data["case " + index];
-			if (preData.min == 0 || caseN.start < preData.min){
-				preData.min = caseN.start;
-			}
-			
-			if (preData.max == 0 || caseN.end < preData.max){
-				preData.max = caseN.end;
-			} 
-			preData.cases.push(caseN);
-			index ++;
-		}
-		preData.size = index -1;
-		console.log(preData);
-		return;
 	}
+	
+	//===============================================
+	// Animation control 
+	//===============================================
+	var _acontrol = {
+		// Conversion
+		xDomainRange : null,
+		xRangeDomain : null,
+		xTimeDomain : null,
+		
+		// Stacks control
+		cases : {
+			actives : [],
+			waiting : [],
+			completed : []
+		},
+		time : 0,
+		left : 0
+	};
+	
+	function drawStartTimes(){
+		
+		_acontrol.xDomainRange = d3.scale.linear().domain([_data.min, _data.max]).range([_dimensions.x, _dimensions.width]);
+		_barSVG.append("g")
+			.selectAll("line")
+			.data(d3.merge(_data.cases.map(function (m){return m.arcTimes;})))
+			.enter()
+			.append("line")
+			.attr("x1", function (d){return _acontrol.xDomainRange(d.start);})
+			.attr("x2", function (d){return _acontrol.xDomainRange(d.start);})
+			.attr("y1", "0%")
+			.attr("y2", "100%")
+			.attr("stroke-width", "1px")
+			.attr("stroke","#255D91");
+		
+		_acontrol.xRangeDomain = d3.scale.linear().domain([_dimensions.x, _dimensions.width]).range([_data.min, _data.max]);
+		_acontrol.xTimeDomain = d3.scale.linear().domain([0, 600]).range([_data.min, _data.max]);
+		_acontrol.time = _data.min;
+	}
+	
+	var animationTimeout = null;
+	var stop = true;
 	
 	function animate(){
+		changeButton();
+		
+		var time = 100;
+		var currentTime = _acontrol.time;
+		var elapsedTime = 0;
+		stop = false;
+		var animation = function () {
+			
+			// Draw dots
+			
+			// Compute the next time;
+			currentTime = _acontrol.xTimeDomain(elapsedTime)
+			if (!stop && currentTime < _data.max){
+				elapsedTime += time/10;
+				_acontrol.time = currentTime;
+				animationTimeout = window.setTimeout(animation, time);
+			}
+		};
+		animation();
 		
 	}
+	
+	function stopAnimate(){
+		stop = true;
+		if (animationTimeout != null){
+			window.clearTimeout(animationTimeout);
+		}
+		animationTimeout = null;
+		changeButton();
+	}
+	
+	//===============================================
+	// Animation draw 
+	//===============================================
+	
+	function activateEdges(caseN, time){
+		caseN.edgesActive = [];
+		caseN.edgesRemaining = [];
+		for (var i = 0; i < caseN.arcTimes.length; i ++){
+			var arc = caseN.arcTimes[i];
+			arc.usecase = caseN.name;
+			if (time < arc.start){
+				caseN.edgesRemaining.push(arc);
+			} else if (time > arc.end) {
+				// Irrelephant
+			} else {
+				caseN.edgesActive.push(arc);
+			}
+		}
+	}
+	
+	// Prepare the cases
+	function selectTime(left){
+		var time = _acontrol.xRangeDomain(left);
+		
+		// Reset 
+		_acontrol.cases.waiting = [];
+		_acontrol.cases.completed = [];
+		_acontrol.cases.actives = [];
+		
+		// Classify the cases in the current time
+		for (var i = 0; i < _data.size ; i ++){
+			var caseN = _data.cases[i];
+			if (time < caseN.start){
+				_acontrol.cases.waiting.push(caseN);
+			} else if (time > caseN.end) {
+				_acontrol.cases.completed.push(caseN);
+			} else {
+				activateEdges(caseN, time);
+				_acontrol.cases.actives.push(caseN);
+			}
+		}
+		
+		return time;
+	}
+	
+	// Work only with sorted lists
+	function updateNewActiveCase(currentTime){
+		var waintingList = _acontrol.cases.waiting;
+		var index = 0;
+		var encontrou = true;
+		while (encontrou && waintingList.length > 0){
+			var newCase = waintingList[0];
+			if (currentTime > newCase.start){
+				_acontrol.cases.actives(_acontrol.cases.waiting.shift());
+			} else {
+				encontrou = false;
+			}
+		}
+	}
+	
+	
+	function drawPointsInTime(currentTime){
+		
+		var caseIndexToMove = [];
+		var visiblePointsInEdges = [];
+		
+		for (var i = 0; i < _acontrol.cases.actives.length; i++ ){
+			var caseN = _acontrol.cases.actives[i];
+			var edges = getCurrentEdges(caseN, currentTime);
+			if (edges.length == 0){
+				// End of edges
+				caseIndexToMove.push(i);
+			} else {
+				visiblePointsInEdges = visiblePointsInEdges.concat(edges);
+			}
+		}
+		
+		// DRAW
+		drawD3Points(visiblePointsInEdges);
+		
+		// Remove cases from Actives and put as completed
+		while (caseIndexToMove.length > 0){
+			var index = caseIndexToMove.pop();
+			_acontrol.cases.complete.push( _acontrol.cases.actives[index]);
+			_acontrol.cases.actives.splice(index, 1);
+		}
+		
+	}
+	
+	function drawD3Points(visiblePointsInEdges){
+		
+		var points = _d3SVG
+			.select(".graph g.animations").selectAll("circle")
+			.data(visiblePointsInEdges, function (d){return (d.start + d.end);});
+		points.enter()
+			.append("circle")
+			.attr("r", 6)
+			.attr("cx", function (d) { return d.point.x})
+			.attr("cy", function (d) { return d.point.y})
+			.attr("fill", "red");
+		points.transition().duration(50)
+			.attr("cx", function (d) { return d.point.x})
+			.attr("cy", function (d) { return d.point.y})
+		points.exit().remove();
+		
+	}
+	
+	
+	function getNewEdges(edgesRemaining, currentTime){
+		var newEdges = [];
+		while (edgesRemaining.length > 0 && edgesRemaining[0].start < currentTime){
+			var edge = edgesRemaining.shift();
+			edge.t = (currentTime - edge.start)/ (edge.end - edge.start);
+			edge.point = getPointAtPath(_graph.edges[edge.ref], edge.t);
+			newEdges.push(edge);
+		}
+		return newEdges;
+	}
+	
+	function getCurrentEdges(caseN, currentTime){
+		var edgesIndexToRemove = [];
+		
+		// Check the current edges
+		for (var i = 0; i < caseN.edgesActive.length; i ++){
+			var edge = caseN.edgesActive[i];
+			if (edge.end < currentTime){
+				// Remove edge
+				edgesIndexToRemove.push(i);
+			} else {
+				edge.t = (currentTime - edge.start)/ (edge.end - edge.start);
+				edge.point = getPointAtPath(_graph.edges[edge.ref], edge.t);
+			}
+		}
+		
+		
+		if (edgesIndexToRemove.length > 0){
+			// Remove cases from Actives and put as completed
+			while (edgesIndexToRemove.length > 0){
+				var index = edgesIndexToRemove.pop();
+				caseN.edgesActive.splice(index, 1);
+			}
+			// Get new edges only if an active edge is removed.
+			// This was made to prevent unnecessary calls and loops, due the fact
+			// that no activity ever start if none has end.
+			console.log(caseN.edgesRemaining);
+			caseN.edgesActive.push(getNewEdges(caseN.edgesRemaining, currentTime));
+			console.log(caseN.edgesRemaining);
+		}
+		
+		return caseN.edgesActive;
+	}
+	
+	
 	
 	//===============================================
 	// Animation equations
@@ -182,8 +451,8 @@ DirectedAcyclicGraphAnimationBar = function(_DAGMinimap){
 	
 	function getPointAtLine(line, t){
 		var xBigger = line.dx > line.dy;
-		var axis = xBigger ? 'x' : 'y';
-		var inverse = xBigger ? 'y' : 'x';
+		var axis = !xBigger ? 'x' : 'y';
+		var inverse = !xBigger ? 'y' : 'x';
 		
 		// Linear equation
 		var m = line["d" +inverse]/line["d" + axis];
