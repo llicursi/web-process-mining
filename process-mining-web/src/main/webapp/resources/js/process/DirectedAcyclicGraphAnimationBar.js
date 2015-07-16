@@ -57,7 +57,7 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 			original : data
 		}
 		var index = 1;
-		while (data.tuples["case " + index] != null && index < 100){
+		while (data.tuples[index] != null && index < 1000){
 			// Clone cases for future use
 			var caseN = jQuery.extend({}, data.tuples["case " + index]);
 			if (preData.min == 0 || caseN.start < preData.min){

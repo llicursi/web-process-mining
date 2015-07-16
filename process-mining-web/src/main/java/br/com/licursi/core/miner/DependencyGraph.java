@@ -1,17 +1,17 @@
 package br.com.licursi.core.miner;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 import br.com.licursi.core.miner.exceptions.InvalidDateException;
+import br.com.licursi.core.miner.exceptions.ParseTimeException;
 import br.com.licursi.core.process.ActivityEntity;
 import br.com.licursi.core.process.ActivitySimpleEntity;
 import br.com.licursi.core.process.ActivityType;
@@ -26,7 +26,7 @@ import com.google.common.collect.HashBiMap;
 
 public class DependencyGraph {
 	
-	private SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm");
+	private DateTimeFormatter dateFormat = null;
 	
 	// Character used to compute the next Char alias for Activity
 	private char aliasCharActivity = 64; // 'A'
@@ -68,9 +68,41 @@ public class DependencyGraph {
 		this.currentCase = new TupleEntity();
 		this.textTuple = "";
 		this.lastActivityEndTime = 0L;
+		
 	}
 	
 	/////////////////////// ACTIVITIES
+	
+	private Long parseDate(String dateTime) throws ParseTimeException{
+		
+		if (this.dateFormat != null){
+			try{
+				return dateFormat.parseDateTime(dateTime).getMillis();
+			} catch (IllegalArgumentException e) {
+				throw new ParseTimeException(e);
+			}
+		} else {
+			// If no parser is found, then register the last one to avoid the rework of this code snippet  
+			String[] possibles = {"YYYY-MM-dd HH:mm:ss.SSS", "dd-MM-YYYY HH:mm", "dd-MM-YYYY hh:mm:ss.SSS", "dd-MM-YYYY HH:mm:ss"};
+			
+			// Last ParseException
+			ParseTimeException p = null;
+			
+			for (String possibleParser : possibles){
+				try {
+					DateTimeFormatter formattter = DateTimeFormat.forPattern(possibleParser);
+					long parseMillis = formattter.parseMillis(dateTime);
+					this.dateFormat = formattter;
+					return parseMillis;
+					
+				} catch (IllegalArgumentException e) {
+					p = new ParseTimeException(e);
+				}
+			}
+			// Throws the last error only
+			throw p;
+		}
+	}
 
 	/**
 	 * Put the activity and it's resource to process and compute in activityList 
@@ -82,21 +114,21 @@ public class DependencyGraph {
 		if (activity != null){
 			
 			// Converts data if possible
-			Date newTime = null;
+			Long endTime = null;
 			if (time != null){
 				try {
-					newTime = dateFormat.parse(time.toString());
-				} catch (ParseException e) {
-					e.printStackTrace();
-				}
-				
-				if (newTime == null){
+					endTime = parseDate(time.toString());
+				} catch (ParseTimeException e) {
 					String message = "The current process, \"" + caseId.toString() + "\" at " + this.textTuple +", was interrupted due date time conversion error";
 					throw new InvalidDateException(message);
 				}
+				
+				if (endTime == null){
+					
+				}
 			}
 			
-			put(activity.toString(), newTime.getTime(), (resource != null ? resource.toString() : "!NONE!"));
+			put(activity.toString(), endTime, (resource != null ? resource.toString() : "!NONE!"));
 		}
 	}
 	
@@ -132,10 +164,11 @@ public class DependencyGraph {
 		textTuple += activityChar;
 	}
 
-	public String end(){
+	public String end(String caseId){
 		appendEventBorder(this.lastActivity, BorderEventType.END);
 		appendTuple(this.textTuple);
 		
+		this.currentCase.setCaseId("a" + caseId);
 		this.currentCase.setTuple(this.textTuple);
 		this.currentCase.setEnd(this.lastActivityEndTime);
 		
@@ -377,7 +410,7 @@ public class DependencyGraph {
 		processEntity.setTuples(this.caseMap);
 		
 		long endProcessing = System.currentTimeMillis();
-		long totalProcessing = (endProcessing - startProcessing);
+		long totalProcessing = (endProcessing - startProcessing)+1;
 		System.out.println("=============================================");
 		System.out.println("= Tempo processando :                       ");
 		System.out.println("= Paralelismo.......: "+ computeParalellism + " ms (" + (Math.floor((computeParalellism/totalProcessing)*10000)/100) + " %)");

@@ -1,16 +1,11 @@
 package br.com.licursi.core.eventlog.business;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,11 +13,9 @@ import org.springframework.web.multipart.MultipartFile;
 import br.com.licursi.core.datasource.CSVDataSource;
 import br.com.licursi.core.datasource.DataSource;
 import br.com.licursi.core.eventlog.exception.EventLogNotAcceptedException;
-import br.com.licursi.core.util.GenericUtil;
 import br.com.licursi.upload.exception.InvalidExtensionException;
 import br.com.licursi.upload.exception.UniqueFileException;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 

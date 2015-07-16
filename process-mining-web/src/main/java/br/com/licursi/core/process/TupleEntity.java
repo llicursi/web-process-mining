@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class TupleEntity {
 
-	private String caseId = null;
+	private String caseId;
 	private Integer caseIndex;
 	private String tuple;
 	private Long start;
@@ -86,9 +86,6 @@ public class TupleEntity {
 
 
 	public String getCaseId() {
-		if (caseId == null){
-			caseId = tuple;
-		}
 		return caseId;
 	}
 
