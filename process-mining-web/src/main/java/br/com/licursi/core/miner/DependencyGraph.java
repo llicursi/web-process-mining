@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import br.com.licursi.core.miner.exceptions.InvalidDateException;
 import br.com.licursi.core.process.ActivityEntity;
 import br.com.licursi.core.process.ActivitySimpleEntity;
 import br.com.licursi.core.process.ActivityType;
@@ -39,11 +40,11 @@ public class DependencyGraph {
 	private Map<String, List<ArcEntity>> arcsEndedWith = null;
 	
 	private Map<String, Integer> tupleOcurrency = null;
-	private Map<String, TupleEntity> tuplesMap = null;
+	private Map<String, TupleEntity> caseMap = null;
 	
 
 	private ActivityEntity lastActivity = null;
-	private TupleEntity currentTuple = null;
+	private TupleEntity currentCase = null;
 	private long lastActivityEndTime = 0L;
 	private int caseIndex = 1;
 	private String textTuple = "";
@@ -54,12 +55,17 @@ public class DependencyGraph {
 		this.tupleOcurrency = new HashMap<String, Integer>();
 		this.activityMap = new HashMap<String, ActivityEntity>();
 		this.borderEventMap = new HashMap<String, BorderEventEntity>();
-		this.tuplesMap = new HashMap<String, TupleEntity>();
+		this.caseMap = new HashMap<String, TupleEntity>();
 	}
 
+	public void start(String caseId){
+		start();
+		this.currentCase.setCaseId(caseId);
+	}
+	
 	public void start(){
 		this.lastActivity = null;
-		this.currentTuple = new TupleEntity();
+		this.currentCase = new TupleEntity();
 		this.textTuple = "";
 		this.lastActivityEndTime = 0L;
 	}
@@ -70,8 +76,9 @@ public class DependencyGraph {
 	 * Put the activity and it's resource to process and compute in activityList 
 	 * @param activity As the name says
 	 * @param resource As the name says
+	 * @throws InvalidDateException when any data passed is invalid
 	 */
-	public void put(Object activity, Object time, Object resource) {
+	public void put(Object caseId, Object activity, Object time, Object resource) throws InvalidDateException {
 		if (activity != null){
 			
 			// Converts data if possible
@@ -82,31 +89,31 @@ public class DependencyGraph {
 				} catch (ParseException e) {
 					e.printStackTrace();
 				}
+				
+				if (newTime == null){
+					String message = "The current process, \"" + caseId.toString() + "\" at " + this.textTuple +", was interrupted due date time conversion error";
+					throw new InvalidDateException(message);
+				}
 			}
 			
 			put(activity.toString(), newTime.getTime(), (resource != null ? resource.toString() : "!NONE!"));
 		}
 	}
 	
+
 	/**
 	 * Put the activity and it's resource to process and compute in activityList 
-	 * @param activity As the name says
+	 * @param activityName As the name says
 	 * @param endTime Activity end time
 	 * @param resource As the name says
 	 */
-	private void put(String activity, long endTime, String resource) {
-		activity = activity.toUpperCase();
-		Character activityChar = getActivityAlias(activity);
-		ActivityEntity activityEntity = activityMap.get(activityChar + "");
-		
-		// Creates activity if not found
-		if (activityEntity == null){
-			activityEntity = new ActivityEntity(activity, activityChar.toString());
-			activityMap.put(activityChar+"", activityEntity);
-		}
-		
+	private void put(String activityName, long endTime, String resource) {
+		activityName = activityName.toUpperCase();
+		Character activityChar = getActivityAlias(activityName);
+		ActivityEntity activityEntity = getActivity(activityChar + "", activityName);
+				
 		lastActivityEndTime = endTime;
-		currentTuple.putActivity(activityChar, activity, endTime, resource);
+		currentCase.putActivity(activityChar, activityName, endTime, resource);
 		
 		if (lastActivity != null){
 			appendArc(lastActivity.getUniqueLetter() + ArcEntity.SPLIT_CHAR + activityChar);
@@ -114,11 +121,11 @@ public class DependencyGraph {
 			// Updates previous Activity dependences
 			activityEntity.addPrev(lastActivity.getName());
 			// Updates last Activity dependences
-			lastActivity.addNext(activity);
+			lastActivity.addNext(activityName);
 			
 		} else {
 			appendEventBorder(activityEntity, BorderEventType.START);
-			currentTuple.setStart(endTime);
+			currentCase.setStart(endTime);
 		} 
 		
 		lastActivity = activityEntity;
@@ -129,15 +136,35 @@ public class DependencyGraph {
 		appendEventBorder(this.lastActivity, BorderEventType.END);
 		appendTuple(this.textTuple);
 		
-		this.currentTuple.setName(this.textTuple);
-		this.currentTuple.setEnd(this.lastActivityEndTime);
+		this.currentCase.setTuple(this.textTuple);
+		this.currentCase.setEnd(this.lastActivityEndTime);
 		
-		this.tuplesMap.put("case " + this.caseIndex, this.currentTuple);
+		this.caseMap.put(this.currentCase.getCaseId(), this.currentCase);
 		this.caseIndex++;
 		
 		return textTuple;
 	}
 
+	
+	/**
+	 * Gets an existing activity in the pool, if does not exist, creates a new one.
+	 * @param activityChar Character that represents the activity
+	 * @param activityName Activity name
+	 * @return Activity
+	 */
+	private ActivityEntity getActivity(String activityChar, String activityName) {
+		ActivityEntity activityEntity = activityMap.get(activityChar);
+		
+		// Creates activity if not found
+		if (activityEntity == null){
+			activityEntity = new ActivityEntity(activityName, activityChar.toString());
+			activityMap.put(activityChar, activityEntity);
+		}
+		activityEntity.incrementCounter();
+		
+		return activityEntity;
+	}
+	
 	/**
 	 * Loads the processed activities to a List
 	 * @return List of activites
@@ -347,7 +374,7 @@ public class DependencyGraph {
 		processEntity.setBorderEvents(this.getBorderEvents());
 		processEntity.setActivities(this.getActivities());
 		processEntity.setArcs(this.getArcs());
-		processEntity.setTuples(this.tuplesMap);
+		processEntity.setTuples(this.caseMap);
 		
 		long endProcessing = System.currentTimeMillis();
 		long totalProcessing = (endProcessing - startProcessing);
@@ -380,8 +407,8 @@ public class DependencyGraph {
 			 arcsEndedWith.put(uniqueLetter, list);
 		}
 		
-		for (String key : tuplesMap.keySet()){
-			TupleEntity tupleEntity = tuplesMap.get(key);
+		for (String key : caseMap.keySet()){
+			TupleEntity tupleEntity = caseMap.get(key);
 			
 			// Recover the list of activities, avoiding the first one, 
 			// for the purpouse of calculating of arcs time

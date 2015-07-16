@@ -120,9 +120,27 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 		var left = d3.mouse(this)[0];
 		var currentTime = selectTime(left);
 		//console.log(_acontrol.cases);
+		drawAreaCompletetion(left);
 		drawPointsInTime(currentTime)
 		var end = (new Date()).getTime();
 		//console.log("Processando os pontos : " + (end - start) + "ms");
+	}
+	
+	function drawAreaCompletetion(left){
+		if (_barSVG.selectAll("rect.complete")[0].length == 0){
+			_barSVG.append("rect")
+				.classed("complete", true)
+				.attr("fill", "#333")
+				.attr("opacity", 0.9)
+				.attr("x", 0)
+				.attr("y", 0)
+				.attr("height", "100%")
+				.attr("width", 0);
+				
+		}
+		
+		_barSVG.select("rect.complete")
+			.attr("width", left);
 	}
 	
 	function getHundred(){

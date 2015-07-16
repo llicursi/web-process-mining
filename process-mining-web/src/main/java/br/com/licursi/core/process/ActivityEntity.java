@@ -192,5 +192,10 @@ public class ActivityEntity {
 	public void setAvgTime(Long avgTime) {
 		this.avgTime = avgTime;
 	}
+
+	public void incrementCounter() {
+		this.count ++;
+		
+	}
 	
 }

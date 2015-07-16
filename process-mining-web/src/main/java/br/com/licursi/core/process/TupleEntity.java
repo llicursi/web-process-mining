@@ -11,7 +11,9 @@ import java.util.List;
  */
 public class TupleEntity {
 
-	private String name;
+	private String caseId = null;
+	private Integer caseIndex;
+	private String tuple;
 	private Long start;
 	private Long end;
 	private List<ActivitySimpleEntity> activities;
@@ -22,13 +24,6 @@ public class TupleEntity {
 		arcTimes = new ArrayList<ArcTimeEntity>();
 	}
 
-	public String getName() {
-		return name;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
-	}
 	
 	public Long getStart() {
 		return start;
@@ -79,6 +74,37 @@ public class TupleEntity {
 		arcTime.setResource(resource);
 		arcTime.setStart(start);
 		this.arcTimes.add(arcTime);
+	}
+
+	public String getTuple() {
+		return tuple;
+	}
+
+	public void setTuple(String tuple) {
+		this.tuple = tuple;
+	}
+
+
+	public String getCaseId() {
+		if (caseId == null){
+			caseId = tuple;
+		}
+		return caseId;
+	}
+
+
+	public void setCaseId(String caseId) {
+		this.caseId = caseId;
+	}
+
+
+	public Integer getCaseIndex() {
+		return caseIndex;
+	}
+
+
+	public void setCaseIndex(Integer caseIndex) {
+		this.caseIndex = caseIndex;
 	}
 	
 }

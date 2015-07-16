@@ -2,6 +2,7 @@ package br.com.licursi.core.miner;
 
 import java.util.List;
 
+import br.com.licursi.core.miner.exceptions.InvalidDateException;
 import br.com.licursi.core.process.ProcessEntity;
 
 import com.mongodb.BasicDBList;
@@ -37,21 +38,27 @@ public class FlexibleHeuristicMinner {
 		
 	}
 
-	private void processActivities(BasicDBList activityList) {
+	private void processActivities(BasicDBList instance) {
 		System.out.println("========================================================");
-		if (activityList != null){
-			dependencyGraph.start();
-			for (Object oActivity : activityList){
-				DBObject activity = (DBObject) oActivity;
-				System.out.println(activity);
-				dependencyGraph.put(
-						activity.get(VariablesEnum.ACTIVITY.p()), 
-						activity.get(VariablesEnum.END_TIME.p()), 
-						activity.get(VariablesEnum.RESOURCE.p()));
-			}
-			String end = dependencyGraph.end();
+		if (instance != null){
+			try {
+				dependencyGraph.start();
+				for (Object oActivity : instance){
+					DBObject activity = (DBObject) oActivity;
+					System.out.println(activity);
+						dependencyGraph.put(
+							activity.get(VariablesEnum.CASE_ID.p()),
+							activity.get(VariablesEnum.ACTIVITY.p()), 
+							activity.get(VariablesEnum.END_TIME.p()), 
+							activity.get(VariablesEnum.RESOURCE.p()));
+				
+				}
+				String end = dependencyGraph.end();
+				System.out.println("tuple : " + end);
 			
-			System.out.println("tuple : " + end);
+			} catch (InvalidDateException e) {
+				System.out.println(e.getMessage());
+			}
 		}
 	}
 	
