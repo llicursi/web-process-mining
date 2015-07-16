@@ -2,6 +2,7 @@ package br.com.licursi.core.eventlog.business;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import br.com.licursi.core.datasource.CSVDataSource;
+import br.com.licursi.core.datasource.DataSource;
 import br.com.licursi.core.eventlog.exception.EventLogNotAcceptedException;
 import br.com.licursi.core.util.GenericUtil;
 import br.com.licursi.upload.exception.InvalidExtensionException;
@@ -26,10 +29,18 @@ import com.mongodb.util.JSON;
 @Component
 public class EventLogBO {
 
-	private static final String EXTENSION_XLS = "xls";
-	private static final String EXTENSION_XLSX = "xlsx";
-	private static final String EXTENSION_CSV = "csv";
-	private static final String CSV_SPLIT_LETTER = ";";
+	
+	/**
+	 * This list of available data source could be automatize
+	 * to support any datasource and loads all of then annotated or
+	 * thats extends DataSource file
+	 */
+	private List<DataSource> availablesDataSources = null;
+	
+	public EventLogBO() {
+		availablesDataSources = new ArrayList<DataSource>();
+		availablesDataSources.add(new CSVDataSource());
+	}
 	
 	@Autowired
 	private EventLogRepository eventLogRepository;
@@ -38,68 +49,52 @@ public class EventLogBO {
 	private EventLogAggregator eventLogAggregator;
 
 	public String generateEventoLogFromFiles(List<MultipartFile> files) throws UniqueFileException, InvalidExtensionException, EventLogNotAcceptedException {
+		
 		if (files.size() > 1){
 			throw new UniqueFileException("Only one file can be processed");
 		}
 		
 		MultipartFile multipartFile = files.get(0);
 		String name = multipartFile.getOriginalFilename();
-
-		String regexValidExtension = "([^\\s]+(\\.(?i)(xls|csv|xlsx))$)";
+		
+		System.out.println("Content type :" + multipartFile.getContentType());
+		
+		String regexValidExtension = "(.+(\\.(?i)("+getAvailablesExtensions()+"))$)";
 		if (!name.matches(regexValidExtension)){
 			throw new InvalidExtensionException();
 		}
 		
-		try {
-			if (name.toLowerCase().endsWith(EXTENSION_CSV)){
-				return importCSV(multipartFile);
-			} else if (name.toLowerCase().endsWith(EXTENSION_XLS) || name.toLowerCase().endsWith(EXTENSION_XLSX)){
+		for (DataSource dataSource : availablesDataSources){
+			if (name.trim().endsWith(dataSource.getExtension())){
 				
+				System.out.println("File : " + name + " matched with the extension " + dataSource.getExtension());
+				try {
+					dataSource.setInputStream(multipartFile.getInputStream());
+					
+					EventLogEntity eventLog = dataSource.getEventLog();
+					EventLogEntity insert = eventLogRepository.insert(eventLog);
+					System.out.println("uid do event log criado:" + insert.id);	
+					return insert.id;
+				} catch (IOException e) {
+					e.printStackTrace();
+				} finally {
+					dataSource.close();
+				}
 			}
-			
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 		
 		return "";
 		
 	}
 	
-	public String importCSV(MultipartFile multipartFile) throws IOException, EventLogNotAcceptedException{
-		BufferedReader stream = new BufferedReader(new InputStreamReader(multipartFile.getInputStream()));
-		String readLine = stream.readLine();
-		String[] sheaders = readLine.split(CSV_SPLIT_LETTER);
-		
-		EventLogEntity eventLog = new EventLogEntity();
-		eventLog.headers = GenericUtil.formatKeyHeaders(Arrays.asList(sheaders));
-		
-		List<DBObject> rawData = new ArrayList<DBObject>();
-		eventLog.rawData = rawData;
-		
-		while ((readLine = stream.readLine()) != null){
-			DBObject rawInstance = new BasicDBObject();
-			String[] sline = readLine.split(CSV_SPLIT_LETTER);
-			List<String> itemsInLine = Arrays.asList(sline);
-			
-			int index = 0;
-			for (String item : itemsInLine){
-				rawInstance.put(eventLog.headers.get(index), item);
-				index ++;
-			}
-			rawData.add(rawInstance);
-			
+	private String getAvailablesExtensions() {
+		String extensionsRegEx = " ";
+		for(DataSource dataSource : availablesDataSources){
+			String extension = dataSource.getExtension();
+			extensionsRegEx += extension + "|";
 		}
-		
-		try {
-			EventLogEntity insert = eventLogRepository.insert(eventLog);
-			System.out.println("uid do event log criado:" + insert.id);	
-			return insert.id;
-		} catch (Exception e) {
-			throw new EventLogNotAcceptedException(e);
-		}
+		return extensionsRegEx.substring(0, extensionsRegEx.length()-1).trim();
 	}
-	
-	
 	
 	public String getTop100RecordsFromEventLog(String processID){
 		List<DBObject> top100RecordsFromEventLogRawData = eventLogAggregator.getTop100RecordsFromEventLogRawData(processID);
