@@ -18,6 +18,7 @@ import br.com.licursi.core.process.ActivityType;
 import br.com.licursi.core.process.ArcEntity;
 import br.com.licursi.core.process.BorderEventEntity;
 import br.com.licursi.core.process.BorderEventType;
+import br.com.licursi.core.process.ProcessDetailsEntity;
 import br.com.licursi.core.process.ProcessEntity;
 import br.com.licursi.core.process.TupleEntity;
 
@@ -46,7 +47,8 @@ public class DependencyGraph {
 	private ActivityEntity lastActivity = null;
 	private TupleEntity currentCase = null;
 	private long lastActivityEndTime = 0L;
-	private int caseIndex = 1;
+	private long firstActivityEndTime = 0L;
+	private long caseTimeCounter = 0L;
 	private String textTuple = "";
 
 	public DependencyGraph(){
@@ -68,6 +70,7 @@ public class DependencyGraph {
 		this.currentCase = new TupleEntity();
 		this.textTuple = "";
 		this.lastActivityEndTime = 0L;
+		this.firstActivityEndTime = 0L;
 		
 	}
 	
@@ -123,9 +126,6 @@ public class DependencyGraph {
 					throw new InvalidDateException(message);
 				}
 				
-				if (endTime == null){
-					
-				}
 			}
 			
 			put(activity.toString(), endTime, (resource != null ? resource.toString() : "!NONE!"));
@@ -156,6 +156,7 @@ public class DependencyGraph {
 			lastActivity.addNext(activityName);
 			
 		} else {
+			this.firstActivityEndTime = endTime;
 			appendEventBorder(activityEntity, BorderEventType.START);
 			currentCase.setStart(endTime);
 		} 
@@ -172,8 +173,10 @@ public class DependencyGraph {
 		this.currentCase.setTuple(this.textTuple);
 		this.currentCase.setEnd(this.lastActivityEndTime);
 		
+		Long caseTotalTime = (this.lastActivityEndTime - this.firstActivityEndTime);
+		this.caseTimeCounter += caseTotalTime;
+		
 		this.caseMap.put(this.currentCase.getCaseId(), this.currentCase);
-		this.caseIndex++;
 		
 		return textTuple;
 	}
@@ -397,10 +400,11 @@ public class DependencyGraph {
 	
 	public ProcessEntity getProcessedData(String id){
 		long startProcessing = System.currentTimeMillis();
+		ProcessDetailsEntity processDetailEntity = getDetails();
 		
-		long computeParalellism = computeParalellism();
-		long computeDependencyMeasure = computeDependencyMeasure();
-		long computeArcsTimes = computeArcsTimes();
+		long lComputeParalellism = computeParalellism();
+		long lComputeDependencyMeasure = computeDependencyMeasure();
+		long lComputeArcsTimes = computeArcsTimes(processDetailEntity.getAverageTime());
 		
 		ProcessEntity processEntity = new ProcessEntity(id);
 		
@@ -408,25 +412,97 @@ public class DependencyGraph {
 		processEntity.setActivities(this.getActivities());
 		processEntity.setArcs(this.getArcs());
 		processEntity.setTuples(this.caseMap);
+		processEntity.setDetails(processDetailEntity);
 		
 		long endProcessing = System.currentTimeMillis();
 		long totalProcessing = (endProcessing - startProcessing)+1;
 		System.out.println("=============================================");
 		System.out.println("= Tempo processando :                       ");
-		System.out.println("= Paralelismo.......: "+ computeParalellism + " ms (" + (Math.floor((computeParalellism/totalProcessing)*10000)/100) + " %)");
-		System.out.println("= Dependencia.......: "+ computeDependencyMeasure + " ms (" + (Math.floor((computeDependencyMeasure/totalProcessing)*10000)/100) + " %)");
-		System.out.println("= Tempo dos arcos...: "+ computeArcsTimes + " ms (" + (Math.floor((computeArcsTimes/totalProcessing)*10000)/100) + " %)");
+		System.out.println("= Paralelismo.......: "+ lComputeParalellism + " ms (" + (Math.floor((lComputeParalellism/totalProcessing)*10000)/100) + " %)");
+		System.out.println("= Dependencia.......: "+ lComputeDependencyMeasure + " ms (" + (Math.floor((lComputeDependencyMeasure/totalProcessing)*10000)/100) + " %)");
+		System.out.println("= Tempo dos arcos...: "+ lComputeArcsTimes + " ms (" + (Math.floor((lComputeArcsTimes/totalProcessing)*10000)/100) + " %)");
 		System.out.println("= ");
-		System.out.println("= Total.......: "+ totalProcessing + " ms (" + (Math.floor((computeParalellism/totalProcessing)*10000)/100) + " %)");
+		System.out.println("= Total.......: "+ totalProcessing + " ms (" + (Math.floor((lComputeParalellism/totalProcessing)*10000)/100) + " %)");
 		
 		return processEntity;
 	}
 
 	
 	
-	private long computeArcsTimes() {
-		long startTime = System.currentTimeMillis();
+	private ProcessDetailsEntity getDetails() {
 		
+		Float avgTime = (this.caseTimeCounter/ (new Integer(this.caseMap.size())).floatValue());
+		ProcessDetailsEntity procesDetail = new ProcessDetailsEntity();
+		procesDetail.setAverageTime(avgTime.longValue());
+		procesDetail.setTotalCases(this.caseMap.size());
+		
+		return procesDetail;
+	}
+
+	private long computeArcsTimes(Long avgCaseTimes) {
+		long startTime = System.currentTimeMillis();
+		long avgCaseTimeOnePercent = (new Double(avgCaseTimes*0.01)).longValue(); 
+		
+		buildListOfArcsEndedWithSomeLetter();
+		
+		for (String key : caseMap.keySet()){
+			TupleEntity tupleEntity = caseMap.get(key);
+			
+			// Compute the initial arc, from the symbol representing the start to the 
+			{
+				ActivitySimpleEntity activitySimpleEntity = tupleEntity.getActivities().get(0);
+				List<ArcEntity> possibleArcs = getPossibleArcs(activitySimpleEntity.getUniqueLetter());
+				for (ArcEntity arc : possibleArcs){
+					if (arc.getSource().toUpperCase().contains("START")){
+						tupleEntity.putArc(arc.getRef(),activitySimpleEntity.getEndTime() - avgCaseTimeOnePercent, activitySimpleEntity.getEndTime(), activitySimpleEntity.getResource(), 0f);
+						arcsMap.get(arc.getRef()).addTime(avgCaseTimeOnePercent);
+						tupleEntity.setStart(tupleEntity.getStart() - avgCaseTimeOnePercent);
+					}
+				}
+			
+			}
+			// Recover the list of activities, avoiding the first one, 
+			// for the purpouse of calculating of arcs time
+			for (int i = 1 ; i < tupleEntity.getActivities().size(); i++){
+				ActivitySimpleEntity activitySimple = tupleEntity.getActivities().get(i);
+				List<ArcEntity> possibleArcs = getPossibleArcs(activitySimple.getUniqueLetter());
+				
+				for (ArcEntity arc : possibleArcs){
+					ActivitySimpleEntity activity = getValidaArcStartActivity(arc, i, tupleEntity.getActivities()); 
+					if (activity != null){
+						tupleEntity.putArc(arc.getRef(), activity.getEndTime(), activitySimple.getEndTime(), activitySimple.getResource(), 0f);
+						Long arcDuration = (activitySimple.getEndTime() -  activity.getEndTime());
+						arcsMap.get(arc.getRef()).addTime(arcDuration);
+					}
+				}
+			}
+			
+			// Compute the last Activity to the borderEvent, using 1% of average time. 
+			{
+				ActivitySimpleEntity lastActivity = tupleEntity.getActivities().get(tupleEntity.getActivities().size()-1);
+				for (BorderEventEntity border : borderEventMap.values()){
+					if (border.getType().equals(BorderEventType.END.toString())){
+						String ref = lastActivity.getUniqueLetter() + ">" + border.getRef();
+						if (arcsMap.containsKey(ref)){
+							tupleEntity.putArc(ref,lastActivity.getEndTime(), lastActivity.getEndTime() + avgCaseTimeOnePercent, "NONE", 0f);
+							arcsMap.get(ref).addTime(avgCaseTimeOnePercent);
+							tupleEntity.setEnd(tupleEntity.getEnd() + avgCaseTimeOnePercent);
+						}
+					}
+				}
+			
+			}
+			
+			
+		}
+		long endTime = System.currentTimeMillis();
+		
+		return (endTime - startTime);
+		
+	}
+	
+
+	private void buildListOfArcsEndedWithSomeLetter() {
 		arcsEndedWith = new HashMap<String, List<ArcEntity>>();
 		for (ArcEntity arc : arcsMap.values()){
 			 String uniqueLetter = activityAlias.get(arc.getTarget()) + "";
@@ -440,30 +516,8 @@ public class DependencyGraph {
 			 arcsEndedWith.put(uniqueLetter, list);
 		}
 		
-		for (String key : caseMap.keySet()){
-			TupleEntity tupleEntity = caseMap.get(key);
-			
-			// Recover the list of activities, avoiding the first one, 
-			// for the purpouse of calculating of arcs time
-			for (int i = 1 ; i < tupleEntity.getActivities().size(); i++){
-				ActivitySimpleEntity activitySimple = tupleEntity.getActivities().get(i);
-				List<ArcEntity> possibleArcs = getPossibleArcs(activitySimple.getUniqueLetter());
-				
-				for (ArcEntity arc : possibleArcs){
-					ActivitySimpleEntity activity = getValidaArcStartActivity(arc, i, tupleEntity.getActivities()); 
-					if (activity != null){
-						tupleEntity.putArc(arc.getRef(), activity.getEndTime(), activitySimple.getEndTime(), activitySimple.getResource(), 0f);
-					}
-				}
-			}
-			
-		}
-		long endTime = System.currentTimeMillis();
-		
-		return (endTime - startTime);
 		
 	}
-	
 
 	private ActivitySimpleEntity getValidaArcStartActivity(ArcEntity arc,int i, List<ActivitySimpleEntity> activities) {
 		for (int f = i-1; f >= 0; f--){

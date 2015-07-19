@@ -11,28 +11,25 @@ public class ArcEntity {
 	private String source;
 	private String target;
 	private Integer count;
-	private Integer strength;
 	private Float dependencyMeasure;
+	private Long sumTime;
+	
 	
 	public ArcEntity(){
 		this.count = 0;
 		this.dependencyMeasure = 0f;
-		this.setStrength(1);
+		this.sumTime = 0l;
 	}
 	
 	public ArcEntity(String ref){
+		this();
 		this.ref = ref;
-		this.count = 0;
-		this.dependencyMeasure = 0f;
-		this.setStrength(1);
 	}
 	
 	public ArcEntity(String ref, String source, String target){
-		this.ref = ref;
+		this(ref);
 		this.source = source;
 		this.target = target;
-		this.count = 0;
-		this.dependencyMeasure = 0f;
 	}
 	
 	public String getRef() {
@@ -83,16 +80,20 @@ public class ArcEntity {
 		}
 		
 		objeto.add("count", this.count);
-		objeto.add("strength", this.strength);
 		return objeto.get();
 	}
 
-	public Integer getStrength() {
-		return strength;
+
+	public void addTime(long timeExpended) {
+		this.sumTime += timeExpended;
 	}
 
-	public void setStrength(Integer strength) {
-		this.strength = strength;
+	public Long getSumTime() {
+		return sumTime;
+	}
+
+	public void setSumTime(Long sumTime) {
+		this.sumTime = sumTime;
 	}
 	
 	

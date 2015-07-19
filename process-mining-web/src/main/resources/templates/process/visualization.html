@@ -10,17 +10,35 @@
         <link rel="stylesheet" th:href="@{/css/jquery-ui.accordion.min.css}"/>
         <link rel="stylesheet" th:href="@{/css/jquery.nouislider.min.css}"/>
         <link rel="stylesheet" th:href="@{/css/svg.css}"/>
-        <link rel="stylesheet" th:href="@{/css/visualization.css}"/>
+        <link rel="stylesheet" th:href="@{/css/process/visualization.css}"/>
 		<link rel="stylesheet" th:href="@{/css/process/xtrace.css}" type="text/css"/>
 		<link rel="stylesheet" th:href="@{/css/process/tipsy.css}" type="text/css"/>
         
     </head>
     <body>
-    	<span th:include="commun/header :: process-menu (active=3)"></span>
+    	<span th:include="commun/header :: process-menu (active=2)"></span>
     
  		<div id="split-container">
             
             <div id="doc-menus">
+            
+            	<div>
+            	<ul class="nav nav-tabs" role="tablist">
+				    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Home</a></li>
+				    <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Profile</a></li>
+				    <li role="presentation"><a href="#messages" aria-controls="messages" role="tab" data-toggle="tab">Messages</a></li>
+				    <li role="presentation"><a href="#settings" aria-controls="settings" role="tab" data-toggle="tab">Settings</a></li>
+				</ul>
+				
+				<div class="tab-content">
+				  <div role="tabpanel" class="tab-pane fade in active" id="home">...</div>
+				  <div role="tabpanel" class="tab-pane fade" id="profile">...</div>
+				  <div role="tabpanel" class="tab-pane fade" id="messages">...</div>
+				  <div role="tabpanel" class="tab-pane fade" id="settings">...</div>
+				</div>
+				            	
+            </div>
+            
 				<div id="accordion">
 				  <h3 id="h3Densidade">Densidade</h3>
 				  <div>

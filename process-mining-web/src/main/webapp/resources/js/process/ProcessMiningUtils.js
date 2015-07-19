@@ -8,7 +8,7 @@ window.height = function() {
 	return document.body.clientHeight;
 };
 
-// http://stackoverflow.com/questions/523266/how-can-i-get-a-specific-parameter-from-location-search
+/*// http://stackoverflow.com/questions/523266/how-can-i-get-a-specific-parameter-from-location-search
 var getParameter = function(name) {
     name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
     var regexS = "[\\?&]"+name+"=([^&#]*)";
@@ -196,7 +196,7 @@ function getGCNodes(ids, callback, errback) {
 		getTags(ids.join(','), tagsReceivedCallback, errback);
 	};
 	getRelated(ids, relatedIDsReceivedCallback, errback);
-}
+}*/
 
 var sanitizeNodes = function(activities) {
     var i = 0;

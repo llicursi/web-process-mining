@@ -1,6 +1,5 @@
 DirectedAcyclicGraphAnimationBar = function(graph){
 	var _graph = graph;
-	var _tuples = null;
 	var _barSVG;
 	var _d3SVG;
 	var _data = null;
@@ -13,7 +12,7 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 	};
 	
 	this.load = function(url, containerIdForButton){
-		if (_tuples == null){
+		if (_data == null){
 			if (url.indexOf("/") != (url.length - 1)){
 				url = url + "/";
 			}
@@ -38,14 +37,15 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 	} 
 	
 	function show(){
-		d3.select("#DAGMinimap").transition().delay(200).attr("opacity","0.0");
-		_barSVG.transition().delay(200).attr("opacity", "1");
+		d3.select("#DAGMinimap").transition().duration(200).attr("opacity","0.0");
+		_barSVG.transition().delay(200).attr("opacity", "1").attr("y", "94%");
 		
 	}
 	
 	this.hide = function(){
-		d3.select("#DAGMinimap").transition().delay(200).attr("opacity","1");
-		_barSVG.transition().delay(200).attr("opacity", "0");
+		d3.select("#DAGMinimap").transition().duration(200).attr("opacity","1");
+		_barSVG.transition().delay(200).attr("opacity", "0").attr("y", "115%");
+		_d3SVG.select(".graph g.animations").transition().duration(200).attr("opactiy", "0").transition().attr("style", "display:none");
 	}
 	
 	function adjustData(data){
@@ -57,24 +57,30 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 			original : data
 		}
 		var index = 1;
-		while (data.tuples[index] != null && index < 1000){
-			// Clone cases for future use
-			var caseN = jQuery.extend({}, data.tuples["case " + index]);
-			if (preData.min == 0 || caseN.start < preData.min){
-				preData.min = caseN.start;
+		for ( var key in data.tuples){
+			if (data.tuples[key] != null && data.tuples[key].start){
+				var caseN = jQuery.extend({}, data.tuples[key]);
+				if (preData.min == 0 || caseN.start < preData.min){
+					preData.min = caseN.start;
+				}
+				
+				if (preData.max == 0 || caseN.end > preData.max){
+					preData.max = caseN.end;
+				} 
+				preData.cases.push(caseN);
+				index ++;
 			}
-			
-			if (preData.max == 0 || caseN.end > preData.max){
-				preData.max = caseN.end;
-			} 
-			preData.cases.push(caseN);
-			index ++;
 		}
 		preData.size = index -1;
 		
-		// Create a gap in the start of 1% of the total
+		// Create a gap, in the start, of 1% of the total
 		if (preData.min > 0){
-			preData.min -= ((preData.max - preData.min)*0.01).toFixed(0);
+			preData.min -= parseInt(((preData.max - preData.min)*0.01).toFixed(0));
+		}
+		
+		// Create a gap, at the end, of 1% of the total
+		if (preData.max > 0){
+			preData.max += parseInt(((preData.max - preData.min)*0.01).toFixed(0));
 		} 
 		
 		return preData;
@@ -90,13 +96,13 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 			.attr("height", "5%")
 			.attr("width", "99%")
 			.attr("opacity", "0")
+			.on('click', handleClick);
 		
 		var rect = _barSVG.append("rect")
 			.attr("height", "100%")
 			.attr("width", "100%")
 			.attr("fill", "#CBCBCB")
 			.attr("stroke", "#999")
-			.on('mousemove', handleClick);
 		
 		_dimensions = rect[0][0].getBBox()
 		
@@ -119,9 +125,9 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 		var start = (new Date()).getTime();
 		var left = d3.mouse(this)[0];
 		var currentTime = selectTime(left);
-		//console.log(_acontrol.cases);
+//		//console.log(_acontrol.cases);
 		drawAreaCompletetion(left);
-		drawPointsInTime(currentTime)
+		drawPointsInTime(currentTime);
 		var end = (new Date()).getTime();
 		//console.log("Processando os pontos : " + (end - start) + "ms");
 	}
@@ -131,17 +137,16 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 			_barSVG.append("rect")
 				.classed("complete", true)
 				.attr("fill", "#333")
-				.attr("opacity", 0.9)
+				.attr("opacity", 0.7)
 				.attr("x", 0)
 				.attr("y", 0)
 				.attr("height", "100%")
 				.attr("width", 0);
-				
 		}
 		
 		_barSVG.select("rect.complete")
 			.attr("width", left);
-	}
+		}
 	
 	function getHundred(){
 		var data = [];
@@ -158,21 +163,11 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 				_playButton.className = "btn btn-default";
 				_playButton.setAttribute("href", "javascipt:;");
 				_playButton.id = "Replay";
-				_playButton.innerHTML = "Replay";
+				_playButton.innerHTML = "<span class=\"glyphicon glyphicon-play\" aria-hidden=\"true\"></span> Replay";
 				_playButton.onclick = animate;
-				buttonPlaceholder.innerHTML = "";
+				buttonPlaceholder.innerHTML = "<br/>";
 				buttonPlaceholder.appendChild(_playButton);
 			}
-		}
-	}
-	
-	function changeButton(){
-		if (_playButton.innerHTML == "Replay"){
-			_playButton.innerHTML = "Stop";
-			_playButton.onclick = stopAnimate;
-		} else {
-			_playButton.innerHTML = "Replay";
-			_playButton.onclick = animate;
 		}
 	}
 	
@@ -212,7 +207,8 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 		
 		_acontrol.xRangeDomain = d3.scale.linear().domain([_dimensions.x, _dimensions.width]).range([_data.min, _data.max]);
 		_acontrol.xTimeDomain = d3.scale.linear().domain([0, 600]).range([_data.min, _data.max]);
-		_acontrol.time = _data.min;
+		_acontrol.xDomainTime = d3.scale.linear().domain([_data.min, _data.max]).range([0, 600]);
+		_acontrol.time = null;
 	}
 	
 	var animationTimeout = null;
@@ -222,19 +218,29 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 		changeButton();
 		
 		var time = 100;
+		if (_acontrol.time == null){
+			_acontrol.time = selectTime(_dimensions.x);
+		}
 		var currentTime = _acontrol.time;
-		var elapsedTime = 0;
+		var elapsedTime = _acontrol.xDomainTime(currentTime);
 		stop = false;
 		var animation = function () {
 			
+			updateNewActiveCase(currentTime);
 			// Draw dots
+			drawPointsInTime(currentTime);
 			
 			// Compute the next time;
-			currentTime = _acontrol.xTimeDomain(elapsedTime)
+			currentTime = _acontrol.xTimeDomain(elapsedTime);
+			drawAreaCompletetion(_acontrol.xDomainRange(currentTime));
+			
 			if (!stop && currentTime < _data.max){
-				elapsedTime += time/10;
+				elapsedTime += time/100;
 				_acontrol.time = currentTime;
 				animationTimeout = window.setTimeout(animation, time);
+			} else {
+				changeButton();
+				selectTime(_acontrol.xDomainRange(_data.min));
 			}
 		};
 		animation();
@@ -249,6 +255,18 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 		animationTimeout = null;
 		changeButton();
 	}
+	
+
+	function changeButton(){
+		if (_playButton.innerHTML == "Replay"){
+			_playButton.innerHTML = "Stop";
+			_playButton.onclick = stopAnimate;
+		} else {
+			_playButton.innerHTML = "Replay";
+			_playButton.onclick = animate;
+		}
+	}
+	
 	
 	//===============================================
 	// Animation draw 
@@ -273,6 +291,7 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 	// Prepare the cases
 	function selectTime(left){
 		var time = _acontrol.xRangeDomain(left);
+		_acontrol.time = time;
 		
 		// Reset 
 		_acontrol.cases.waiting = [];
@@ -303,7 +322,9 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 		while (encontrou && waintingList.length > 0){
 			var newCase = waintingList[0];
 			if (currentTime > newCase.start){
-				_acontrol.cases.actives(_acontrol.cases.waiting.shift());
+				var caseN = _acontrol.cases.waiting.shift();
+				activateEdges(caseN, currentTime);
+				_acontrol.cases.actives.push(caseN);
 			} else {
 				encontrou = false;
 			}
@@ -333,8 +354,11 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 		// Remove cases from Actives and put as completed
 		while (caseIndexToMove.length > 0){
 			var index = caseIndexToMove.pop();
-			_acontrol.cases.complete.push( _acontrol.cases.actives[index]);
+			_acontrol.cases.completed.push( _acontrol.cases.actives[index]);
 			_acontrol.cases.actives.splice(index, 1);
+			
+			console.log("Casos completos : " + _acontrol.cases.completed.length);
+			console.log("Casos ativos : " + _acontrol.cases.actives.length);
 		}
 		
 	}
@@ -347,12 +371,15 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 		points.enter()
 			.append("circle")
 			.attr("r", 6)
-			.attr("cx", function (d) { return d.point.x})
-			.attr("cy", function (d) { return d.point.y})
-			.attr("fill", "red");
+			.attr("cx", function (d) { return d.point.x;})
+			.attr("cy", function (d) {	return d.point.y;})
+			.attr("fill", function (d){ return d.colors.fill;})
+			.attr("stroke", function (d){ return d.colors.stroke;});
 		points.transition().duration(50)
 			.attr("cx", function (d) { return d.point.x})
 			.attr("cy", function (d) { return d.point.y})
+			.attr("fill", function (d){ return d.colors.fill;})
+			.attr("stroke", function (d){ return d.colors.stroke;});
 		points.exit().remove();
 		
 	}
@@ -362,9 +389,13 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 		var newEdges = [];
 		while (edgesRemaining.length > 0 && edgesRemaining[0].start < currentTime){
 			var edge = edgesRemaining.shift();
-			edge.t = (currentTime - edge.start)/ (edge.end - edge.start);
-			edge.point = getPointAtPath(_graph.edges[edge.ref], edge.t);
-			newEdges.push(edge);
+			// Prevent small activities to exceute
+			if (edge.end > currentTime){
+				edge.t = (currentTime - edge.start)/ (edge.end - edge.start);
+				edge.point = getPointAtPath(_graph.edges[edge.ref], edge.t);
+				edge.colors = _graph.getColorByDelay(edge.ref, (edge.end - edge.start));
+				newEdges.push(edge);
+			}
 		}
 		return newEdges;
 	}
@@ -381,6 +412,10 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 			} else {
 				edge.t = (currentTime - edge.start)/ (edge.end - edge.start);
 				edge.point = getPointAtPath(_graph.edges[edge.ref], edge.t);
+				edge.colors = _graph.getColorByDelay(edge.ref, (edge.end - edge.start));
+				if (edge.point == null || isNaN(edge.point.y)){
+						debugger;
+				}
 			}
 		}
 		
@@ -394,9 +429,7 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 			// Get new edges only if an active edge is removed.
 			// This was made to prevent unnecessary calls and loops, due the fact
 			// that no activity ever start if none has end.
-			console.log(caseN.edgesRemaining);
-			caseN.edgesActive.push(getNewEdges(caseN.edgesRemaining, currentTime));
-			console.log(caseN.edgesRemaining);
+			caseN.edgesActive = caseN.edgesActive.concat(getNewEdges(caseN.edgesRemaining, currentTime));
 		}
 		
 		return caseN.edgesActive;
@@ -425,10 +458,11 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 		var i = 0;
 		var detalAcumulado = edge.paths[i][dAxis];
 //		console.log("deltaAcumulado/deltaTotal = " + (detalAcumulado/deltaTotal) + " t = " + t);
+//		console.log("i=" + i  + " deltaAcumulado = " + detalAcumulado + " deltaTotal = " + deltaTotal + " pathDx=" + (edge.paths[i][dAxis] < 0 ? -1 : 1) * edge.paths[i][dAxis]);
 		while ((detalAcumulado/deltaTotal) < t){
 			i++;
-			detalAcumulado += edge.paths[i][dAxis];
-//			console.log("deltaAcumulado/deltaTotal = " + (detalAcumulado/deltaTotal) + " t = " + t);
+			detalAcumulado +=  edge.paths[i][dAxis];
+//			console.log("i=" + i  + " deltaAcumulado = " + detalAcumulado + " deltaTotal = " + deltaTotal + " pathDx=" + (edge.paths[i][dAxis] < 0 ? -1 : 1) * edge.paths[i][dAxis]);
 		};
 		
 		var path = edge.paths[i];
@@ -468,18 +502,26 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 	}
 	
 	function getPointAtLine(line, t){
-		var xBigger = line.dx > line.dy;
-		var axis = !xBigger ? 'x' : 'y';
-		var inverse = !xBigger ? 'y' : 'x';
 		
+		var relative, result;
+		var dx = line.dx * line.dxSignal;
+		var dy = line.dy * line.dySignal;
 		// Linear equation
-		var m = line["d" +inverse]/line["d" + axis];
-		var relative = line.points[axis+"0"] + line['d' + axis] * t;
-		var result = (relative - line.points[axis+"0"])*m + line.points[inverse+"0"];
-		var point = {};
+		if (line.dx != 0){
 		
-		point[axis] = relative;
-		point[inverse] = result;
+			var m = dy/dx;
+			relative = line.points.x0 + dx * t;
+			result = (relative - line.points.x0)*m + line.points.y0 ;
+			
+		} else {
+			
+			relative = line.points.x0;
+			result = line.points.y0 + dy * t;
+			
+		}
+		var point = {};
+		point.x = relative;
+		point.y = result;
 
 		return point;
 	}
@@ -487,43 +529,38 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 	this.computePointInsideEdge = function(index){
 		var edge = null;
 		var count = 0;
+		var paths = [];
 		for (var name in _graph.edges){
-			if (count == index){
-				edge = _graph.edges[name];
-				break;
-			}
+			edge = _graph.edges[name];
+			for (var i = 0; i < edge.paths.length; i ++){
+				var points = edge.paths[i].points;
+				paths.push({x : points.x0, y : points.y0, aux : 2});
+				paths.push({x : points.x1, y : points.y1, aux : 2});
+				if (points.dy0){
+					paths.push({x : points.dx0, y : points.dy0, aux : 3});
+					paths.push({x : points.dx1, y : points.dy1, aux : 3});
+				} else {
+					var point = getPointAtLine(edge.paths[i], 0);
+					paths.push({x : point.x, y : point.y, aux : 4});
+					var point = getPointAtLine(edge.paths[i], 1);
+					paths.push({x : point.x, y : point.y, aux : 4});
+					
+				}
+			} 
 			count++;
 		}
-		var _variance = 0.00;
-		var point = getPointAtPath(edge, _variance);
 		
-		var circle = _d3SVG.select(".graph").append("circle")
-			.attr("r", 5)
-			.attr("cx", point.x)
-			.attr("cy", point.y)
-			.attr("fill", "#A16D00");
-		
-		animateTo100(_variance);
+		var circle = _d3SVG.select(".graph")
+			.selectAll("circle.pontos-magicos")
+			.data(paths)
+			.enter()
+			.append("circle")
+			.classed("pontos-magicos", true)
+			.attr("r", function (d) { return 6-d.aux;})
+			.attr("cx", function (d) { return d.x;})
+			.attr("cy", function (d) { return d.y;})
+			.attr("fill", function (d) { return (d.aux == 2 ? "red" : (d.aux == 3 ? "yellow" : "blue"));});
 		
 	};
-	
-	function animateTo100(variance){
-		point = getPointAtPath(edge, variance);
-		circle
-		 	.interrupt() // cancel the current transition
-		 	.transition()
-		 	.delay(310)
-			.attr("cx", point.x)
-			.attr("cy", point.y);
-			
-		if (variance < 1){
-			setTimeout(function (){
-				variance += 0.05;
-				animateTo100(parseFloat(variance.toFixed(2)));
-				
-			}, 300);
-		}
-	}
-	
 	
 }

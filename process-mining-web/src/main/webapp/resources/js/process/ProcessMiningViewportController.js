@@ -311,6 +311,7 @@ ProcessMiningViewportController = function (attachPoint, data) {
 		
 		if (ui.oldHeader[0].id == "h3Densidade"){
 			_d3GraphG.classed("density", false);
+			DAGAnimationBar.computePointInsideEdge(0);
 		} else if (ui.oldHeader[0].id == "h3Conformidade"){
 			_d3GraphG.classed("replay", false);
 			DAGAnimationBar.hide();
@@ -327,15 +328,6 @@ ProcessMiningViewportController = function (attachPoint, data) {
 
 var procMiningController;
 (function (){
-	var accordionChangeFunction = null;
-	$("#accordion" ).accordion({
-	    heightStyle: "fill",
-	    beforeActivate : function (event, ui) {
-	    	if (accordionChangeFunction != null){
-	    		accordionChangeFunction(event, ui);
-	    	}
-	    }
-	});
 	
 	$.ajax({
 		 url:"data/" ,
