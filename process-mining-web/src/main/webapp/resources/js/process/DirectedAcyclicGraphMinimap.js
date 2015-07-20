@@ -50,8 +50,7 @@ function Minimap() {
             contents.append("rect")
             	.attr("class", "viewfinder")
             	.attr("stroke", "black")
-                .attr("fill", "black")
-                .attr("opacity", 0.1);
+                .attr("opacity", 0.2);
             
             // Size the minimap as appropriate
             svg.attr("width", width.call(this, data));

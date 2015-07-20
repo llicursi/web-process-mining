@@ -26,7 +26,7 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 					// Initiate the 
 					_d3SVG.select(".graph").append("g").classed("animations", true);
 					
-					createPlayButton(containerIdForButton);
+					bindAnimationButtons();
 					_data = adjustData(data);
 					drawStartTimes();
 				 }
@@ -37,13 +37,11 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 	} 
 	
 	function show(){
-		d3.select("#DAGMinimap").transition().duration(200).attr("opacity","0.0");
 		_barSVG.transition().delay(200).attr("opacity", "1").attr("y", "94%");
 		
 	}
 	
 	this.hide = function(){
-		d3.select("#DAGMinimap").transition().duration(200).attr("opacity","1");
 		_barSVG.transition().delay(200).attr("opacity", "0").attr("y", "115%");
 		_d3SVG.select(".graph g.animations").transition().duration(200).attr("opactiy", "0").transition().attr("style", "display:none");
 	}
@@ -123,13 +121,22 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 	
 	function handleClick(o, e, d){
 		var start = (new Date()).getTime();
+		
 		var left = d3.mouse(this)[0];
-		var currentTime = selectTime(left);
-//		//console.log(_acontrol.cases);
+		_acontrol.animation.time = selectTime(left);
+		
+		if (_acontrol.animation.stop != true){
+			stopAnimate(false);
+		}
+		
 		drawAreaCompletetion(left);
-		drawPointsInTime(currentTime);
+		drawPointsInTime(_acontrol.animation.time);
+		
+		if (_acontrol.animation.stop != true){
+			animate(false);
+		}
+		
 		var end = (new Date()).getTime();
-		//console.log("Processando os pontos : " + (end - start) + "ms");
 	}
 	
 	function drawAreaCompletetion(left){
@@ -154,21 +161,25 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 		return data;
 	}
 	
-	var _playButton;
-	function createPlayButton(containerIdForButton){
-		if (containerIdForButton != null && containerIdForButton != undefined){
-			var buttonPlaceholder = document.getElementById(containerIdForButton);
-			if (buttonPlaceholder != null && buttonPlaceholder != undefined){
-				_playButton = document.createElement("a");
-				_playButton.className = "btn btn-default";
-				_playButton.setAttribute("href", "javascipt:;");
-				_playButton.id = "Replay";
-				_playButton.innerHTML = "<span class=\"glyphicon glyphicon-play\" aria-hidden=\"true\"></span> Replay";
-				_playButton.onclick = animate;
-				buttonPlaceholder.innerHTML = "<br/>";
-				buttonPlaceholder.appendChild(_playButton);
-			}
-		}
+	var _buttons = {};
+	function bindAnimationButtons(){
+		 _buttons.play = document.getElementById("btn-play");
+		_buttons.play.onclick = animate;
+		_buttons.stop = document.getElementById("btn-stop");
+		_buttons.stop.onclick = stopAnimate;
+
+		_buttons.foward = document.getElementById("btn-foward");
+		_buttons.foward.onclick = function (event){
+			changeSpeed(1, event);
+		};
+		_buttons.backward = document.getElementById("btn-backward");
+		_buttons.backward.onclick = function (event){
+			changeSpeed(1, event);
+		};
+		_buttons.counter = document.getElementById("btn-counter");
+		
+		
+		$("#btn-play-control").show();
 	}
 	
 	//===============================================
@@ -186,8 +197,13 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 			waiting : [],
 			completed : []
 		},
-		time : 0,
-		left : 0
+		// Animation control
+		animation : {
+			timeout : null, 
+			time : 0,
+			stop : true,
+			speed: 1
+		}
 	};
 	
 	function drawStartTimes(){
@@ -208,36 +224,33 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 		_acontrol.xRangeDomain = d3.scale.linear().domain([_dimensions.x, _dimensions.width]).range([_data.min, _data.max]);
 		_acontrol.xTimeDomain = d3.scale.linear().domain([0, 600]).range([_data.min, _data.max]);
 		_acontrol.xDomainTime = d3.scale.linear().domain([_data.min, _data.max]).range([0, 600]);
-		_acontrol.time = null;
+		_acontrol.animation.time = null;
 	}
 	
-	var animationTimeout = null;
-	var stop = true;
 	
-	function animate(){
-		changeButton();
+	function animate(preventChange){
+		
+		_acontrol.animation.stop = false;
 		
 		var time = 100;
-		if (_acontrol.time == null){
-			_acontrol.time = selectTime(_dimensions.x);
+		if (_acontrol.animation.time == null){
+			_acontrol.animation.time = selectTime(_dimensions.x);
 		}
-		var currentTime = _acontrol.time;
-		var elapsedTime = _acontrol.xDomainTime(currentTime);
-		stop = false;
+		var elapsedTime = _acontrol.xDomainTime(_acontrol.animation.time);
+		
 		var animation = function () {
 			
-			updateNewActiveCase(currentTime);
+			updateNewActiveCase(_acontrol.animation.time);
 			// Draw dots
-			drawPointsInTime(currentTime);
+			drawPointsInTime(_acontrol.animation.time);
 			
 			// Compute the next time;
-			currentTime = _acontrol.xTimeDomain(elapsedTime);
-			drawAreaCompletetion(_acontrol.xDomainRange(currentTime));
+			_acontrol.animation.time = _acontrol.xTimeDomain(elapsedTime);
+			drawAreaCompletetion(_acontrol.xDomainRange(_acontrol.animation.time));
 			
-			if (!stop && currentTime < _data.max){
-				elapsedTime += time/100;
-				_acontrol.time = currentTime;
-				animationTimeout = window.setTimeout(animation, time);
+			if (!_acontrol.animation.stop && _acontrol.animation.time < _data.max){
+				elapsedTime += (time/100) * _acontrol.animation.speed;
+				_acontrol.animation.timeout = window.setTimeout(animation, time);
 			} else {
 				changeButton();
 				selectTime(_acontrol.xDomainRange(_data.min));
@@ -245,25 +258,36 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 		};
 		animation();
 		
+		if (preventChange){
+			changeButton();
+		}
+		
 	}
 	
-	function stopAnimate(){
-		stop = true;
-		if (animationTimeout != null){
-			window.clearTimeout(animationTimeout);
+	function stopAnimate(preventChange){
+		_acontrol.animation.stop = true;
+		if (_acontrol.animation.timeout != null){
+			window.clearTimeout(_acontrol.animation.timeout);
 		}
-		animationTimeout = null;
-		changeButton();
+		_acontrol.animation.timeout = null;
+
+		if (preventChange){
+			changeButton();
+		}
 	}
 	
 
 	function changeButton(){
-		if (_playButton.innerHTML == "Replay"){
-			_playButton.innerHTML = "Stop";
-			_playButton.onclick = stopAnimate;
+		if (_buttons.play.hasAttribute("disabled")){
+			_buttons.play.removeAttribute("disabled");
+			$(_buttons.play).removeClass("disabled")
+			_buttons.stop.setAttribute("disabled", "disabled");
+			$(_buttons.stop).addClass("disabled")
 		} else {
-			_playButton.innerHTML = "Replay";
-			_playButton.onclick = animate;
+			_buttons.stop.removeAttribute("disabled");
+			$(_buttons.stop).removeClass("disabled")
+			_buttons.play.setAttribute("disabled", "disabled");
+			$(_buttons.play).addClass("disabled")
 		}
 	}
 	
@@ -291,7 +315,7 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 	// Prepare the cases
 	function selectTime(left){
 		var time = _acontrol.xRangeDomain(left);
-		_acontrol.time = time;
+		_acontrol.animation.time = time;
 		
 		// Reset 
 		_acontrol.cases.waiting = [];

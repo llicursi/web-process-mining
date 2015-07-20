@@ -30,8 +30,7 @@ ProcessMiningViewportController = function (attachPoint, data) {
 		
 		_d3SVG.node().oncontextmenu = function(d) { return false; };
 			
-		minimapSVG = rootSVG.append("svg")
-			.attr("class", "minimap-attach");
+		minimapSVG = d3.select("#minimap-container").append("svg").attr("class", "minimap-attach");
 		
 	//	listSVG = rootSVG.append("svg").attr("class", "history-attach");
 	
@@ -42,7 +41,7 @@ ProcessMiningViewportController = function (attachPoint, data) {
 	
 	//	Create the chart instances
 		DAG = DirectedAcyclicGraph().animate(!lightweight);
-		DAGMinimap = DirectedAcyclicGraphMinimap(DAG).width("19.5%").height("19.5%").x("80%").y("80%");
+		DAGMinimap = DirectedAcyclicGraphMinimap(DAG).width("85%").height("87%");
 		DAGTooltip = DirectedAcyclicGraphTooltip(undefined, ["name", "count", "type", "avgTime"]);
 		DAGAnimationBar = new DirectedAcyclicGraphAnimationBar(_graph);
 		DAGAnimationBar.build(rootSVG, _d3SVG);
@@ -303,7 +302,7 @@ ProcessMiningViewportController = function (attachPoint, data) {
 			_d3GraphG.classed("density", true);
 		} else if (ui.newHeader[0].id == "h3Conformidade"){
 			_d3GraphG.classed("replay", true);
-			DAGAnimationBar.load("tuples/", "conformidadeContent");
+			DAGAnimationBar.load("tuples/");
 			
 		}
 		
@@ -318,12 +317,20 @@ ProcessMiningViewportController = function (attachPoint, data) {
 		}
 		
 	}
-	
-	this.attachAccordionEvent = function (){
-		return accordionEventChange;
-	};
 
-	
+	$('#doc-menus .nav-tabs a').on('shown.bs.tab', function (e) {
+		var targetElem = e.target;
+		var sourceElem = e.relatedTarget;
+		
+		var target = targetElem.hash.replace("Control", "").replace("#", "");
+		_d3GraphG.classed(target, true);
+		var source = sourceElem.hash.replace("Control", "").replace("#", "");
+		_d3GraphG.classed(source, false);
+		if (target == "animation"){
+			DAGAnimationBar.load("tuples/");
+		}
+		
+	});
 };
 
 var procMiningController;
@@ -340,7 +347,6 @@ var procMiningController;
 	        }
 	        procMiningController = new ProcessMiningViewportController("graph", data);
 	    	procMiningController.draw();
-	    	accordionChangeFunction = procMiningController.attachAccordionEvent();
 		 }
 	});
 	

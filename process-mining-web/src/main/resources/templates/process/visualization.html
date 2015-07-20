@@ -19,68 +19,58 @@
     	<span th:include="commun/header :: process-menu (active=2)"></span>
     
  		<div id="split-container">
-            
-            <div id="doc-menus">
-            
-            	<div>
+ 		
+            <div id="doc-menus" class="right-options">
             	<ul class="nav nav-tabs" role="tablist">
-				    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Home</a></li>
-				    <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Profile</a></li>
-				    <li role="presentation"><a href="#messages" aria-controls="messages" role="tab" data-toggle="tab">Messages</a></li>
-				    <li role="presentation"><a href="#settings" aria-controls="settings" role="tab" data-toggle="tab">Settings</a></li>
+				    <li role="presentation" class="active"><a href="#densityControl" aria-controls="densityControl" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-filter"></span></a></li>
+				    <li role="presentation"><a href="#activitiesControl" aria-controls="activitiesControl" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-list"></span></a></li>
+				    <li role="presentation"><a href="#statiscticsControl" aria-controls="statiscticsControl" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-stats"></span></a></li>
+				    <li role="presentation"><a href="#animationControl" aria-controls="animationControl" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-play"></span></a></li>
 				</ul>
 				
 				<div class="tab-content">
-				  <div role="tabpanel" class="tab-pane fade in active" id="home">...</div>
-				  <div role="tabpanel" class="tab-pane fade" id="profile">...</div>
-				  <div role="tabpanel" class="tab-pane fade" id="messages">...</div>
-				  <div role="tabpanel" class="tab-pane fade" id="settings">...</div>
+					<div role="tabpanel" class="tab-pane fade in active" id="densityControl">
+						<h2>Densidade</h2>
+						<div class="content">
+						
+						</div>
+					</div>
+					<div role="tabpanel" class="tab-pane fade" id="activitiesControl">	
+						<h2>Atvidades</h2>
+						<div class="content"></div>
+					</div>
+					<div role="tabpanel" class="tab-pane fade" id="statiscticsControl">	
+						<h2>Estatísticas</h2>
+						<div class="content"></div>
+					</div>
+					<div role="tabpanel" class="tab-pane fade" id="animationControl">	
+						<h2>Replay</h2>
+						<div class="btn-group" role="group" id="btn-play-control" style="display:none">
+						  	<button id="btn-backward" type="button" class="btn btn-default" role="group" aria-label="Slow Down" title="Slow Down">
+						  		<span class="glyphicon glyphicon-backward"></span>
+						  	</button>
+						  	<button id="btn-play" type="button" class="btn btn-default btn-play" role="group" aria-label="Play" title="Play">
+						  		<span class="glyphicon glyphicon-play"></span>
+						  	</button>
+						  	<button id="btn-stop" type="button" class="btn btn-default btn-stop disabled" disabled="disabled" role="group" aria-label="Stop" title="Stop">
+						  		<span class="glyphicon glyphicon-stop"></span>
+						  	</button>
+						  	<button id="btn-counter" type="button"  disabled="disabled" class="btn btn-default disabled" role="group" aria-label="Speed Up" title="Speed Up">
+						  		1x
+						  	</button>
+						  	<button id="btn-foward" type="button" class="btn btn-default" role="group" aria-label="Speed Up" title="Speed Up">
+						  		<span class="glyphicon glyphicon-forward"></span>
+						  	</button>
+						</div>
+						<div class="content">
+							
+						</div>
+					</div>
 				</div>
-				            	
-            </div>
-            
-				<div id="accordion">
-				  <h3 id="h3Densidade">Densidade</h3>
-				  <div>
-						<div class="sliders" id="densitySlider"></div>
-						<div class="sliders" id="activitySlider"></div>
-				  </div>
-				  <h3 id="h3Atividades">Atividades</h3>
-				  <div>
-				    <ul id="list-activities"></ul>
-				  </div>
-				 
-				  <h3 id="h3Estatisticas">Estatísticas</h3>
-				  <div id="docs" class="docs">
-				    <p>
-				    Nam enim risus, molestie et, porta ac, aliquam ac, risus. Quisque lobortis.
-				    Phasellus pellentesque purus in massa. Aenean in pede. Phasellus ac libero
-				    ac tellus pellentesque semper. Sed ac felis. Sed commodo, magna quis
-				    lacinia ornare, quam ante aliquam nisi, eu iaculis leo purus venenatis dui.
-				    </p>
-				    <ul>
-				      <li>List item one</li>
-				      <li>List item two</li>
-				      <li>List item three</li>
-				    </ul>
-				  </div>
-				  <h3 id="h3Conformidade">Conformidade</h3>
-				  <div id="conformidadeContent">
-				  	<br/>
-				  	<a class="btn btn-default" href="#">Replay</a><br/><br/>
-				  	Esta execução irá animar o comportamento das instâncias desse processo, possibilitando
-				  	a visualização dos seguintes problemas :
-				  	<ul>
-				      <li>Repetições de ciclos</li>
-				      <li>Gargalos/Atrasos</li>
-				    </ul>
-				  	<br/>
-				  	<a class="btn btn-default" href="#">Exportar Processo</a><br/><br/>
-				  	Transforme o processo gerado em um formato utilizável por outras ferramentas.
-				  </div>
-				</div>            	
-
-            	
+				       
+				<div id="minimap-container" class="fill">
+					
+				</div>     	
             
             </div>
             <div id="graph-container">
@@ -92,11 +82,14 @@
         
         <script th:src="@{/js/jquery-1.10.2.min.js}"></script>
         <script th:src="@{/js/jquery.browser.min.js}"></script>
-        <script th:src="@{/js/jquery-ui.accordion.min.js}"></script>
         <script th:src="@{/js/jquery.nouislider.min.js}"></script>
         <script th:src="@{/js/d3.v3.min.js}"></script>
         <script th:src="@{/js/colorbrewer.js}"></script>
-        <script th:src="@{/js/geometry.js}"></script>
+		<!-- Para que está sendo usado esse javascript? -->
+		<script th:src="@{/js/geometry.js}"></script> 
+        
+        <script th:src="@{/js/ bootstrap.tab.min.js}"></script>
+       
         
 		<script type="text/javascript" th:src="@{/js/process/dagre.js}"></script>
 		<script type="text/javascript" th:src="@{/js/process/Graph.js}"></script>

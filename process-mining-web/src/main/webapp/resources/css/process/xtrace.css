@@ -133,7 +133,7 @@
 	-webkit-transition-delay: 0, 0, 0, 0.5s;
 }
 
-.graph.graph-main.replay .edge.visible{
+.graph.graph-main.animation .edge.visible{
 	stroke-width:2.5px;
 	stroke: #AAB4D1;
 }
@@ -198,6 +198,7 @@
 
 .xtrace-tooltip {
 	text-align: left;
+	font-size : 13px;
 }
 
 .xtrace-tooltip .key {
@@ -212,6 +213,8 @@
 	float: left;
 	word-wrap: break-word;
 	max-width: 410px;
+	font-size : 12px;
+	
 }
 
 .xtrace-tooltip .clear {
