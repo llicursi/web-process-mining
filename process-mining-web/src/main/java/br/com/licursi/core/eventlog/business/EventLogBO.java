@@ -66,18 +66,11 @@ public class EventLogBO {
 				try {
 					dataSource.setInputStream(multipartFile.getInputStream());
 					
-<<<<<<< HEAD
 					UUID randomUUID = java.util.UUID.randomUUID();
 					List<EventLogEntity> eventLog = dataSource.getEventLog(randomUUID);
 					List<EventLogEntity> insert = eventLogRepository.insert(eventLog);
 					System.out.println("UUID : " + randomUUID + " Nº of Files : "+ insert.size());	
 					return randomUUID.toString();
-=======
-					EventLogEntity eventLog = dataSource.getEventLog();
-					EventLogEntity insert = eventLogRepository.insert(eventLog);
-					System.out.println("uid do event log criado:" + insert.id);	
-					return insert.id;
->>>>>>> d0c0eea3ff4807bfc40cf3b8a1ff2a6d53d721e3
 				} catch (IOException e) {
 					e.printStackTrace();
 				} finally {
@@ -99,13 +92,8 @@ public class EventLogBO {
 		return extensionsRegEx.substring(0, extensionsRegEx.length()-1).trim();
 	}
 	
-<<<<<<< HEAD
 	public String getTop100RecordsFromEventLog(String uuid){
 		List<DBObject> top100RecordsFromEventLogRawData = eventLogAggregator.getTop100RecordsFromEventLogRawData(uuid);
-=======
-	public String getTop100RecordsFromEventLog(String processID){
-		List<DBObject> top100RecordsFromEventLogRawData = eventLogAggregator.getTop100RecordsFromEventLogRawData(processID);
->>>>>>> d0c0eea3ff4807bfc40cf3b8a1ff2a6d53d721e3
 		long startTime = System.currentTimeMillis();
 		String serialized = JSON.serialize(top100RecordsFromEventLogRawData);
 				
