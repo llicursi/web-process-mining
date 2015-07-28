@@ -4,7 +4,9 @@ public enum VariablesEnum {
 	CASE_ID("Case Id", "id"),
 	ACTIVITY("Activity", "activity"),
 	RESOURCE("Resource", "resource"),
-	END_TIME("End Time", "endTime");
+	END_TIME("End Time", "endTime"),
+	START_TIME("Start Time", "startTime"),
+	COST("Cost", "cost");
 	
 	private String name;
 	private String processed; 

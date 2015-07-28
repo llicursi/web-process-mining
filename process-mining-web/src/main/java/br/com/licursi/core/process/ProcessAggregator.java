@@ -46,4 +46,22 @@ public class ProcessAggregator {
 				
 	}
 	
+	public DBObject getProcessTuplesById(String id){
+		//long startTime = System.currentTimeMillis();
+		List<DBObject> find = new ArrayList<DBObject>();
+		// Query condicions
+		DBObject where = BasicDBObjectBuilder.start("_id",new ObjectId(id)).get();
+		// Filter conditions
+		DBObject filter = BasicDBObjectBuilder
+				.start("tuples", 1)
+				.get();
+		
+		DBCollection collection = mongoTemplate.getCollection(COLLECTION);
+		DBObject oneResult = collection.findOne(where, filter);
+		
+		//System.out.println("Time serializing the data : " + (endTime - startTime));
+		return oneResult;
+				
+	}
+	
 }

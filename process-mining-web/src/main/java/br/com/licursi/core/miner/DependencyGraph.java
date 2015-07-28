@@ -1,20 +1,24 @@
 package br.com.licursi.core.miner;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
+import br.com.licursi.core.miner.exceptions.InvalidDateException;
+import br.com.licursi.core.miner.exceptions.ParseTimeException;
 import br.com.licursi.core.process.ActivityEntity;
+import br.com.licursi.core.process.ActivitySimpleEntity;
 import br.com.licursi.core.process.ActivityType;
 import br.com.licursi.core.process.ArcEntity;
 import br.com.licursi.core.process.BorderEventEntity;
 import br.com.licursi.core.process.BorderEventType;
+import br.com.licursi.core.process.ProcessDetailsEntity;
 import br.com.licursi.core.process.ProcessEntity;
 import br.com.licursi.core.process.TupleEntity;
 
@@ -23,7 +27,7 @@ import com.google.common.collect.HashBiMap;
 
 public class DependencyGraph {
 	
-	private SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm");
+	private DateTimeFormatter dateFormat = null;
 	
 	// Character used to compute the next Char alias for Activity
 	private char aliasCharActivity = 64; // 'A'
@@ -32,81 +36,116 @@ public class DependencyGraph {
 	private BiMap<String, Character> activityAlias = null;
 	private Map<String, ActivityEntity> activityMap = null;
 	private Map<String, BorderEventEntity> borderEventMap = null;
+	
 	private Map<String, ArcEntity> arcsMap = null;
+	private Map<String, List<ArcEntity>> arcsEndedWith = null;
+	
 	private Map<String, Integer> tupleOcurrency = null;
-	private Map<String, TupleEntity> tuplesMap = null;
+	private Map<String, TupleEntity> caseMap = null;
+	
 
 	private ActivityEntity lastActivity = null;
-	private TupleEntity currentTuple = null;
+	private TupleEntity currentCase = null;
 	private long lastActivityEndTime = 0L;
-	private int caseIndex = 1;
+	private long firstActivityEndTime = 0L;
+	private long caseTimeCounter = 0L;
 	private String textTuple = "";
 
 	public DependencyGraph(){
-		activityAlias = HashBiMap.create();
-		arcsMap = new HashMap<String, ArcEntity>();
-		tupleOcurrency = new HashMap<String, Integer>();
-		activityMap = new HashMap<String, ActivityEntity>();
-		borderEventMap = new HashMap<String, BorderEventEntity>();
-		tuplesMap = new HashMap<String, TupleEntity>();
+		this.activityAlias = HashBiMap.create();
+		this.arcsMap = new HashMap<String, ArcEntity>();
+		this.tupleOcurrency = new HashMap<String, Integer>();
+		this.activityMap = new HashMap<String, ActivityEntity>();
+		this.borderEventMap = new HashMap<String, BorderEventEntity>();
+		this.caseMap = new HashMap<String, TupleEntity>();
 	}
 
+	public void start(String caseId){
+		start();
+		this.currentCase.setCaseId(caseId);
+	}
+	
 	public void start(){
-		lastActivity = null;
-		currentTuple = new TupleEntity();
-		textTuple = "";
-		lastActivityEndTime = 0L;
+		this.lastActivity = null;
+		this.currentCase = new TupleEntity();
+		this.textTuple = "";
+		this.lastActivityEndTime = 0L;
+		this.firstActivityEndTime = 0L;
+		
 	}
 	
 	/////////////////////// ACTIVITIES
+	
+	private Long parseDate(String dateTime) throws ParseTimeException{
+		
+		if (this.dateFormat != null){
+			try{
+				return dateFormat.parseDateTime(dateTime).getMillis();
+			} catch (IllegalArgumentException e) {
+				throw new ParseTimeException(e);
+			}
+		} else {
+			// If no parser is found, then register the last one to avoid the rework of this code snippet  
+			String[] possibles = {"YYYY-MM-dd HH:mm:ss.SSS", "dd-MM-YYYY HH:mm", "dd-MM-YYYY hh:mm:ss.SSS", "dd-MM-YYYY HH:mm:ss"};
+			
+			// Last ParseException
+			ParseTimeException p = null;
+			
+			for (String possibleParser : possibles){
+				try {
+					DateTimeFormatter formattter = DateTimeFormat.forPattern(possibleParser);
+					long parseMillis = formattter.parseMillis(dateTime);
+					this.dateFormat = formattter;
+					return parseMillis;
+					
+				} catch (IllegalArgumentException e) {
+					p = new ParseTimeException(e);
+				}
+			}
+			// Throws the last error only
+			throw p;
+		}
+	}
 
 	/**
 	 * Put the activity and it's resource to process and compute in activityList 
 	 * @param activity As the name says
 	 * @param resource As the name says
+	 * @throws InvalidDateException when any data passed is invalid
 	 */
-	public void put(Object activity, Object time, Object resource) {
+	public void put(Object caseId, Object activity, Object time, Object resource) throws InvalidDateException {
 		if (activity != null){
 			
 			// Converts data if possible
-			Date newTime = null;
+			Long endTime = null;
 			if (time != null){
 				try {
-					newTime = dateFormat.parse(time.toString());
-				} catch (ParseException e) {
-					e.printStackTrace();
+					endTime = parseDate(time.toString());
+				} catch (ParseTimeException e) {
+					String message = "The current process, \"" + caseId.toString() + "\" at " + this.textTuple +", was interrupted due date time conversion error";
+					throw new InvalidDateException(message);
 				}
+				
 			}
 			
-			put(activity.toString(), newTime.getTime(), (resource != null ? resource.toString() : "!NONE!"));
+			put(activity.toString(), endTime, (resource != null ? resource.toString() : "!NONE!"));
 		}
 	}
 	
+
 	/**
 	 * Put the activity and it's resource to process and compute in activityList 
-	 * @param activity As the name says
+	 * @param activityName As the name says
 	 * @param endTime Activity end time
 	 * @param resource As the name says
 	 */
-	private void put(String activity, long endTime, String resource) {
-		activity = activity.toUpperCase();
-		Character activityChar = getActivityAlias(activity);
-		ActivityEntity activityEntity = activityMap.get(activityChar + "");
-		
-		// Creates activity if not found
-		if (activityEntity == null){
-			activityEntity = new ActivityEntity(activity, activityChar.toString());
-			activityMap.put(activityChar+"", activityEntity);
-		}
-		
-		long activityDuration = (lastActivityEndTime != 0L) ? endTime - lastActivityEndTime : 0L;
+	private void put(String activityName, long endTime, String resource) {
+		activityName = activityName.toUpperCase();
+		Character activityChar = getActivityAlias(activityName);
+		ActivityEntity activityEntity = getActivity(activityChar + "", activityName);
+				
 		lastActivityEndTime = endTime;
-		if (activityDuration < 0){
-			activityDuration *= -1;
-		}
-		
-		// Adds the resource and increments counter
-		activityEntity.addResource(resource, activityDuration);
+		currentCase.putActivity(activityChar, activityName, endTime, resource);
 		
 		if (lastActivity != null){
 			appendArc(lastActivity.getUniqueLetter() + ArcEntity.SPLIT_CHAR + activityChar);
@@ -114,30 +153,54 @@ public class DependencyGraph {
 			// Updates previous Activity dependences
 			activityEntity.addPrev(lastActivity.getName());
 			// Updates last Activity dependences
-			lastActivity.addNext(activity);
+			lastActivity.addNext(activityName);
 			
 		} else {
+			this.firstActivityEndTime = endTime;
 			appendEventBorder(activityEntity, BorderEventType.START);
-			currentTuple.setStart(endTime);
+			currentCase.setStart(endTime);
 		} 
 		
 		lastActivity = activityEntity;
 		textTuple += activityChar;
 	}
 
-	public String end(){
-		appendEventBorder(lastActivity, BorderEventType.END);
-		appendTuple(textTuple);
+	public String end(String caseId){
+		appendEventBorder(this.lastActivity, BorderEventType.END);
+		appendTuple(this.textTuple);
 		
-		currentTuple.setName(textTuple);
-		currentTuple.setEnd(lastActivityEndTime);
+		this.currentCase.setCaseId("a" + caseId);
+		this.currentCase.setTuple(this.textTuple);
+		this.currentCase.setEnd(this.lastActivityEndTime);
 		
-		tuplesMap.put("case " + caseIndex, currentTuple);
-		caseIndex++;
+		Long caseTotalTime = (this.lastActivityEndTime - this.firstActivityEndTime);
+		this.caseTimeCounter += caseTotalTime;
+		
+		this.caseMap.put(this.currentCase.getCaseId(), this.currentCase);
 		
 		return textTuple;
 	}
 
+	
+	/**
+	 * Gets an existing activity in the pool, if does not exist, creates a new one.
+	 * @param activityChar Character that represents the activity
+	 * @param activityName Activity name
+	 * @return Activity
+	 */
+	private ActivityEntity getActivity(String activityChar, String activityName) {
+		ActivityEntity activityEntity = activityMap.get(activityChar);
+		
+		// Creates activity if not found
+		if (activityEntity == null){
+			activityEntity = new ActivityEntity(activityName, activityChar.toString());
+			activityMap.put(activityChar, activityEntity);
+		}
+		activityEntity.incrementCounter();
+		
+		return activityEntity;
+	}
+	
 	/**
 	 * Loads the processed activities to a List
 	 * @return List of activites
@@ -336,24 +399,140 @@ public class DependencyGraph {
 	}
 	
 	public ProcessEntity getProcessedData(String id){
-		computeParalellism();
-		computeDependencyMeasure();
-		computeArcsTimes();
+		long startProcessing = System.currentTimeMillis();
+		ProcessDetailsEntity processDetailEntity = getDetails();
+		
+		long lComputeParalellism = computeParalellism();
+		long lComputeDependencyMeasure = computeDependencyMeasure();
+		long lComputeArcsTimes = computeArcsTimes(processDetailEntity.getAverageTime());
 		
 		ProcessEntity processEntity = new ProcessEntity(id);
 		
 		processEntity.setBorderEvents(this.getBorderEvents());
 		processEntity.setActivities(this.getActivities());
 		processEntity.setArcs(this.getArcs());
+		processEntity.setTuples(this.caseMap);
+		processEntity.setDetails(processDetailEntity);
+		
+		long endProcessing = System.currentTimeMillis();
+		long totalProcessing = (endProcessing - startProcessing)+1;
+		System.out.println("=============================================");
+		System.out.println("= Tempo processando :                       ");
+		System.out.println("= Paralelismo.......: "+ lComputeParalellism + " ms (" + (Math.floor((lComputeParalellism/totalProcessing)*10000)/100) + " %)");
+		System.out.println("= Dependencia.......: "+ lComputeDependencyMeasure + " ms (" + (Math.floor((lComputeDependencyMeasure/totalProcessing)*10000)/100) + " %)");
+		System.out.println("= Tempo dos arcos...: "+ lComputeArcsTimes + " ms (" + (Math.floor((lComputeArcsTimes/totalProcessing)*10000)/100) + " %)");
+		System.out.println("= ");
+		System.out.println("= Total.......: "+ totalProcessing + " ms (" + (Math.floor((lComputeParalellism/totalProcessing)*10000)/100) + " %)");
 		
 		return processEntity;
 	}
 
 	
 	
-	private void computeArcsTimes() {
+	private ProcessDetailsEntity getDetails() {
+		
+		Float avgTime = (this.caseTimeCounter/ (new Integer(this.caseMap.size())).floatValue());
+		ProcessDetailsEntity procesDetail = new ProcessDetailsEntity();
+		procesDetail.setAverageTime(avgTime.longValue());
+		procesDetail.setTotalCases(this.caseMap.size());
+		
+		return procesDetail;
+	}
+
+	private long computeArcsTimes(Long avgCaseTimes) {
+		long startTime = System.currentTimeMillis();
+		long avgCaseTimeOnePercent = (new Double(avgCaseTimes*0.01)).longValue(); 
+		
+		buildListOfArcsEndedWithSomeLetter();
+		
+		for (String key : caseMap.keySet()){
+			TupleEntity tupleEntity = caseMap.get(key);
+			
+			// Compute the initial arc, from the symbol representing the start to the 
+			{
+				ActivitySimpleEntity activitySimpleEntity = tupleEntity.getActivities().get(0);
+				List<ArcEntity> possibleArcs = getPossibleArcs(activitySimpleEntity.getUniqueLetter());
+				for (ArcEntity arc : possibleArcs){
+					if (arc.getSource().toUpperCase().contains("START")){
+						tupleEntity.putArc(arc.getRef(),activitySimpleEntity.getEndTime() - avgCaseTimeOnePercent, activitySimpleEntity.getEndTime(), activitySimpleEntity.getResource(), 0f);
+						arcsMap.get(arc.getRef()).addTime(avgCaseTimeOnePercent);
+						tupleEntity.setStart(tupleEntity.getStart() - avgCaseTimeOnePercent);
+					}
+				}
+			
+			}
+			// Recover the list of activities, avoiding the first one, 
+			// for the purpouse of calculating of arcs time
+			for (int i = 1 ; i < tupleEntity.getActivities().size(); i++){
+				ActivitySimpleEntity activitySimple = tupleEntity.getActivities().get(i);
+				List<ArcEntity> possibleArcs = getPossibleArcs(activitySimple.getUniqueLetter());
+				
+				for (ArcEntity arc : possibleArcs){
+					ActivitySimpleEntity activity = getValidaArcStartActivity(arc, i, tupleEntity.getActivities()); 
+					if (activity != null){
+						tupleEntity.putArc(arc.getRef(), activity.getEndTime(), activitySimple.getEndTime(), activitySimple.getResource(), 0f);
+						Long arcDuration = (activitySimple.getEndTime() -  activity.getEndTime());
+						arcsMap.get(arc.getRef()).addTime(arcDuration);
+					}
+				}
+			}
+			
+			// Compute the last Activity to the borderEvent, using 1% of average time. 
+			{
+				ActivitySimpleEntity lastActivity = tupleEntity.getActivities().get(tupleEntity.getActivities().size()-1);
+				for (BorderEventEntity border : borderEventMap.values()){
+					if (border.getType().equals(BorderEventType.END.toString())){
+						String ref = lastActivity.getUniqueLetter() + ">" + border.getRef();
+						if (arcsMap.containsKey(ref)){
+							tupleEntity.putArc(ref,lastActivity.getEndTime(), lastActivity.getEndTime() + avgCaseTimeOnePercent, "NONE", 0f);
+							arcsMap.get(ref).addTime(avgCaseTimeOnePercent);
+							tupleEntity.setEnd(tupleEntity.getEnd() + avgCaseTimeOnePercent);
+						}
+					}
+				}
+			
+			}
+			
+			
+		}
+		long endTime = System.currentTimeMillis();
+		
+		return (endTime - startTime);
+		
+	}
+	
+
+	private void buildListOfArcsEndedWithSomeLetter() {
+		arcsEndedWith = new HashMap<String, List<ArcEntity>>();
+		for (ArcEntity arc : arcsMap.values()){
+			 String uniqueLetter = activityAlias.get(arc.getTarget()) + "";
+			 List<ArcEntity> list = arcsEndedWith.get(uniqueLetter);
+			 if (list == null){
+				 list = new ArrayList<ArcEntity>();
+			 }
+			 if (!list.contains(arc)){
+				list.add(arc); 
+			 }
+			 arcsEndedWith.put(uniqueLetter, list);
+		}
 		
 		
+	}
+
+	private ActivitySimpleEntity getValidaArcStartActivity(ArcEntity arc,int i, List<ActivitySimpleEntity> activities) {
+		for (int f = i-1; f >= 0; f--){
+			ActivitySimpleEntity activitySimpleEntity = activities.get(f);
+			String source = activitySimpleEntity.getName();
+			if (source != null && source.toUpperCase().equals(arc.getSource())){
+				return activitySimpleEntity;
+			}
+		}
+		return null;
+	}
+
+	private List<ArcEntity> getPossibleArcs(String activitiyUniqueLetter) {
+		String uniqueLetter = activitiyUniqueLetter;
+		return arcsEndedWith.get(uniqueLetter);
 	}
 
 	//============================================================= 
@@ -364,7 +543,7 @@ public class DependencyGraph {
 	//		   \   /
 	//			 C
 	//============================================================= 
-	public void computeParalellism() {
+	private long computeParalellism() {
 		long startTime = System.currentTimeMillis();
 		
 		Set<Character> activitySetChars = activityAlias.values();
@@ -407,7 +586,7 @@ public class DependencyGraph {
 			}
 		}
 		long endTime = System.currentTimeMillis();
-		System.out.println("Tempo computando Paralelismos : " + (endTime - startTime) + " ms");
+		return (endTime - startTime);
 	}
 
 	private Character getMutualPredecessor(Character c1, Character c2, List<Character> activityChars) {
@@ -433,12 +612,11 @@ public class DependencyGraph {
 	}
 	
 	//============================================================= 
-	// Computa a medida de dependencia
+	// Computa a medida de dependencia dos arcos
 	//	
-	//
 	//============================================================= 
 
-	public void computeDependencyMeasure() {
+	private long computeDependencyMeasure() {
 		long startTime = System.currentTimeMillis();
 		for (ArcEntity arc : arcsMap.values()){
 			Integer inverseCount = getOppositeCount(arc); 
@@ -448,7 +626,7 @@ public class DependencyGraph {
 			arc.setDependencyMeasure(dividendus != 0f ? divisor/dividendus : dividendus);
 		}
 		long endTime = System.currentTimeMillis();
-		System.out.println("Tempo computando medida de dependencia : " + (endTime - startTime) + " ms");
+		return (endTime - startTime);
 	}
 
 	private Integer getOppositeCount(ArcEntity arc) {

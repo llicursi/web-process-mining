@@ -25,10 +25,11 @@ public class EventLogAggregator {
 	@Autowired
 	private MongoTemplate mongoTemplate;
 	
-	public List<DBObject> getTop100RecordsFromEventLogRawData(String id){
+	public List<DBObject> getTop100RecordsFromEventLogRawData(String uuid){
 		long startTime = System.currentTimeMillis();
 		List<DBObject> pipeline = new ArrayList<DBObject>();
-		pipeline.add(BasicDBObjectBuilder.start("$match",  BasicDBObjectBuilder.start("_id",new ObjectId(id)).get()).get());
+		pipeline.add(BasicDBObjectBuilder.start("$match",  BasicDBObjectBuilder.start("uuid", uuid).get()).get());
+		pipeline.add(BasicDBObjectBuilder.start("$limit", 1).get());
 		pipeline.add(BasicDBObjectBuilder.start("$unwind", "$rawData").get());
 		pipeline.add(BasicDBObjectBuilder.start("$limit", 100).get());
 		pipeline.add(BasicDBObjectBuilder.start("$project", BasicDBObjectBuilder.start("rawData", 1).get()).get());

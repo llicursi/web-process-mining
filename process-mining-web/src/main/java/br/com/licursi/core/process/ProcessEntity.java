@@ -19,8 +19,10 @@ public class ProcessEntity {
 	private Map<String, ActivityEntity> activities;
 	private Map<String, BorderEventEntity> borderEvents;
 	private Map<String, TupleEntity> tuples;
+	private ProcessDetailsEntity details;
 	
 	public ProcessEntity(){
+		this.details = new ProcessDetailsEntity();
 	}
 	
 	public ProcessEntity(String id){
@@ -91,6 +93,14 @@ public class ProcessEntity {
 
 	public void setTuples(Map<String, TupleEntity> tuples) {
 		this.tuples = tuples;
+	}
+
+	public void setDetails(ProcessDetailsEntity processDetailEntity) {
+		this.details = processDetailEntity;
+	}
+	
+	public ProcessDetailsEntity getDetails(){
+		return details;
 	}
 	
 }

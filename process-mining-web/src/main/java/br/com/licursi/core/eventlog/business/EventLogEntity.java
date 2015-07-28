@@ -11,19 +11,50 @@ import com.mongodb.DBObject;
 public class EventLogEntity {
 	
 	@Id
-	public String id;
+	private String id;
 	
-	public String refProcessId;
-	public String refActivity;
-	public String refExecutor;
-	public Long refEndDate;
-	public String refCost;
-	public List<EventLogRefOther> refOthers;
-	public List<String> headers;
-	public List<DBObject> rawData;
+	private String uuid;
+	private List<String> headers;
+	private List<DBObject> rawData;
 	
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
+	}
+
+	public List<String> getHeaders() {
+		return headers;
+	}
+
+	public void setHeaders(List<String> headers) {
+		this.headers = headers;
+	}
+
+	public List<DBObject> getRawData() {
+		return rawData;
+	}
+
+	public void setRawData(List<DBObject> rawData) {
+		this.rawData = rawData;
+	}
+
 	public EventLogEntity(){
 		
+	}
+
+	public EventLogEntity(String uuid) {
+		this.uuid = uuid;
 	}
 	
 
