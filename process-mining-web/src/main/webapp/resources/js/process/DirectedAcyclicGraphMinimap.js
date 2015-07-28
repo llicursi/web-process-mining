@@ -36,12 +36,21 @@ function Minimap() {
             // Select the svg element that we draw to or add it if it doesn't exist
             var svg = d3.select(this).selectAll("svg").data([data]);
             var firsttime = svg.enter().append("svg");
-            firsttime.append("rect").attr("class", "background").attr("fill", "#DDD")
-                        .attr("fill-opacity", 0.5).attr("width", "100%").attr("height", "100%");
+            firsttime.attr("id", "DAGMinimap")
+            firsttime.append("rect")
+            	.attr("class", "background")
+            	.attr("fill", "#DDD")
+                .attr("fill-opacity", 0.5)
+                .attr("width", "100%")
+                .attr("height", "100%");
+            
             var contents = firsttime.append("svg").attr("class", "minimap");
-            contents.append("g").attr("class", "contents")
-            contents.append("rect").attr("class", "viewfinder").attr("stroke", "black")
-                                   .attr("fill", "black").attr("opacity", 0.1);
+            contents.append("g")
+            	.attr("class", "contents")
+            contents.append("rect")
+            	.attr("class", "viewfinder")
+            	.attr("stroke", "black")
+                .attr("opacity", 0.2);
             
             // Size the minimap as appropriate
             svg.attr("width", width.call(this, data));
@@ -55,8 +64,13 @@ function Minimap() {
             // Zoom the minimap to the extent of the contents
             var curbbox = svg.select('.contents').node().getBBox();
             var bbox = { x: curbbox.x - 50, y: curbbox.y - 50, width: curbbox.width + 100, height: curbbox.height + 100 };
-            svg.select(".minimap").attr("viewBox", bbox.x + " " + bbox.y + " " + bbox.width + " " + bbox.height);
-            contents.select(".viewfinder").attr("x", bbox.x).attr("y", bbox.y).attr("width", bbox.width).attr("height", bbox.height);
+            svg.select(".minimap")
+            	.attr("viewBox", bbox.x + " " + bbox.y + " " + bbox.width + " " + bbox.height);
+            contents.select(".viewfinder")
+            	.attr("x", bbox.x)
+            	.attr("y", bbox.y)
+            	.attr("width", bbox.width)
+            	.attr("height", bbox.height);
         });
     }
     

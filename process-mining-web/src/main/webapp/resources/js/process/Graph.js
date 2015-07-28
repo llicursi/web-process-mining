@@ -127,6 +127,7 @@ Node.prototype.draw = function(d3D){
         text.attr("x", -text_bbox.width/2).attr("y", -text_bbox.height/2);
 	} else if (this.type == Node.types.end || this.type == Node.types.start){
 		var text = d3D.select('text');
+			text.remove();
 		var rect = d3D.select('rect');
 		var node_bbox = {"height": 40, "width": 40};
         rect.attr("x", -node_bbox.width/2)
@@ -134,7 +135,8 @@ Node.prototype.draw = function(d3D){
         	.attr("width", node_bbox.width)
         	.attr("height", node_bbox.height)
         	.attr("rx", 20)
-        	.attr("ry", 20);
+        	.attr("ry", 20)
+        	.classed("node-"+ this.type.toLowerCase().replace("_", "-"), true);
 	}
 };
 
@@ -145,11 +147,13 @@ Node.types = {
 	
 };
 
-var Graph = function() {
+var Graph = function(importedData) {
     // Default values for internal variables
     this.nodelist = [];
     this.nodes = {};
     this.edges = [];
+    this._importedData = importedData;
+
 };
 
 Graph.prototype.addNode = function(node) {
@@ -170,6 +174,41 @@ Graph.prototype.getVisibleNodes = function() {
     	return node.visible(); 
     });
 };
+
+Graph.prototype.getColorByDelay = function (ref, interval){
+
+	var maiores = [1.4, 1.96, 2.744, 3.8416];
+	var menores = [0.7, 0.49, 0.343, 0.2401];
+	
+	var criteria = interval/this.edges[ref].avgTime;
+	var index = 4;
+	if (criteria <= 1){
+		for (var i = menores.length-1, f=8; i >= 0; i--, f--){
+			if (criteria < menores[i]){
+				console.log(menores[i] + f);
+				index = f;
+				break;
+			}
+		}
+	} else {
+		for (var i = maiores.length-1, f=3; i >= 0; i--, f--){
+			if (criteria > maiores[i]){
+				index = f;
+				break;
+			}
+		}
+	}
+	if (index > 8 || index < 0){
+		debugger;
+	}
+	var colors = {
+		fill : colorbrewer.RdYlGn[9][index],
+		stroke : colorbrewer.YlGn[9][index]
+	};
+	
+	return colors;
+	
+}
 
 Graph.prototype.updateEdges = function(d3Paths){
 	var edges = {};
@@ -264,10 +303,13 @@ function computePathIntervals(data){
 	for (var i = 0; i < data.paths.length; i++){
 		var path = data.paths[i];
 		var points = path.points;
+
+		path.dxSignal = (points.x1 < points.x0 ? -1 : 1);
 		path.dx = (points.x1 - points.x0) * (points.x1 < points.x0 ? -1 : 1);
 		propx += (dx == 0 ? dx : path.dx/dx);
 		path.deltaX = propx.toFixed(2);
 		
+		path.dySignal = (points.y1 < points.y0 ? -1 : 1);
 		path.dy = (points.y1 - points.y0) * (points.y1 < points.y0 ? -1 : 1);
 		propy += (dy == 0 ? dy : path.dy/dy);
 		path.deltaY = propy.toFixed(2);
@@ -306,12 +348,18 @@ Graph.prototype.getVisibleLinks = function() {
     
     var nodes = this.nodes;
     var ret = [];
+    var arcs = this._importedData.arcs;
     var visible_nodes = this.getVisibleNodes();
     for (var i = 0; i < visible_nodes.length; i++) {
         var node = visible_nodes[i];
         var parentids = visible_parent_map[node.id];
         Object.keys(parentids).forEach(function(pid) {
-            ret.push({ref: getRef(nodes[pid],node) ,source: nodes[pid], target: node, label :  getRef(nodes[pid],node)});
+        	var ref = getRef(nodes[pid],node);
+        
+        	var arc = arcs[ref];
+        	
+        	
+            ret.push(constructEdge(ref, nodes[pid], node, arc));
         });
     }
     this.edges = ret;
@@ -321,6 +369,45 @@ Graph.prototype.getVisibleLinks = function() {
 /*
  * The functions below are just simple utility functions
  */
+
+function constructEdge(ref, nodeStart, nodeEnd, arc){
+	var avgTime = parseInt((arc.sumTime/ arc.count).toFixed(0));
+	var edgeN =	{
+		ref: ref ,
+		source: nodeStart, 
+		target: nodeEnd, 
+		label : ref, 
+		count : arc.count,
+		avgTime : avgTime,
+	};
+
+	if (arc.dependencyMeasure != null){
+		edgeN.dependencyMeasure = arc.dependencyMeasure;
+		edgeN.strokeWidth = getEdgeStroke(arc.dependencyMeasure);
+	}
+	
+	return edgeN;
+}
+
+
+function getEdgeStroke(dependencyMeasure){
+	var d = parseFloat(dependencyMeasure);
+	if (d < 0.55){
+		return 1;
+	} else if (d < 0.70){
+		return 1.5;
+	} else if (d < 0.76){
+		return 2.0;
+	} else if (d < 0.80){
+		return 3;
+	} else if (d < 0.85){
+		return 4;
+	} else if (d < 0.89){
+		return 5;
+	} else {
+		return 6;
+	}
+}
 
 function getNodesBetween(a, b) {
     // Returns a list containing all the nodes between a and b, including a and b

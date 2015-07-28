@@ -6,14 +6,16 @@
   <body>
   
     <div th:fragment="process-menu" >
-      	<div class="nav"><a href="#content">Ir para conteudo</a> 	</div>
-    	<div th:class="'nav fixed ' + ${isHome == true ? 'home' : ''}">
-  			<div class="nav-title">Web Process <br/><span>Miner</span></div>
-			
-			<a th:class="'nav-button ' + ${active == 1 ? 'active' : ''}" href="#">Adjust Data</a>
-			<a th:class="'nav-button ' + ${active == 2 ? 'active' : ''}" href="#">Analyse Process</a>
-			<a th:class="'nav-button ' + ${active == 3 ? 'active' : ''}" href="#">Estatistic</a>
-			
+    	<div class="head-nav">
+	      	<div class="nav"><a href="#content">Ir para conteudo</a> 	</div>
+	    	<div th:class="'nav fixed ' + ${isHome == true ? 'home' : ''}">
+	  			<div class="nav-title">Web Process <br/><span>Miner</span></div>
+				
+				<a th:class="'nav-button ' + ${active == 1 ? 'active' : ''}" href="#">Adjust Data</a>
+				<a th:class="'nav-button ' + ${active == 2 ? 'active' : ''}" href="#">Analyse Process</a>
+				<a th:class="'nav-button ' + ${active == 3 ? 'active' : ''}" href="#">Estatistic</a>
+				
+			</div>
 		</div>
     </div>
   

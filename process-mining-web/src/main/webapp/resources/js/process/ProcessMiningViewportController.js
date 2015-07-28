@@ -1,16 +1,18 @@
 //lightweight is an optional argument that will try to draw the graph as fast as possible
-XTraceDAG = function (attachPoint, data) {
+ProcessMiningViewportController = function (attachPoint, data) {
 	var _self = this;
-	var DAG,DAGMinimap,/*DAGHistory,DAGContextMenu,*/DAGTooltip;
+	var DAG,DAGMinimap,DAGTooltip, DAGAnimationBar; /*DAGHistory,DAGContextMenu,*/
 	var _graphDimensions = graphDimensions();
 	
 	// SVG elements
 	var _d3SVG = null, 
 		minimapSVG = null, 
-		rootSVG = null;
+		rootSVG = null,
+		_d3GraphG = null;
 	
 	var containerDOM = document.getElementById(attachPoint);
 	var lightweight = false;
+	var _status = "densidade";
 	var _graph = null, _data = data;
 
 	function init(){
@@ -28,8 +30,7 @@ XTraceDAG = function (attachPoint, data) {
 		
 		_d3SVG.node().oncontextmenu = function(d) { return false; };
 			
-		minimapSVG = rootSVG.append("svg")
-			.attr("class", "minimap-attach");
+		minimapSVG = d3.select("#minimap-container").append("svg").attr("class", "minimap-attach");
 		
 	//	listSVG = rootSVG.append("svg").attr("class", "history-attach");
 	
@@ -40,8 +41,10 @@ XTraceDAG = function (attachPoint, data) {
 	
 	//	Create the chart instances
 		DAG = DirectedAcyclicGraph().animate(!lightweight);
-		DAGMinimap = DirectedAcyclicGraphMinimap(DAG).width("19.5%").height("19.5%").x("80%").y("80%");
+		DAGMinimap = DirectedAcyclicGraphMinimap(DAG).width("85%").height("87%");
 		DAGTooltip = DirectedAcyclicGraphTooltip(undefined, ["name", "count", "type", "avgTime"]);
+		DAGAnimationBar = new DirectedAcyclicGraphAnimationBar(_graph);
+		DAGAnimationBar.build(rootSVG, _d3SVG);
 		
 	//	var DAGHistory = List().width("15%").height("99%").x("0.5%").y("0.5%");
 	//	var DAGContextMenu = DirectedAcyclicGraphContextMenu(_graph, _d3SVG);
@@ -184,7 +187,6 @@ XTraceDAG = function (attachPoint, data) {
 	function setupEvents(){
 		var nodes = _d3SVG.selectAll(".node");
 		var edges = _d3SVG.selectAll(".edge");
-//		var items = listSVG.selectAll(".item");
 
 //		Set up node selection events
 		var select = Selectable().getrange(function(a, b) {
@@ -204,8 +206,10 @@ XTraceDAG = function (attachPoint, data) {
 
 		if (!lightweight) {
 			nodes.on("mouseover", function(d) {
-				_d3SVG.classed("hovering", true);
-				highlightPath(d);
+				if (_status == "densidade"){
+					_d3SVG.classed("hovering", true);
+					highlightPath(d);
+				}
 			}).on("mouseout", function(d){
 				_d3SVG.classed("hovering", false);
 				edges.classed("hovered", false).classed("immediate", false);
@@ -289,173 +293,61 @@ XTraceDAG = function (attachPoint, data) {
 		console.log("draw complete, total time=", new Date().getTime() - begin);
 		
 		resetViewport();
-	};
-
-	function createPlayButton () {
 		
-		//	Add a play button
-		var playbutton = rootSVG.append("svg")
-			.attr("x", "10")
-			.attr("y", "5")
-			.append("text")
-			.attr("text-anchor", "left")
-			.append("tspan")
-			.attr("x", 0)
-			.attr("dy", "1em")
-			.text("Click To Play")
-			.on("click",function(d) {
-				animate();
-			});
-	
-		var animate = function() {
-			var startTime = new Date().getTime();
-	
-			//Find the min and max times
-			var max = 0;
-			var min = Infinity;
-			_d3SVG.selectAll(".node").each(function(d) {
-				var time = parseFloat(d.datum.avgTime);
-				if (time < min) {
-					min = time;
-				}
-				if (time > max) {
-					max = time;
-				}
-			});
-	
-			var playDuration = 10000;
-	
-			var update = function() {
-				var elapsed = new Date().getTime() - startTime;
-				var threshold = (elapsed * (max - min) / playDuration) + min;
-				_d3SVG.selectAll(".node").attr("display", function(d) {
-					d.animation_hiding = parseFloat(d.datum.avgTime) < threshold ? null : true;
-					return d.animation_hiding ? "none" : "";
-				});
-				_d3SVG.selectAll(".edge").attr("display", function(d) {
-					return (d.source.animation_hiding || d.target.animation_hiding) ? "none" : ""; 
-				});
-				if (elapsed < playDuration) {
-					window.setTimeout(update, 10);
-				}
-			};
-			update();
-	
-		};
-	}
-	 	
-	function bezierInterpolation( t, a, b, c, d) {
-		var mT = 1 - t;
-		var mT2 = mT * mT;
-		var mT3 = mT2 * mT;
-	    var t2 = t * t;
-	    var t3 = t2 * t;
-	    return mT3*(a) + 3*mT2*t*(b) + 3*mT*t2*(c) + t3*d; 
-	}
-	
-	function getPathFromEdge(edge, t){
-		var axis = edge.dx > edge.dy ? 'x' : 'y';
-		var dAxis = 'd' + axis;
-		var deltaTotal = edge[dAxis]; 
-		var sinal = (edge.paths.length > 1 && edge.paths[0].points[axis+"0"] > edge.paths[1].points[axis+"0"]) ? -1 : 1;
-		var i = 0;
-		var detalAcumulado = edge.paths[i][dAxis];
-		console.log("deltaAcumulado/deltaTotal = " + (detalAcumulado/deltaTotal) + " t = " + t);
-		while ((detalAcumulado/deltaTotal) < t){
-			i++;
-			detalAcumulado += edge.paths[i][dAxis];
-			console.log("deltaAcumulado/deltaTotal = " + (detalAcumulado/deltaTotal) + " t = " + t);
-		};
-		
-		var path = edge.paths[i];
-		console.log("Computed t :" + t);
-		var nt = (deltaTotal*t - sinal *( path.points[axis+"0"] - edge.paths[0].points[axis+"0"])) / path[dAxis];
-		console.log( "(Delta * t - (path.points[x0] - edge.paths[0].points[x0]) ) / path.dx");
-		console.log( "( "+ deltaTotal + " * " + t + " - " + sinal + "*(" + path.points[axis+"0"] + " - " + edge.paths[0].points[axis+"0"] +") ) / " + path[dAxis] +"");
-		console.log( "( "+ deltaTotal * t + " - (" + sinal *(path.points[axis+"0"] - edge.paths[0].points[axis+"0"]) +") ) / " + path[dAxis] +"");
-		console.log( "( "+ (deltaTotal*t - ( path.points[axis+"0"] - edge.paths[0].points[axis+"0"])) +" ) / " + path[dAxis] +"");
-		console.log("Computed nt :" + nt);
-		var result = {
-			path : path,
-			t : nt
-		};
-		
-		return result;
-	}
-	
-	function getPointAtPath(edge, t){
-		if (t < 0 || t > 1){
-			return null;
-		}
-		var result = getPathFromEdge(edge, t);
-		if (result.path.type == 'bezier'){
-			return getPointAtBezierCurve(result.path, result.t);
-		} else {
-			return getPointAtLine(result.path, result.t);
-		}
-	}
-	
-	function getPointAtBezierCurve(bezierCurve, t){
-		var point = {
-			x : bezierInterpolation(t, bezierCurve.points.x0, bezierCurve.points.dx0, bezierCurve.points.dx1, bezierCurve.points.x1),
-			y : bezierInterpolation(t, bezierCurve.points.y0, bezierCurve.points.dy0, bezierCurve.points.dy1, bezierCurve.points.y1)
-		};
-		return point;
-	}
-	
-	function getPointAtLine(line, t){
-		var xBigger = line.dx > line.dy;
-		var axis = xBigger ? 'x' : 'y';
-		var inverse = xBigger ? 'y' : 'x';
-		// Linear equation
-		var m = line["d" +inverse]/line["d" + axis];
-		var relative = line.points[axis+"0"] + line['d' + axis] * t;
-		var result = (relative - line.points[axis+"0"])*m + line.points[inverse+"0"];
-		var point = {};
-		
-		point[axis] = relative;
-		point[inverse] = result;
-
-		return point;
-	}
-	
-	this.computePointInsideEdge = function(index){
-		var edge = null;
-		var count = 0;
-		for (var name in _graph.edges){
-			if (count == index){
-				edge = _graph.edges[name];
-				break;
-			}
-			count++;
-		}
-		var _variance = 0.00;
-		var point = getPointAtPath(edge, _variance);
-		
-		var circle = _d3SVG.select(".graph").append("circle")
-			.attr("r", 5)
-			.attr("cx", point.x)
-			.attr("cy", point.y)
-			.attr("fill", "#A16D00");
-		
-		function animateTo100(variance){
-			point = getPointAtPath(edge, variance);
-			circle
-			 	.interrupt() // cancel the current transition
-			 	.transition()
-			 	.delay(310)
-				.attr("cx", point.x)
-				.attr("cy", point.y);
-				
-			if (variance < 1){
-				setTimeout(function (){
-					variance += 0.05;
-					animateTo100(parseFloat(variance.toFixed(2)));
-					
-				}, 300);
-			}
-		}
-		animateTo100(_variance);
+		_d3GraphG = _d3SVG.select("g.graph");
 	};
 	
+	var accordionEventChange = function(event, ui){
+		if (ui.newHeader[0].id == "h3Densidade"){
+			_d3GraphG.classed("density", true);
+		} else if (ui.newHeader[0].id == "h3Conformidade"){
+			_d3GraphG.classed("replay", true);
+			DAGAnimationBar.load("tuples/");
+			
+		}
+		
+		_status = ui.newHeader[0].id.replace("h3", "").toLowerCase();
+		
+		if (ui.oldHeader[0].id == "h3Densidade"){
+			_d3GraphG.classed("density", false);
+			DAGAnimationBar.computePointInsideEdge(0);
+		} else if (ui.oldHeader[0].id == "h3Conformidade"){
+			_d3GraphG.classed("replay", false);
+			DAGAnimationBar.hide();
+		}
+		
+	}
+
+	$('#doc-menus .nav-tabs a').on('shown.bs.tab', function (e) {
+		var targetElem = e.target;
+		var sourceElem = e.relatedTarget;
+		
+		var target = targetElem.hash.replace("Control", "").replace("#", "");
+		_d3GraphG.classed(target, true);
+		var source = sourceElem.hash.replace("Control", "").replace("#", "");
+		_d3GraphG.classed(source, false);
+		if (target == "animation"){
+			DAGAnimationBar.load("tuples/");
+		}
+		
+	});
 };
+
+var procMiningController;
+(function (){
+	
+	$.ajax({
+		 url:"data/" ,
+		 method: "POST",
+		 datatype: "json",
+		 success: function(data) {
+	        if (data.errors && data.errors.length) {
+	            alert('Data error(s):\n\n' + data.errors.join('\n'));
+	            return;
+	        }
+	        procMiningController = new ProcessMiningViewportController("graph", data);
+	    	procMiningController.draw();
+		 }
+	});
+	
+})();

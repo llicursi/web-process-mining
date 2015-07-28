@@ -24,7 +24,7 @@ function DirectedAcyclicGraph() {
         selection.each(function(data) {   
             // Select the g element that we draw to, or add it if it doesn't exist
             var svg = d3.select(this).selectAll("svg").data([data]);
-            svg.enter().append("svg").append("g").attr("class", "graph").classed("animate", animate);
+            svg.enter().append("svg").append("g").attr("class", "graph").classed("graph-main", animate);
             
             // Size the chart
             svg.attr("width", _width.call(this, data));
@@ -69,7 +69,10 @@ function DirectedAcyclicGraph() {
             }
             
             new_nodes.each(newnodetransition);
-            new_edges.attr("d", graph.splineGenerator).classed("visible", true);
+            new_edges
+            	.attr("d", graph.splineGenerator)
+            	.classed("visible", true)
+            	.attr("stroke-width", function (d){return d.strokeWidth;});
             existing_nodes.classed("visible", true);
             window.setTimeout(function() {
                 new_edges.classed("entering", false);
@@ -78,8 +81,6 @@ function DirectedAcyclicGraph() {
         });
         
     }
-
-
     
     var drawnode = function(d) {
         // Attach the DOM elements
