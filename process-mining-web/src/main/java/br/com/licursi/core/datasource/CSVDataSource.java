@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import br.com.licursi.core.eventlog.business.EventLogEntity;
 import br.com.licursi.core.util.GenericUtil;
@@ -19,8 +20,6 @@ import com.mongodb.DBObject;
 public class CSVDataSource implements DataSource{
 	
 	private BufferedReader stream;
-	private boolean processFirstLine = true;
-	private List<String> headers;
 	
 
 	@Override
@@ -28,25 +27,43 @@ public class CSVDataSource implements DataSource{
 		stream = new BufferedReader(new InputStreamReader(input));
 	}
 	
-	public EventLogEntity getEventLog() throws IOException{
+	public List<EventLogEntity> getEventLog(UUID randomUUID) throws IOException{
 		
 		if (stream == null){
 			return null;
 		}
-	
-		EventLogEntity eventLog = new EventLogEntity();
+		
+		String uuid = randomUUID.toString();
 		
 		String readLine = stream.readLine();
-		headers = GenericUtil.formatKeyHeaders(header(readLine));
+		List<String> headers = GenericUtil.formatKeyHeaders(header(readLine));
+
+		long sizeHeaders = readLine.getBytes().length + 5* headers.size();
+		long sizeAccumulated = 0L;
 		
 		String nextLine = stream.readLine();
 		
 		List<DBObject> rawData = new ArrayList<DBObject>();
-		
+		List<EventLogEntity> eventLogs = new ArrayList<EventLogEntity>();
 		
 		while (nextLine != null){
 			
-			Map<String, String> map = processLine(nextLine);
+			// Loop stop
+			if (sizeAccumulated < 15000000){
+				EventLogEntity eventLog = new EventLogEntity();
+				eventLog.setUuid(uuid);
+				eventLog.setHeaders(headers);
+				eventLog.setRawData(rawData);
+				eventLogs.add(eventLog);
+				
+				// Reset loop variables
+				rawData = new ArrayList<DBObject>();
+				sizeAccumulated = 0L;
+			}
+			
+			sizeAccumulated += nextLine.getBytes().length + sizeHeaders;
+			
+			Map<String, String> map = processLine(nextLine, headers);
 			if (map != null){
 				DBObject rawInstance = new BasicDBObject(map);
 				rawData.add(rawInstance);
@@ -55,9 +72,14 @@ public class CSVDataSource implements DataSource{
 			nextLine =stream.readLine();
 			
 		}
-		eventLog.rawData = rawData;
-		eventLog.headers = this.headers;
-		return eventLog;
+		
+		EventLogEntity eventLog = new EventLogEntity();
+		eventLog.setUuid(uuid);
+		eventLog.setHeaders(headers);
+		eventLog.setRawData(rawData);
+		eventLogs.add(eventLog);
+		
+		return eventLogs;
 	}
 	
 
@@ -95,7 +117,7 @@ public class CSVDataSource implements DataSource{
 		//return FileDataSource.NO_HEADER;
 	}
 
-	private Map<String, String> processLine(String nextLine) {
+	private Map<String, String> processLine(String nextLine, List<String> headers) {
 		
 		String[] sline = nextLine.split(spliterLetter);
 		Map<String, String> line = new HashMap<String, String>();

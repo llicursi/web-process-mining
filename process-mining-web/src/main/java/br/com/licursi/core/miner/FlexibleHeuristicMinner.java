@@ -12,11 +12,11 @@ public class FlexibleHeuristicMinner {
 
 	private final static String ACTIVITIES = "activities";
 	
-	private String _id;
+	private String uuid;
 	private DependencyGraph dependencyGraph;
 	
-	public FlexibleHeuristicMinner(String id) {
-		this._id = id;
+	public FlexibleHeuristicMinner(String uuid) {
+		this.uuid = uuid;
 		this.dependencyGraph = new DependencyGraph();
 	}
 	
@@ -30,7 +30,7 @@ public class FlexibleHeuristicMinner {
 		System.out.println("========================================================");
 		dependencyGraph.printOcurrancyTable();
 		
-		ProcessEntity processEntity = dependencyGraph.getProcessedData(this._id);
+		ProcessEntity processEntity = dependencyGraph.getProcessedData(this.uuid);
 		
 		
 		return processEntity;
