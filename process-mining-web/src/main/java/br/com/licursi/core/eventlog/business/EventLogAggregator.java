@@ -84,10 +84,10 @@ public class EventLogAggregator {
 	 * @return
 	 */
 	
-	public List<DBObject> getActivitiesFromRowData(String id, Map<String, String> mVariables){
+	public List<DBObject> getActivitiesFromRowData(String uuid, Map<String, String> mVariables){
 		
 		List<DBObject> pipeline = new ArrayList<DBObject>();
-		pipeline.add(BasicDBObjectBuilder.start("$match",  BasicDBObjectBuilder.start("_id",new ObjectId(id)).get()).get());
+		pipeline.add(BasicDBObjectBuilder.start("$match",  BasicDBObjectBuilder.start("uuid", uuid).get()).get());
 		pipeline.add(BasicDBObjectBuilder.start("$unwind", "$rawData").get());
 		pipeline.add(BasicDBObjectBuilder.start("$sort",BasicDBObjectBuilder.start("ISODATE(rawData." + mVariables.get(VariablesEnum.END_TIME.toString()) + ")", 1).get()).get());
 		pipeline.add(BasicDBObjectBuilder.start("$project", BasicDBObjectBuilder
@@ -108,6 +108,8 @@ public class EventLogAggregator {
 		System.out.println("json: " + pipeline.toString());
 		
 		DBCollection collection = mongoTemplate.getCollection(COLLECTION);
+		
+		System.out.println(collection.aggregate(pipeline).toString());
 		Iterable<DBObject> results = collection.aggregate(pipeline).results();
 		
 		return Lists.newArrayList(results);

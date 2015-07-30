@@ -31,6 +31,7 @@ Dropzone.options.processDropzone = {
 
 		this.on("complete", function(file, xhr, formData){
 			var response = file.xhr.response;
+			debugger;
 			if (response == CONSTRAINTS.RESPONSE_ERROR_NONUNIQUE){
 				
 			} else if (response == CONSTRAINTS.RESPONSE_ERROR_AT_EVENTO_LOG) {

@@ -49,7 +49,7 @@ public class CSVDataSource implements DataSource{
 		while (nextLine != null){
 			
 			// Loop stop
-			if (sizeAccumulated < 15000000){
+			if (sizeAccumulated > 15000000){
 				EventLogEntity eventLog = new EventLogEntity();
 				eventLog.setUuid(uuid);
 				eventLog.setHeaders(headers);
