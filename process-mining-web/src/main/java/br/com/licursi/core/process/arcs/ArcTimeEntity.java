@@ -1,7 +1,8 @@
 package br.com.licursi.core.process.arcs;
 
+import br.com.licursi.core.mongo.MongoSizeable;
 
-public class ArcTimeEntity {
+public class ArcTimeEntity implements MongoSizeable {
 	
 	private Long start;
 	private Long end;
@@ -50,5 +51,27 @@ public class ArcTimeEntity {
 
 	public void setCost(Float cost) {
 		this.cost = cost;
+	}
+
+	@Override
+	public Long getSize() {
+		
+		Long size = 
+			6L + (start + "").length() +
+			4L + (end + "").length();
+		
+		if (this.ref != null){
+			size += 6L + this.ref.length();
+		}
+		
+		if (this.resource != null){
+			size += 11L + this.resource.length();
+		}
+		
+		if (this.cost != null){
+			size += 5L + this.cost.toString().length();
+		}
+		
+		return size;
 	}
 }

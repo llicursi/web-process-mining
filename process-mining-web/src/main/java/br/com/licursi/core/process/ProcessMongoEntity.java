@@ -18,27 +18,35 @@ public class ProcessMongoEntity {
 
 	@Id
 	private String id;
+	private String uuid;
 	private String name;
 	
 	private Map<String,ArcEntity> arcs;
 	private Map<String, ActivityEntity> activities;
 	private Map<String, BorderEventEntity> borderEvents;
-	private Map<String, TupleEntity> tuples;
 	private ProcessDetailsEntity details;
 	
 	public ProcessMongoEntity(){
 		this.details = new ProcessDetailsEntity();
 	}
 	
-	public ProcessMongoEntity(String id){
-		this.id = id;
-	};
+	public ProcessMongoEntity(String uuid){
+		this.uuid = uuid;
+	}
 	
-	public ProcessMongoEntity(String name, String id){
+	public ProcessMongoEntity(String name, String uuid){
+		this.uuid = uuid;
 		this.name = name;
-		this.id = id;	
-	};
+	}
 	
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
+	}
+
 	public Map<String,ArcEntity> getArcs() {
 		return arcs;
 	}
@@ -90,14 +98,6 @@ public class ProcessMongoEntity {
 	
 	public String toString() {
 		return toDBObject().toString();
-	}
-
-	public Map<String, TupleEntity> getTuples() {
-		return tuples;
-	}
-
-	public void setTuples(Map<String, TupleEntity> tuples) {
-		this.tuples = tuples;
 	}
 
 	public void setDetails(ProcessDetailsEntity processDetailEntity) {

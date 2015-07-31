@@ -1,6 +1,8 @@
 package br.com.licursi.core.process.activities;
 
-public class ActivitySimpleEntity {
+import br.com.licursi.core.mongo.MongoSizeable;
+
+public class ActivitySimpleEntity implements MongoSizeable {
 
 	private String uniqueLetter;
 	private String name;
@@ -30,5 +32,29 @@ public class ActivitySimpleEntity {
 	}
 	public void setResource(String resource) {
 		this.resource = resource;
+	}
+	@Override
+	public Long getSize() {
+		
+		Long size = 0L;
+		
+		if (this.uniqueLetter != null){
+			size += 16L + this.uniqueLetter.length() + 1;
+		}
+		
+		if (this.resource != null){
+			size += 11L + this.resource.length() + 1;
+		}
+		
+		if (this.endTime != null){
+			size += 7L + this.endTime.toString().length() + 1;
+		}
+		
+		if (this.name != null){
+			// name : "x"
+			size += 6L + this.name.length() + 1; 
+		}
+		
+		return size;
 	}
 }

@@ -3,6 +3,7 @@ package br.com.licursi.core.process.tuples;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.com.licursi.core.mongo.MongoSizeable;
 import br.com.licursi.core.process.activities.ActivitySimpleEntity;
 import br.com.licursi.core.process.arcs.ArcTimeEntity;
 
@@ -12,7 +13,7 @@ import br.com.licursi.core.process.arcs.ArcTimeEntity;
  * @author Lucas Licursi
  *
  */
-public class TupleEntity {
+public class TupleEntity implements MongoSizeable{
 
 	private String caseId;
 	private Integer caseIndex;
@@ -105,6 +106,48 @@ public class TupleEntity {
 
 	public void setCaseIndex(Integer caseIndex) {
 		this.caseIndex = caseIndex;
+	}
+	
+	@Override
+	public Long getSize() {
+		
+		Long size = 0L;
+		
+		if (this.activities != null){
+			size += 13L;
+			for ( ActivitySimpleEntity activity : this.activities){
+				size += activity.getSize() + 1;
+			}
+		}
+		
+		if (this.arcTimes != null){
+			size += 11L;
+			for (ArcTimeEntity arc : this.arcTimes){
+				size += arc.getSize() + 1;
+			}
+		}
+		
+		if (this.caseId != null){
+			size += 8L + this.caseId.length() + 1;
+		}
+		
+		if (this.end != null){
+			size += 3L + this.end.toString().length() + 1;
+		}
+
+		if (this.start != null){
+			size += 5L + this.start.toString().length() + 1;
+		}
+
+		if (this.caseIndex != null){
+			size += 9L + this.caseIndex.toString().length() + 1;
+		}
+
+		if (this.tuple != null){
+			size += 7L + this.tuple.length() + 1; 
+		}
+		
+		return size;
 	}
 	
 }
