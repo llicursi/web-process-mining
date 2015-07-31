@@ -3,7 +3,7 @@ package br.com.licursi.core.miner;
 import java.util.List;
 
 import br.com.licursi.core.miner.exceptions.InvalidDateException;
-import br.com.licursi.core.process.ProcessEntity;
+import br.com.licursi.core.process.ProcessMongoEntity;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.DBObject;
@@ -20,7 +20,7 @@ public class FlexibleHeuristicMinner {
 		this.dependencyGraph = new DependencyGraph();
 	}
 	
-	public ProcessEntity process(List<DBObject> mappedData){
+	public ProcessMongoEntity process(List<DBObject> mappedData){
 		
 		// Process Tuple per Tuple
 		for (DBObject instance : mappedData){
@@ -30,7 +30,7 @@ public class FlexibleHeuristicMinner {
 		System.out.println("========================================================");
 		dependencyGraph.printOcurrancyTable();
 		
-		ProcessEntity processEntity = dependencyGraph.getProcessedData(this.uuid);
+		ProcessMongoEntity processEntity = dependencyGraph.getProcessedData(this.uuid);
 		
 		
 		return processEntity;

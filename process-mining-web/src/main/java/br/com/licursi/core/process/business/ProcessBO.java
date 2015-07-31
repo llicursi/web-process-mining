@@ -1,4 +1,4 @@
-package br.com.licursi.core.process;
+package br.com.licursi.core.process.business;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

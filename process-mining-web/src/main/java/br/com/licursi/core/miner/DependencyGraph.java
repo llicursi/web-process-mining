@@ -12,15 +12,16 @@ import org.joda.time.format.DateTimeFormatter;
 
 import br.com.licursi.core.miner.exceptions.InvalidDateException;
 import br.com.licursi.core.miner.exceptions.ParseTimeException;
-import br.com.licursi.core.process.ActivityEntity;
-import br.com.licursi.core.process.ActivitySimpleEntity;
-import br.com.licursi.core.process.ActivityType;
-import br.com.licursi.core.process.ArcEntity;
-import br.com.licursi.core.process.BorderEventEntity;
-import br.com.licursi.core.process.BorderEventType;
 import br.com.licursi.core.process.ProcessDetailsEntity;
-import br.com.licursi.core.process.ProcessEntity;
-import br.com.licursi.core.process.TupleEntity;
+import br.com.licursi.core.process.ProcessMongoEntity;
+import br.com.licursi.core.process.activities.ActivityEntity;
+import br.com.licursi.core.process.activities.ActivitySimpleEntity;
+import br.com.licursi.core.process.activities.ActivityType;
+import br.com.licursi.core.process.arcs.ArcEntity;
+import br.com.licursi.core.process.events.BorderEventEntity;
+import br.com.licursi.core.process.events.BorderEventType;
+import br.com.licursi.core.process.tuples.TupleEntity;
+import br.com.licursi.core.process.tuples.TuplesMongoEntity;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -398,7 +399,7 @@ public class DependencyGraph {
 		
 	}
 	
-	public ProcessEntity getProcessedData(String id){
+	public ProcessMongoEntity getProcessedData(String id){
 		long startProcessing = System.currentTimeMillis();
 		ProcessDetailsEntity processDetailEntity = getDetails();
 		
@@ -406,7 +407,7 @@ public class DependencyGraph {
 		long lComputeDependencyMeasure = computeDependencyMeasure();
 		long lComputeArcsTimes = computeArcsTimes(processDetailEntity.getAverageTime());
 		
-		ProcessEntity processEntity = new ProcessEntity(id);
+		ProcessMongoEntity processEntity = new ProcessMongoEntity(id);
 		
 		processEntity.setBorderEvents(this.getBorderEvents());
 		processEntity.setActivities(this.getActivities());
@@ -420,13 +421,17 @@ public class DependencyGraph {
 		System.out.println("= Tempo processando :                       ");
 		System.out.println("= Paralelismo.......: "+ lComputeParalellism + " ms (" + (Math.floor((lComputeParalellism/totalProcessing)*10000)/100) + " %)");
 		System.out.println("= Dependencia.......: "+ lComputeDependencyMeasure + " ms (" + (Math.floor((lComputeDependencyMeasure/totalProcessing)*10000)/100) + " %)");
-		System.out.println("= Tempo dos arcos...: "+ lComputeArcsTimes + " ms (" + (Math.floor((lComputeArcsTimes/totalProcessing)*10000)/100) + " %)");
 		System.out.println("= ");
 		System.out.println("= Total.......: "+ totalProcessing + " ms (" + (Math.floor((lComputeParalellism/totalProcessing)*10000)/100) + " %)");
 		
 		return processEntity;
 	}
-
+	
+	public List<TuplesMongoEntity> getTuples(){
+		
+		
+		return null;
+	}
 	
 	
 	private ProcessDetailsEntity getDetails() {

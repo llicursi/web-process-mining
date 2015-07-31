@@ -1,4 +1,4 @@
-package br.com.licursi.core.process;
+package br.com.licursi.core.process.arcs;
 
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBObject;

@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import br.com.licursi.core.process.ProcessBO;
 import br.com.licursi.core.process.ProcessRepository;
+import br.com.licursi.core.process.business.ProcessBO;
 
 @Controller
 @RequestMapping("/process")

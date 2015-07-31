@@ -1,4 +1,4 @@
-package br.com.licursi.core.process;
+package br.com.licursi.core.process.activities;
 
 public class ExecutorsCountEntity {
 

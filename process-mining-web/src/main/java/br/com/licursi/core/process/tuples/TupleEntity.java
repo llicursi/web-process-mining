@@ -1,7 +1,10 @@
-package br.com.licursi.core.process;
+package br.com.licursi.core.process.tuples;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import br.com.licursi.core.process.activities.ActivitySimpleEntity;
+import br.com.licursi.core.process.arcs.ArcTimeEntity;
 
 
 /**

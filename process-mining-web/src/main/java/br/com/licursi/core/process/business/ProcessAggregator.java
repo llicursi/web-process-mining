@@ -1,4 +1,4 @@
-package br.com.licursi.core.process;
+package br.com.licursi.core.process.business;
 
 import java.util.ArrayList;
 import java.util.Iterator;

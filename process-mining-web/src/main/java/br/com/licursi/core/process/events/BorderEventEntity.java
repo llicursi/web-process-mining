@@ -1,4 +1,4 @@
-package br.com.licursi.core.process;
+package br.com.licursi.core.process.events;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -8,8 +8,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBObject;
 
+import br.com.licursi.core.process.activities.ActivityEntity;
+import br.com.licursi.core.process.arcs.ArcEntity;
+import br.com.licursi.core.process.events.BorderEventEntity;
+import br.com.licursi.core.process.tuples.TupleEntity;
+
 @Document(collection="process")
-public class ProcessEntity {
+public class ProcessMongoEntity {
 
 	@Id
 	private String id;
@@ -21,15 +26,15 @@ public class ProcessEntity {
 	private Map<String, TupleEntity> tuples;
 	private ProcessDetailsEntity details;
 	
-	public ProcessEntity(){
+	public ProcessMongoEntity(){
 		this.details = new ProcessDetailsEntity();
 	}
 	
-	public ProcessEntity(String id){
+	public ProcessMongoEntity(String id){
 		this.id = id;
 	};
 	
-	public ProcessEntity(String name, String id){
+	public ProcessMongoEntity(String name, String id){
 		this.name = name;
 		this.id = id;	
 	};
