@@ -7,4 +7,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 public interface ProcessRepository extends MongoRepository<ProcessMongoEntity, String>{
 	
 	List<ProcessMongoEntity> findAllById(String id);
+	
+	List<ProcessMongoEntity> findAllByUuid(String uuid);
 }

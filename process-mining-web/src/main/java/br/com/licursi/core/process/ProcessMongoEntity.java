@@ -10,8 +10,8 @@ import com.mongodb.DBObject;
 
 import br.com.licursi.core.process.activities.ActivityEntity;
 import br.com.licursi.core.process.arcs.ArcEntity;
+import br.com.licursi.core.process.cases.CaseEntity;
 import br.com.licursi.core.process.events.BorderEventEntity;
-import br.com.licursi.core.process.tuples.TupleEntity;
 
 @Document(collection="process")
 public class ProcessMongoEntity {

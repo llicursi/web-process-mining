@@ -1,14 +1,14 @@
-package br.com.licursi.core.process.tuples;
+package br.com.licursi.core.process.cases;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TuplesMongoEntity {
+public class CaseMongoEntity {
 	
 	private List<Long> startingTimes;
 	private List<Long> endingTimes;
-	private Map<String, TupleEntity> tuples;
+	private Map<String, CaseEntity> tuples;
 	private String uuid;
 	
 	public String getUuid() {
@@ -19,11 +19,11 @@ public class TuplesMongoEntity {
 		this.uuid = uuid;
 	}
 
-	public Map<String, TupleEntity> getTuples() {
+	public Map<String, CaseEntity> getTuples() {
 		return tuples;
 	}
 
-	public void setTuples(Map<String, TupleEntity> tuples) {
+	public void setTuples(Map<String, CaseEntity> tuples) {
 		this.tuples = tuples;
 	}
 
@@ -43,9 +43,9 @@ public class TuplesMongoEntity {
 		this.endingTimes = endingTimes;
 	}
 	
-	public void putTuple(String key, TupleEntity value){
+	public void putTuple(String key, CaseEntity value){
 		if (tuples == null){
-			tuples = new HashMap<String, TupleEntity>();
+			tuples = new HashMap<String, CaseEntity>();
 		}
 		tuples.put(key, value);
 	}

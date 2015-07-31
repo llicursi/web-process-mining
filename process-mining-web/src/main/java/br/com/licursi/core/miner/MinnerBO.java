@@ -7,8 +7,10 @@ import org.springframework.stereotype.Component;
 
 import com.mongodb.DBObject;
 
+import br.com.licursi.core.process.ProcessAndCases;
 import br.com.licursi.core.process.ProcessMongoEntity;
 import br.com.licursi.core.process.ProcessRepository;
+import br.com.licursi.core.process.cases.CaseMongoEntity;
 
 @Component
 public class MinnerBO { 
@@ -20,8 +22,10 @@ public class MinnerBO {
 		
 		try {
 			FlexibleHeuristicMinner minner = new FlexibleHeuristicMinner(processId);
-			ProcessMongoEntity process = minner.process(mappedRawData);
+			ProcessAndCases processAndCases = minner.process(mappedRawData);
 			
+			ProcessMongoEntity process = processAndCases.getProcessEntity(); 
+			List<CaseMongoEntity> cases = processAndCases.getCases();
 			processRepository.save(process);
 			
 			return true;

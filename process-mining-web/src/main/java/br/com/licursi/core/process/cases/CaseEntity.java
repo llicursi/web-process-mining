@@ -1,4 +1,4 @@
-package br.com.licursi.core.process.tuples;
+package br.com.licursi.core.process.cases;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import br.com.licursi.core.process.arcs.ArcTimeEntity;
  * @author Lucas Licursi
  *
  */
-public class TupleEntity implements MongoSizeable{
+public class CaseEntity implements MongoSizeable{
 
 	private String caseId;
 	private Integer caseIndex;
@@ -23,7 +23,7 @@ public class TupleEntity implements MongoSizeable{
 	private List<ActivitySimpleEntity> activities;
 	private List<ArcTimeEntity> arcTimes;
 	
-	public TupleEntity(){
+	public CaseEntity(){
 		activities = new ArrayList<ActivitySimpleEntity>();
 		arcTimes = new ArrayList<ArcTimeEntity>();
 	}

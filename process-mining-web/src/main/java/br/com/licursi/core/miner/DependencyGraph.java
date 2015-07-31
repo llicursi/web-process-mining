@@ -18,10 +18,10 @@ import br.com.licursi.core.process.activities.ActivityEntity;
 import br.com.licursi.core.process.activities.ActivitySimpleEntity;
 import br.com.licursi.core.process.activities.ActivityType;
 import br.com.licursi.core.process.arcs.ArcEntity;
+import br.com.licursi.core.process.cases.CaseEntity;
+import br.com.licursi.core.process.cases.CaseMongoEntity;
 import br.com.licursi.core.process.events.BorderEventEntity;
 import br.com.licursi.core.process.events.BorderEventType;
-import br.com.licursi.core.process.tuples.TupleEntity;
-import br.com.licursi.core.process.tuples.TuplesMongoEntity;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -42,11 +42,11 @@ public class DependencyGraph {
 	private Map<String, List<ArcEntity>> arcsEndedWith = null;
 	
 	private Map<String, Integer> tupleOcurrency = null;
-	private Map<String, TupleEntity> caseMap = null;
+	private Map<String, CaseEntity> caseMap = null;
 	
 
 	private ActivityEntity lastActivity = null;
-	private TupleEntity currentCase = null;
+	private CaseEntity currentCase = null;
 	private long lastActivityEndTime = 0L;
 	private long firstActivityEndTime = 0L;
 	private long caseTimeCounter = 0L;
@@ -58,7 +58,7 @@ public class DependencyGraph {
 		this.tupleOcurrency = new HashMap<String, Integer>();
 		this.activityMap = new HashMap<String, ActivityEntity>();
 		this.borderEventMap = new HashMap<String, BorderEventEntity>();
-		this.caseMap = new HashMap<String, TupleEntity>();
+		this.caseMap = new HashMap<String, CaseEntity>();
 	}
 
 	public void start(String caseId){
@@ -68,7 +68,7 @@ public class DependencyGraph {
 	
 	public void start(){
 		this.lastActivity = null;
-		this.currentCase = new TupleEntity();
+		this.currentCase = new CaseEntity();
 		this.textTuple = "";
 		this.lastActivityEndTime = 0L;
 		this.firstActivityEndTime = 0L;
@@ -425,7 +425,7 @@ public class DependencyGraph {
 		return processEntity;
 	}
 	
-	public List<TuplesMongoEntity> getCasesWithTimeProcessed(ProcessMongoEntity processEntity){
+	public List<CaseMongoEntity> getCasesWithTimeProcessed(ProcessMongoEntity processEntity){
 		
 		Long avgCaseTimes = processEntity.getDetails().getAverageTime();
 		String uuid = processEntity.getUuid();
@@ -434,9 +434,9 @@ public class DependencyGraph {
 		long startTime = System.currentTimeMillis();
 		long avgCaseTimeOnePercent = (new Double(avgCaseTimes*0.01)).longValue(); 
 		
-		List<TuplesMongoEntity> tuplesToAdd = new ArrayList<TuplesMongoEntity>();
+		List<CaseMongoEntity> tuplesToAdd = new ArrayList<CaseMongoEntity>();
 		
-		TuplesMongoEntity currentCasesMongoEntity = new TuplesMongoEntity();
+		CaseMongoEntity currentCasesMongoEntity = new CaseMongoEntity();
 		List<Long> startTimes = new ArrayList<Long>();
 		List<Long> endTimes = new ArrayList<Long>();
 		
@@ -446,7 +446,7 @@ public class DependencyGraph {
 		
 		for (String key : caseMap.keySet()){
 			
-			TupleEntity tupleEntity = caseMap.get(key);
+			CaseEntity tupleEntity = caseMap.get(key);
 			
 			// Compute the initial arc, from the symbol representing the start to the 
 			Long startActivityTime = 0L;
@@ -506,7 +506,7 @@ public class DependencyGraph {
 				tuplesToAdd.add(currentCasesMongoEntity);
 				
 				// Restart
-				currentCasesMongoEntity = new TuplesMongoEntity();
+				currentCasesMongoEntity = new CaseMongoEntity();
 				startTimes = new ArrayList<Long>();
 				endTimes = new ArrayList<Long>();
 				
