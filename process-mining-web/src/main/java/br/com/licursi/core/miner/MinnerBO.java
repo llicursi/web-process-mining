@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.mongodb.DBObject;
 
+import br.com.licursi.core.process.CaseRepository;
 import br.com.licursi.core.process.ProcessAndCases;
 import br.com.licursi.core.process.ProcessMongoEntity;
 import br.com.licursi.core.process.ProcessRepository;
@@ -17,6 +18,10 @@ public class MinnerBO {
  
 	@Autowired
 	private ProcessRepository processRepository;
+	
+	@Autowired
+	private CaseRepository caseRepository;
+	
 	  
 	public Boolean mine(String processId, List<DBObject> mappedRawData){
 		
@@ -27,6 +32,7 @@ public class MinnerBO {
 			ProcessMongoEntity process = processAndCases.getProcessEntity(); 
 			List<CaseMongoEntity> cases = processAndCases.getCases();
 			processRepository.save(process);
+			caseRepository.save(cases);
 			
 			return true;
 		} catch (Exception e) {

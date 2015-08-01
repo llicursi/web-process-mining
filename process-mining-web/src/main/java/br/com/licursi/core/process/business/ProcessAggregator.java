@@ -25,11 +25,11 @@ public class ProcessAggregator {
 	@Autowired
 	private MongoTemplate mongoTemplate;
 	
-	public DBObject getProcessById(String id){
+	public DBObject getProcessById(String uuid){
 		//long startTime = System.currentTimeMillis();
 		List<DBObject> find = new ArrayList<DBObject>();
 		// Query condicions
-		DBObject where = BasicDBObjectBuilder.start("_id",new ObjectId(id)).get();
+		DBObject where = BasicDBObjectBuilder.start("uuid",uuid).get();
 		// Filter conditions
 		DBObject filter = BasicDBObjectBuilder
 				.start("arcs", 1)
@@ -46,11 +46,11 @@ public class ProcessAggregator {
 				
 	}
 	
-	public DBObject getProcessTuplesById(String id){
+	public DBObject getProcessCasesByUuid(String uuid){
 		//long startTime = System.currentTimeMillis();
 		List<DBObject> find = new ArrayList<DBObject>();
 		// Query condicions
-		DBObject where = BasicDBObjectBuilder.start("_id",new ObjectId(id)).get();
+		DBObject where = BasicDBObjectBuilder.start("uuid",uuid).get();
 		// Filter conditions
 		DBObject filter = BasicDBObjectBuilder
 				.start("tuples", 1)

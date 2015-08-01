@@ -518,6 +518,14 @@ public class DependencyGraph {
 			startTimes.add(startActivityTime);
 						
 		}
+		
+		currentCasesMongoEntity.setEndingTimes(endTimes);
+		currentCasesMongoEntity.setStartingTimes(startTimes);
+		currentCasesMongoEntity.setUuid(uuid);
+		tuplesToAdd.add(currentCasesMongoEntity);
+
+		
+		
 		long endTime = System.currentTimeMillis();
 		System.out.println("= Case Times....: " + (endTime - startTime) + " ms");
 		return tuplesToAdd;

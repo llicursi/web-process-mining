@@ -4,8 +4,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document(collection="cases")
 public class CaseMongoEntity {
 	
+	@Id
+	private String id;
 	private List<Long> startingTimes;
 	private List<Long> endingTimes;
 	private Map<String, CaseEntity> tuples;
@@ -48,6 +54,14 @@ public class CaseMongoEntity {
 			tuples = new HashMap<String, CaseEntity>();
 		}
 		tuples.put(key, value);
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 	
 }
