@@ -11,11 +11,13 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 		
 	};
 	
-	this.load = function(url, containerIdForButton){
+	this.load = function(_url, page){
 		if (_data == null){
-			if (url.indexOf("/") != (url.length - 1)){
+			var url = _url;
+			if (url.indexOf("/") != (url.length - 1)){ 
 				url = url + "/";
 			}
+			url += page + "/";
 			$.ajax({
 				 url: url ,
 				 method: "POST",
@@ -35,6 +37,10 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 			show();
 		}
 	} 
+	
+	function loadNextPages(url, page){
+		
+	}
 	
 	function show(){
 		_barSVG.transition().delay(200).attr("opacity", "1").attr("y", "94%");
@@ -174,7 +180,7 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 		};
 		_buttons.backward = document.getElementById("btn-backward");
 		_buttons.backward.onclick = function (event){
-			changeSpeed(1, event);
+			changeSpeed(-1, event);
 		};
 		_buttons.counter = document.getElementById("btn-counter");
 		
@@ -202,7 +208,8 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 			timeout : null, 
 			time : 0,
 			stop : true,
-			speed: 1
+			speed: 1,
+			speedIndex:0 
 		}
 	};
 	
@@ -262,6 +269,16 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 			changeButton();
 		}
 		
+	}
+	
+	var availablesSpeed = [0.25, 0.33, 0.5, 0.75, 1, 2, 3, 4, 5];
+	function changeSpeed(value){
+		var newValue = _acontrol.animation.speedIndex + value;
+		if (newValue > -5 && newValue < 5){
+			_acontrol.animation.speedIndex = newValue;
+			_acontrol.animation.speed = availablesSpeed[4 + newValue];
+			_buttons.counter.innerHTML = _acontrol.animation.speed + "x" 
+		}
 	}
 	
 	function stopAnimate(preventChange){

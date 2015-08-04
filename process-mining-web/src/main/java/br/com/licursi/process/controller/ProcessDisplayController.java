@@ -28,33 +28,33 @@ public class ProcessDisplayController {
   
 	@Autowired
 	private ProcessBO processBO;
-  
-	
 	
 	@RequestMapping("/")
 	public String index() {
 		return "/process/visualization";
 	}
 	
-	@RequestMapping(value={"/{processId}/"})
-	public String index(@PathVariable("processId") String processId) {
+	@RequestMapping(value={"/{uuid}/"})
+	public String index(@PathVariable("uuid") String uuid) {
 		return "/process/visualization";
 	}
 	
-	@RequestMapping(value={"/{processId}/data/"}, method=RequestMethod.POST,  produces=MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value={"/{uuid}/data/"}, method=RequestMethod.POST,  produces=MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public String dataJsonProcess(@PathVariable("processId") String processId) {
-//		List<ProcessEntity> findAllById = processRepository.findAllById(processId);
-//		return findAllById.get(0).toDBObject().toString();
-		return processBO.getProcessByObjectId(processId).toString();
+	public String dataJsonProcess(@PathVariable("uuid") String uuid) {
+		return processBO.getProcessByUuid(uuid).toString();
 	}
 	
-	@RequestMapping(value={"/{processId}/tuples/"}, method=RequestMethod.POST,  produces=MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value={"/{uuid}/cases/{page}/"}, method=RequestMethod.POST,  produces=MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public String dataJsonTuples(@PathVariable("processId") String processId) {
-//		List<ProcessEntity> findAllById = processRepository.findAllById(processId);
-//		return findAllById.get(0).toDBObject().toString();
-		return processBO.getProcessTuplesByObjectId(processId).toString();
+	public String dataJsonCases(@PathVariable("uuid") String uuid, @PathVariable("page") Integer page) {
+		return processBO.getProcessTuplesByObjectId(uuid, page);
+	}
+	
+	@RequestMapping(value={"/{uuid}/cases/"}, method=RequestMethod.POST,  produces=MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String dataJsonCases(@PathVariable("uuid") String uuid) {
+		return processBO.getProcessTuplesByObjectId(uuid, 0);
 	}
 	
 	@RequestMapping(value="/data/", method=RequestMethod.POST,  produces=MediaType.APPLICATION_JSON_VALUE)
@@ -94,12 +94,6 @@ public class ProcessDisplayController {
 		}
 
 		return jsonErrors.toString();
-	}
-	
-	@RequestMapping(value="/data/", method=RequestMethod.GET)
-	@ResponseBody
-	public String dataJson(){
-		return "{errors:{access: unavailable}}";
 	}
 	
 	

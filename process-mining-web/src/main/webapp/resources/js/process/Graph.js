@@ -251,6 +251,12 @@ Graph.prototype.updateEdges = function(d3Paths){
 				}
 			});
 		}
+		
+		var middlepoint = { 
+			x : paths[paths.length -1].points.x0,
+			y : paths[paths.length -1].points.y0
+		};
+		
 		var lastPart = dParts[dParts.length -1].split("L");
 		
 		// Recover the last CURVETOS
@@ -282,6 +288,7 @@ Graph.prototype.updateEdges = function(d3Paths){
 		});
 		
 		data.paths = paths; 
+		data.middle = middlepoint;
 		computePathIntervals(data);
 		edges[data.ref] = data;
 		
@@ -346,6 +353,7 @@ Graph.prototype.getVisibleLinks = function() {
         explore_node(this.nodelist[i]);
     }
     
+    
     var nodes = this.nodes;
     var ret = [];
     var arcs = this._importedData.arcs;
@@ -353,12 +361,10 @@ Graph.prototype.getVisibleLinks = function() {
     for (var i = 0; i < visible_nodes.length; i++) {
         var node = visible_nodes[i];
         var parentids = visible_parent_map[node.id];
+        // Bind the data to arc and compute Strength
         Object.keys(parentids).forEach(function(pid) {
         	var ref = getRef(nodes[pid],node);
-        
         	var arc = arcs[ref];
-        	
-        	
             ret.push(constructEdge(ref, nodes[pid], node, arc));
         });
     }
@@ -371,19 +377,32 @@ Graph.prototype.getVisibleLinks = function() {
  */
 
 function constructEdge(ref, nodeStart, nodeEnd, arc){
-	var avgTime = parseInt((arc.sumTime/ arc.count).toFixed(0));
 	var edgeN =	{
 		ref: ref ,
 		source: nodeStart, 
 		target: nodeEnd, 
 		label : ref, 
-		count : arc.count,
-		avgTime : avgTime,
 	};
-
-	if (arc.dependencyMeasure != null){
-		edgeN.dependencyMeasure = arc.dependencyMeasure;
-		edgeN.strokeWidth = getEdgeStroke(arc.dependencyMeasure);
+	
+	if (arc){
+	
+		edgeN.count = arc.count;
+		edgeN.avgTime = parseInt((arc.sumTime/ arc.count).toFixed(0));
+		
+		if (nodeStart.type == 'ACTIVITY' && nodeStart.datum.type == 'END'){
+			arc.count = nodeStart.datum.count;
+		} else if (nodeEnd.type == 'ACTIVITY' && nodeEnd.datum.type == 'START'){
+			arc.count = nodeEnd.datum.count;
+		}
+		
+		// Measure strength
+		var strength = (nodeStart.datum.count > 0 ) ? arc.count / nodeStart.datum.count : 0;
+		edgeN.strokeWidth = getEdgeStroke(strength);
+		
+	} else {
+		edgeN.count = nodeStart.datum.count;
+		edgeN.avgTime = 1;
+		edgeN.strokeWidth = 3;
 	}
 	
 	return edgeN;
@@ -392,20 +411,24 @@ function constructEdge(ref, nodeStart, nodeEnd, arc){
 
 function getEdgeStroke(dependencyMeasure){
 	var d = parseFloat(dependencyMeasure);
-	if (d < 0.55){
+	if (d > 0 && d <= 0.15){
 		return 1;
-	} else if (d < 0.70){
+	} else if (d > 0.15 && d <= 0.25){
 		return 1.5;
-	} else if (d < 0.76){
+	} else if (d > 0.25 && d <= 0.35){
 		return 2.0;
-	} else if (d < 0.80){
-		return 3;
-	} else if (d < 0.85){
+	} else if (d > 0.35 && d <= 0.45){
+		return 2.5;
+	} else if (d >= 0.55 && d < 0.65){
+		return 3.5;
+	} else if (d >= 0.65 && d < 0.75){
 		return 4;
-	} else if (d < 0.89){
+	} else if (d >= 0.75 && d < 0.85){
+		return 4.5;
+	} else if (d >= 0.85 && d < 1){
 		return 5;
 	} else {
-		return 6;
+		return 3;
 	}
 }
 

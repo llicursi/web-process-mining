@@ -90,7 +90,12 @@ public class ProcessMongoEntity {
 	public DBObject toDBObject(){
 		BasicDBObjectBuilder objeto = BasicDBObjectBuilder.start();
 		objeto.add("_id", this.id);
-		objeto.add("name", this.name);
+		if (this.name != null ){
+			objeto.add("name", this.name);
+		}
+		if (this.uuid != null ){
+			objeto.add("uuid", this.uuid);
+		}
 		objeto.add("activities", getActivitiesToDBObject());
 		objeto.add("arcs", getArcsToDBObject());
 		return objeto.get();
@@ -107,5 +112,5 @@ public class ProcessMongoEntity {
 	public ProcessDetailsEntity getDetails(){
 		return details;
 	}
-	
+
 }

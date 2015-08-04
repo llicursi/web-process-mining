@@ -26,6 +26,10 @@ var Selectable = function() {
                 lastSelected = lastSelected || d;
                 getrange.call(this, d, lastSelected).classed("selected", true);
             } else {
+            	selection.each(function (d) {
+            		d.binded.selected = false;
+            		d.binded.className = d.binded.className.replace("act-selected");
+            	});
                 if (selection.filter(".selected")[0].length==1) {
                     selection.classed("selected", false);
                     node.classed("selected", selected);
@@ -35,7 +39,10 @@ var Selectable = function() {
                     node.classed("selected", true);
                     lastSelected = d;
                 }
+                
             }
+            d.binded.selected = selected;
+            d3.select(d.binded).classed("act-selected", selected);
             onSelect();
         });
         
@@ -50,6 +57,10 @@ var Selectable = function() {
                 onSelect();
             }
         });
+    };
+    
+    select.fireOnSelect = function (){
+    	onSelect();
     };
 
     var getrange = function(a, b) { return [a, b]; };

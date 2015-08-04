@@ -159,11 +159,11 @@ var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
                 }
             }
 
-            addHideField("Agent");
-            addHideField("Host");
-            addHideField("Class");
-            addHideField("ProcessID");
-            addHideField("StateMachineID");
+//            addHideField("Agent");
+//            addHideField("Host");
+//            addHideField("Class");
+//            addHideField("ProcessID");
+//            addHideField("StateMachineID");
             
             if (!selection.filter(".selected").empty()) {   
                 items.push({

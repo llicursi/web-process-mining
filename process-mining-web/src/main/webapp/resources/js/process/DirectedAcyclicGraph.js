@@ -2,6 +2,7 @@ function DirectedAcyclicGraph() {
     
     var layout_count = 0;
     var animate = true;
+    var interpolationMethod = "basis"; 
 
     /*
      * Settable variables and functions
@@ -86,8 +87,8 @@ function DirectedAcyclicGraph() {
         // Attach the DOM elements
         var rect = d3.select(this).append("rect");
         var text = d3.select(this).append("text").attr("text-anchor", "middle").attr("x", 0);
-        text.append("tspan").attr("x", 0).attr("dy", "1em").text(d.datum.count);
-        text.append("tspan").attr("x", 0).attr("dy", "1.1em").text(d.datum.name);
+        //text.append("tspan").attr("x", 0).attr("dy", "1em").text(d.datum.count);
+        text.append("tspan").attr("y", -7.5).attr("x", 0).attr("dy", "1.1em").text(d.datum.name);
         var prior_pos = nodepos.call(this, d);
         if (prior_pos!=null) {
             d3.select(this).attr("transform", graph.nodeTranslate);
@@ -177,7 +178,7 @@ function DirectedAcyclicGraph() {
         return d3.svg.line()
         	.x(function(d) { return d.x; })
         	.y(function(d) { return d.y; })
-        	.interpolate("basis")(edgepos.call(this, d));
+        	.interpolate(interpolationMethod)(edgepos.call(this, d));
     };
     
     graph.edgeTween = function(d) {
@@ -197,7 +198,7 @@ function DirectedAcyclicGraph() {
             return d3.interpolate([p0.x, p0.y], [p1.x, p1.y]);
         });
 
-        var line = d3.svg.line().interpolate("basis");
+        var line = d3.svg.line().interpolate(interpolationMethod);
         
         return function(t) {
             return line(points.map(function(p) { return p(t); }));

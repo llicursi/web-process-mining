@@ -12,10 +12,10 @@ public class CaseMongoEntity {
 	
 	@Id
 	private String id;
+	private String uuid;
 	private List<Long> startingTimes;
 	private List<Long> endingTimes;
 	private Map<String, CaseEntity> tuples;
-	private String uuid;
 	
 	public String getUuid() {
 		return uuid;
@@ -48,13 +48,6 @@ public class CaseMongoEntity {
 	public void setEndingTimes(List<Long> endingTimes) {
 		this.endingTimes = endingTimes;
 	}
-	
-	public void putTuple(String key, CaseEntity value){
-		if (tuples == null){
-			tuples = new HashMap<String, CaseEntity>();
-		}
-		tuples.put(key, value);
-	}
 
 	public String getId() {
 		return id;
@@ -62,6 +55,13 @@ public class CaseMongoEntity {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+	
+	public void putTuple(String key, CaseEntity value){
+		if (tuples == null){
+			tuples = new HashMap<String, CaseEntity>();
+		}
+		tuples.put(key, value);
 	}
 	
 }

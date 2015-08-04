@@ -10,11 +10,10 @@ import com.mongodb.util.JSON;
 public class ProcessBO {
 
 	@Autowired
-	private ProcessAggregator eventLogAggregator;
+	private ProcessAggregator processAggregator;
 	
-	
-	public String getProcessByObjectId(String processID){
-		DBObject result = eventLogAggregator.getProcessById(processID);
+	public String getProcessByUuid(String processID){
+		DBObject result = processAggregator.getProcessById(processID);
 		long startTime = System.currentTimeMillis();
 		String serialized = (result != null) ? JSON.serialize(result) : "";
 				
@@ -24,9 +23,9 @@ public class ProcessBO {
 		return serialized;
 	}
 
-
-	public String getProcessTuplesByObjectId(String processID){
-		DBObject result = eventLogAggregator.getProcessTuplesById(processID);
+	public String getProcessTuplesByObjectId(String uuid, Integer page){
+		
+		DBObject result = processAggregator.getProcessCasesByUuid(uuid, page);
 		long startTime = System.currentTimeMillis();
 		String serialized = (result != null) ? JSON.serialize(result) : "";
 				

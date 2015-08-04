@@ -8,7 +8,7 @@ window.height = function() {
 	return document.body.clientHeight;
 };
 
-/*// http://stackoverflow.com/questions/523266/how-can-i-get-a-specific-parameter-from-location-search
+// http://stackoverflow.com/questions/523266/how-can-i-get-a-specific-parameter-from-location-search
 var getParameter = function(name) {
     name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
     var regexS = "[\\?&]"+name+"=([^&#]*)";
@@ -196,7 +196,7 @@ function getGCNodes(ids, callback, errback) {
 		getTags(ids.join(','), tagsReceivedCallback, errback);
 	};
 	getRelated(ids, relatedIDsReceivedCallback, errback);
-}*/
+}
 
 var sanitizeNodes = function(activities) {
     var i = 0;
@@ -214,7 +214,6 @@ var sanitizeNodes = function(activities) {
 };
 
 var createGraphFromNodes = function(data) {
-    
     // Create nodes
     console.info("Creating graph nodes");
     var nodes = {};
@@ -223,14 +222,24 @@ var createGraphFromNodes = function(data) {
         var id = nodeid;
         nodes[id] = new Node(id, Node.types.activity);
         nodes[id].datum = datum;
+        nodes[id].freq = datum.count/ data.details.totalCases;
     }
     
     for (var nodeid in data.borderEvents) {
         var datum = data.borderEvents[nodeid];
+        // Adjust the borderevents count based on the concurrent activities
+        if (datum.type == 'START'){
+        	datum.count = nodes[datum.next[0]].datum.count;
+        } else if (datum.type == 'END'){
+        	datum.count = nodes[datum.previous[0]].datum.count;
+        }
+
+        
         var id = nodeid;
         nodes[id] = new Node(id, (datum.type == 'START') ? Node.types.start : Node.types.end);
         nodes[id].datum = datum;
-        nodes[id].datum.uniqueLetter = nodes[id].datum.ref; 
+        nodes[id].datum.uniqueLetter = nodes[id].datum.ref;
+        
     }
     
     // Second link the nodes together

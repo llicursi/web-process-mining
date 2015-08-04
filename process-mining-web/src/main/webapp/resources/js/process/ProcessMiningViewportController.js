@@ -1,7 +1,7 @@
 //lightweight is an optional argument that will try to draw the graph as fast as possible
 ProcessMiningViewportController = function (attachPoint, data) {
 	var _self = this;
-	var DAG,DAGMinimap,DAGTooltip, DAGAnimationBar; /*DAGHistory,DAGContextMenu,*/
+	var DAG,DAGMinimap,DAGTooltip, DAGAnimationBar, DAGHistory,DAGContextMenu;
 	var _graphDimensions = graphDimensions();
 	
 	// SVG elements
@@ -13,7 +13,7 @@ ProcessMiningViewportController = function (attachPoint, data) {
 	var containerDOM = document.getElementById(attachPoint);
 	var lightweight = false;
 	var _status = "densidade";
-	var _graph = null, _data = data;
+	var _graph = null, _data = data, _history = null;
 
 	function init(){
 		
@@ -32,11 +32,10 @@ ProcessMiningViewportController = function (attachPoint, data) {
 			
 		minimapSVG = d3.select("#minimap-container").append("svg").attr("class", "minimap-attach");
 		
-	//	listSVG = rootSVG.append("svg").attr("class", "history-attach");
+		listSVG = rootSVG.append("svg").attr("class", "history-attach");
 	
 	//	Create the graph and history representations
 		_graph = createGraphFromNodes(_data);
-		//var history = DirectedAcyclicGraphHistory();
 		$(containerDOM.parentNode).css('visibility', 'visible');
 	
 	//	Create the chart instances
@@ -46,8 +45,7 @@ ProcessMiningViewportController = function (attachPoint, data) {
 		DAGAnimationBar = new DirectedAcyclicGraphAnimationBar(_graph);
 		DAGAnimationBar.build(rootSVG, _d3SVG);
 		
-	//	var DAGHistory = List().width("15%").height("99%").x("0.5%").y("0.5%");
-	//	var DAGContextMenu = DirectedAcyclicGraphContextMenu(_graph, _d3SVG);
+		DAGContextMenu = DirectedAcyclicGraphContextMenu(_graph, _d3SVG);
 	} init();
 	
 	
@@ -87,10 +85,10 @@ ProcessMiningViewportController = function (attachPoint, data) {
 		zoom.translate([tx, ty]).scale(scale);
 		refreshViewport();
 		
-			var start = (new Date()).getTime();
-			_graph.updateEdges(d3.select(".graph-attach").selectAll("path"));
-			var end = (new Date()).getTime();
-			console.log("Computing edges :  " + (end - start) + " ms");
+		var start = (new Date()).getTime();
+		_graph.updateEdges(d3.select(".graph-attach").selectAll("path"));
+		var end = (new Date()).getTime();
+		console.log("Computing edges :  " + (end - start) + " ms");
 	};
 	
 	function graphDimensions(){
@@ -117,65 +115,66 @@ ProcessMiningViewportController = function (attachPoint, data) {
 
 //	Attaches a context menu to any selected graph nodess
 	function attachContextMenus() {
-//		DAGContextMenu.call(_d3SVG.node(), _d3SVG.selectAll(".node"));
-//		DAGContextMenu.on("open", function() {
-////		DAGTooltip.hide();
-//		}).on("close", function() {
-//		if (!lightweight) {
-//		_d3SVG.selectAll(".node").classed("preview", false);
-//		_d3SVG.selectAll(".edge").classed("preview", false);
-//		}
-//		}).on("hidenodes", function(nodes, selectionname) {
-//		var item = history.addSelection(nodes, selectionname);
-//		if (!lightweight) _d3SVG.classed("hovering", false);
-//		listSVG.datum(history).call(DAGHistory);
+	    DAGContextMenu.call(_d3SVG.node(), _d3SVG.selectAll(".node"));
+	    DAGContextMenu.on("open", function() {
+	        DAGTooltip.hide();
+	    }).on("close", function() {
+	        if (!lightweight) {
+	            _d3SVG.selectAll(".node").classed("preview", false);
+	            _d3SVG.selectAll(".edge").classed("preview", false);
+	        }
+	    }).on("hidenodes", function(nodes, selectionname) {
+	        if (!lightweight) _d3SVG.classed("hovering", false);
+	        DAGHistory.hideNodes(nodes);
 
-////		Find the point to animate the hidden nodes to
-//		var bbox = DAGHistory.bbox().call(DAGHistory.select.call(listSVG.node(), item), item);
-//		var transform = zoom.getTransform(bbox);
-//		DAG.removenode(function(d) {
-//		if (lightweight) {
-//		d3.select(this).remove();
-//		} else {
-//		d3.select(this).classed("visible", false).transition().duration(800).attr("transform", transform).remove();
-//		}
-//		});
+	        // REmove the nodes from graph
+	        DAG.removenode(function(d) {
+	            if (lightweight) {
+	                d3.select(this).remove();
+	            } else {
+	                d3.select(this).classed("visible", false).transition().duration(800).remove();
+	            }
+	        });
 
-//		_self.draw();
-
-////		Refresh selected edges
-//		var selected = {};
-//		_d3SVG.selectAll(".node.selected").data().forEach(function(d) { selected[d.id]=true; });
-//		_d3SVG.selectAll(".edge").classed("selected", function(d) {
-//		return selected[d.source.id] && selected[d.target.id]; 
-//		});
-//		}).on("hovernodes", function(nodes) {
-//		if (!lightweight) {
-//		_d3SVG.selectAll(".node").classed("preview", function(d) {
-//		return nodes.indexOf(d)!=-1;
-//		})
-//		var previewed = {};
-//		_d3SVG.selectAll(".node.preview").data().forEach(function(d) { previewed[d.id]=true; });
-//		_d3SVG.selectAll(".edge").classed("preview", function(d) {
-//		return previewed[d.source.id] && previewed[d.target.id]; 
-//		});
-//		}
-//		}).on("selectnodes", function(nodes) {
-//		var selected = {};
-//		nodes.forEach(function(d) { selected[d.id]=true; });
-//		_d3SVG.selectAll(".node").classed("selected", function(d) {
-//		var selectme = selected[d.id];
-//		if (d3.event.ctrlKey) selectme = selectme || d3.select(this).classed("selected");
-//		return selectme;
-//		})
-//		_d3SVG.selectAll(".edge").classed("selected", function(d) {
-//		var selectme = selected[d.source.id] && selected[d.target.id];
-//		if (d3.event.ctrlKey) selectme = selectme || d3.select(this).classed("selected");
-//		return selectme;
-//		}); 
-//		attachContextMenus();
-		DAGTooltip.hide();
-//		});
+	        //		Refresh selected edges
+	        var selected = {};
+	        _d3SVG.selectAll(".node.selected").data().forEach(function(d) {
+	            selected[d.id] = true;
+	        });
+	        _d3SVG.selectAll(".edge").classed("selected", function(d) {
+	            return selected[d.source.id] && selected[d.target.id];
+	        });
+	    }).on("hovernodes", function(nodes) {
+	        if (!lightweight) {
+	            _d3SVG.selectAll(".node").classed("preview", function(d) {
+	                return nodes.indexOf(d) != -1;
+	            })
+	            var previewed = {};
+	            _d3SVG.selectAll(".node.preview").data().forEach(function(d) {
+	                previewed[d.id] = true;
+	            });
+	            _d3SVG.selectAll(".edge").classed("preview", function(d) {
+	                return previewed[d.source.id] && previewed[d.target.id];
+	            });
+	        }
+	    }).on("selectnodes", function(nodes) {
+	        var selected = {};
+	        nodes.forEach(function(d) {
+	            selected[d.id] = true;
+	        });
+	        _d3SVG.selectAll(".node").classed("selected", function(d) {
+	            var selectme = selected[d.id];
+	            if (d3.event.ctrlKey) selectme = selectme || d3.select(this).classed("selected");
+	            return selectme;
+	        })
+	        _d3SVG.selectAll(".edge").classed("selected", function(d) {
+	            var selectme = selected[d.source.id] && selected[d.target.id];
+	            if (d3.event.ctrlKey) selectme = selectme || d3.select(this).classed("selected");
+	            return selectme;
+	        });
+	        attachContextMenus();
+	        DAGTooltip.hide();
+	    });
 	}
 
 //	Detaches any bound context menus
@@ -187,22 +186,31 @@ ProcessMiningViewportController = function (attachPoint, data) {
 	function setupEvents(){
 		var nodes = _d3SVG.selectAll(".node");
 		var edges = _d3SVG.selectAll(".edge");
-
-//		Set up node selection events
-		var select = Selectable().getrange(function(a, b) {
-			var path = getNodesBetween(a, b).concat(getNodesBetween(b, a));
-			return nodes.data(path, DAG.nodeid());
-		}).on("select", function() {
-			var selected = {};
-			_d3SVG.selectAll(".node.selected").data().forEach(function(d) { selected[d.id]=true; });
-			edges.classed("selected", function(d) {
-				return selected[d.source.id] && selected[d.target.id]; 
+		if (DAGHistory == null){
+			DAGHistory = new DirectedAcyclicGraphHistory("activitiesControl", nodes);
+			DAGHistory.getRange(function(a, b) {
+				var path = getNodesBetween(a, b).concat(getNodesBetween(b, a));
+				return nodes.data(path, DAG.nodeid());
 			});
-//			attachContextMenus();
-			DAGTooltip.hide();
-		});
-		select(nodes);
-
+			
+			DAGHistory.onChange(function(insidenodes, e){
+		        _self.draw();
+			});
+			
+			DAGHistory.onSelect(function() {
+				var selected = {};
+				_d3SVG.selectAll(".node.selected").data().forEach(function(d) { selected[d.id]=true; });
+				edges.classed("selected", function(d) {
+					return selected[d.source.id] && selected[d.target.id]; 
+				});
+				DAGTooltip.hide();
+			});
+				
+		}
+		DAGHistory.select(nodes);
+		
+		attachContextMenus();
+		
 
 		if (!lightweight) {
 			nodes.on("mouseover", function(d) {
@@ -285,6 +293,7 @@ ProcessMiningViewportController = function (attachPoint, data) {
 		console.log("draw begin");
 		var begin = (new Date()).getTime();
 		_d3SVG.datum(_graph).call(DAG);// Draw a DAG at the graph attach
+		
 		minimapSVG.datum(_d3SVG.node()).call(DAGMinimap);// Draw a Minimap at the minimap attach
 		_d3SVG.selectAll(".node").call(DAGTooltip);// Attach tooltips
 		start = (new Date()).getTime();
@@ -297,26 +306,7 @@ ProcessMiningViewportController = function (attachPoint, data) {
 		_d3GraphG = _d3SVG.select("g.graph");
 	};
 	
-	var accordionEventChange = function(event, ui){
-		if (ui.newHeader[0].id == "h3Densidade"){
-			_d3GraphG.classed("density", true);
-		} else if (ui.newHeader[0].id == "h3Conformidade"){
-			_d3GraphG.classed("replay", true);
-			DAGAnimationBar.load("tuples/");
-			
-		}
-		
-		_status = ui.newHeader[0].id.replace("h3", "").toLowerCase();
-		
-		if (ui.oldHeader[0].id == "h3Densidade"){
-			_d3GraphG.classed("density", false);
-			DAGAnimationBar.computePointInsideEdge(0);
-		} else if (ui.oldHeader[0].id == "h3Conformidade"){
-			_d3GraphG.classed("replay", false);
-			DAGAnimationBar.hide();
-		}
-		
-	}
+	
 
 	$('#doc-menus .nav-tabs a').on('shown.bs.tab', function (e) {
 		var targetElem = e.target;
@@ -327,7 +317,7 @@ ProcessMiningViewportController = function (attachPoint, data) {
 		var source = sourceElem.hash.replace("Control", "").replace("#", "");
 		_d3GraphG.classed(source, false);
 		if (target == "animation"){
-			DAGAnimationBar.load("tuples/");
+			DAGAnimationBar.load("cases/", 0);
 		}
 		
 	});

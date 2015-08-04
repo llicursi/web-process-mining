@@ -4,6 +4,7 @@ html.lt-ie9, html.lt-ie9 body {
     height: 100px;
 }
 
+
 .unsupported-browser {
     height: 30px;
     line-height: 30px;
@@ -238,3 +239,85 @@ ul.list-activities li{
 	color: #444;
 }
 
+
+/* Activities */
+ul.act-list {
+    background: white;
+    padding: 0px;
+    list-style-type: none;
+}
+
+li.act-list-node {
+    border-bottom: 1px solid #EEE;
+    padding: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    -webkit-transition: background 300ms,  font-weight 300ms;
+    transition: background 300ms,  font-weight 300ms;
+}
+
+li.act-list-node.act-selected {
+    background-color: #BDD4FD;
+    color: black;
+    border-radius: 3px;
+    font-weight: bolder;
+    text-shadow: 1px 1px 1px white;
+}
+
+.act-icon {
+    width: 17px;
+    height: 17px;
+    float: left;
+    margin: 0px 5px 0px 0px;
+    background-color: #e0e0e4;
+    border: 1px solid #ccc;
+}
+
+.act-type-activity .act-icon {
+    background-color: #DAE3F4;
+}
+
+.act-type-end_event .act-icon {
+    background-color: #F7D89F;
+    border-color: #CF6A6A;
+    border-radius: 9px;
+}
+
+.act-type-start_event .act-icon {
+    background-color: #80D79C;      
+    border-color: #325C3F;      border-radius: 9px;
+}
+
+.act-list-node a.act-hide {
+    float: right;
+    color: #999;
+}
+
+.act-list-node a.act-hide span.glyphicon-eye-close, 
+.act-list-node a.act-hide span.glyphicon-eye-open{
+	display:none;
+}
+
+li.act-list-node:hover{
+	color: #5EB33B;
+    background-color: #E8FFD8;
+}
+
+li.act-list-node:hover span.glyphicon.glyphicon-eye-close {
+    display: block;
+}
+
+li.act-list-node.act-hide {
+    color: #ddd;
+}
+
+.act-list-node.act-hide .act-icon {
+    background-color: #eee;
+}
+
+.act-list-node.act-hide span.glyphicon.glyphicon-eye-open {
+    display: block;
+}
+li.act-list-node.act-hide:hover span.glyphicon.glyphicon-eye-close {
+    display: none;
+}

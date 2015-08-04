@@ -281,7 +281,6 @@ public class DependencyGraph {
 				borderEventEntity.addPrev(activityEntity.getName());
 	
 			}
-			arcEntity.increment();
 			arcsMap.put(arcRef, arcEntity);
 		}
 	}
@@ -430,7 +429,6 @@ public class DependencyGraph {
 		Long avgCaseTimes = processEntity.getDetails().getAverageTime();
 		String uuid = processEntity.getUuid();
 		
-		
 		long startTime = System.currentTimeMillis();
 		long avgCaseTimeOnePercent = (new Double(avgCaseTimes*0.01)).longValue(); 
 		
@@ -446,33 +444,33 @@ public class DependencyGraph {
 		
 		for (String key : caseMap.keySet()){
 			
-			CaseEntity tupleEntity = caseMap.get(key);
+			CaseEntity caseEntity = caseMap.get(key);
 			
 			// Compute the initial arc, from the symbol representing the start to the 
 			Long startActivityTime = 0L;
 			{
-				ActivitySimpleEntity activitySimpleEntity = tupleEntity.getActivities().get(0);
+				ActivitySimpleEntity activitySimpleEntity = caseEntity.getActivities().get(0);
 				List<ArcEntity> possibleArcs = getPossibleArcs(activitySimpleEntity.getUniqueLetter());
 				for (ArcEntity arc : possibleArcs){
 					if (arc.getSource().toUpperCase().contains("START")){
 						startActivityTime = activitySimpleEntity.getEndTime() - avgCaseTimeOnePercent;
-						tupleEntity.putArc(arc.getRef(),startActivityTime, activitySimpleEntity.getEndTime(), activitySimpleEntity.getResource(), 0f);
+						caseEntity.putArc(arc.getRef(),startActivityTime, activitySimpleEntity.getEndTime(), activitySimpleEntity.getResource(), 0f);
 						arcsMap.get(arc.getRef()).addTime(avgCaseTimeOnePercent);
-						tupleEntity.setStart(startActivityTime);
+						caseEntity.setStart(startActivityTime);
 					}
 				}
 			}
 		
 			// Recover the list of activities, avoiding the first one, 
 			// for the purpouse of calculating of arcs time
-			for (int i = 1 ; i < tupleEntity.getActivities().size(); i++){
-				ActivitySimpleEntity activitySimple = tupleEntity.getActivities().get(i);
+			for (int i = 1 ; i < caseEntity.getActivities().size(); i++){
+				ActivitySimpleEntity activitySimple = caseEntity.getActivities().get(i);
 				List<ArcEntity> possibleArcs = getPossibleArcs(activitySimple.getUniqueLetter());
 				
 				for (ArcEntity arc : possibleArcs){
-					ActivitySimpleEntity activity = getValidaArcStartActivity(arc, i, tupleEntity.getActivities()); 
+					ActivitySimpleEntity activity = getValidaArcStartActivity(arc, i, caseEntity.getActivities()); 
 					if (activity != null){
-						tupleEntity.putArc(arc.getRef(), activity.getEndTime(), activitySimple.getEndTime(), activitySimple.getResource(), 0f);
+						caseEntity.putArc(arc.getRef(), activity.getEndTime(), activitySimple.getEndTime(), activitySimple.getResource(), 0f);
 						Long arcDuration = (activitySimple.getEndTime() -  activity.getEndTime());
 						arcsMap.get(arc.getRef()).addTime(arcDuration);
 					}
@@ -482,22 +480,22 @@ public class DependencyGraph {
 			// Compute the last Activity to the borderEvent, using 1% of average time. 
 			Long endActivityTime = 0L;
 			{
-				ActivitySimpleEntity lastActivity = tupleEntity.getActivities().get(tupleEntity.getActivities().size()-1);
+				ActivitySimpleEntity lastActivity = caseEntity.getActivities().get(caseEntity.getActivities().size()-1);
 				for (BorderEventEntity border : borderEventMap.values()){
 					if (border.getType().equals(BorderEventType.END.toString())){
 						String ref = lastActivity.getUniqueLetter() + ">" + border.getRef();
 						if (arcsMap.containsKey(ref)){
-							endActivityTime = tupleEntity.getEnd() + avgCaseTimeOnePercent;
-							tupleEntity.putArc(ref,lastActivity.getEndTime(), endActivityTime, "NONE", 0f);
+							endActivityTime = caseEntity.getEnd() + avgCaseTimeOnePercent;
+							caseEntity.putArc(ref,lastActivity.getEndTime(), endActivityTime, "NONE", 0f);
 							arcsMap.get(ref).addTime(avgCaseTimeOnePercent);
-							tupleEntity.setEnd(endActivityTime);
+							caseEntity.setEnd(endActivityTime);
 							break;
 						}
 					}
 				}
 			}
 		
-			accumulatedSize += tupleEntity.getSize();
+			accumulatedSize += caseEntity.getSize();
 			if (accumulatedSize > 15000000){
 				
 				currentCasesMongoEntity.setEndingTimes(endTimes);
@@ -510,10 +508,10 @@ public class DependencyGraph {
 				startTimes = new ArrayList<Long>();
 				endTimes = new ArrayList<Long>();
 				
-				accumulatedSize = tupleEntity.getSize();
+				accumulatedSize = caseEntity.getSize();
 			}
 			
-			currentCasesMongoEntity.putTuple(key, tupleEntity);
+			currentCasesMongoEntity.putTuple(key, caseEntity);
 			endTimes.add(endActivityTime);
 			startTimes.add(startActivityTime);
 						
@@ -523,11 +521,11 @@ public class DependencyGraph {
 		currentCasesMongoEntity.setStartingTimes(startTimes);
 		currentCasesMongoEntity.setUuid(uuid);
 		tuplesToAdd.add(currentCasesMongoEntity);
-
-		
 		
 		long endTime = System.currentTimeMillis();
-		System.out.println("= Case Times....: " + (endTime - startTime) + " ms");
+		System.out.println("= ");
+		System.out.println("= Case Times..: " + (endTime - startTime) + " ms");
+		System.out.println("=============================================");
 		return tuplesToAdd;
 		
 	}
