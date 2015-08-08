@@ -245,6 +245,8 @@ ul.act-list {
     background: white;
     padding: 0px;
     list-style-type: none;
+    height: 325px;
+    overflow-y: auto;
 }
 
 li.act-list-node {
@@ -320,4 +322,28 @@ li.act-list-node.act-hide {
 }
 li.act-list-node.act-hide:hover span.glyphicon.glyphicon-eye-close {
     display: none;
+}
+
+ul.context-menu{
+	background: #f9f9f9;
+	margin-left: 10px;
+	margin-top: 6px;
+	border-radius: 2px;
+	border: 1px solid #DDD;
+	padding: 2px;
+}
+
+ul.context-menu li{
+	list-style-type: none;	
+}
+
+ul.context-menu li a{
+	padding: 2px 8px;
+	border-bottom: 1px solid #ddd;
+	display:block;	
+}
+
+ul.context-menu li a:hover {
+    background-color: #fff;
+    text-decoration: none;
 }

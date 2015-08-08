@@ -32,11 +32,8 @@ public class FlexibleHeuristicMinner {
 		System.out.println("========================================================");
 		dependencyGraph.printOcurrancyTable();
 		
-		ProcessMongoEntity processEntity = dependencyGraph.getProcessedData(this.uuid);
-		List<CaseMongoEntity> casesWithTimeProcessed = dependencyGraph.getCasesWithTimeProcessed(processEntity);
-			
-		return new ProcessAndCases(processEntity, casesWithTimeProcessed);
-		
+		return dependencyGraph.getProcessedData(this.uuid);
+				
 	}
 
 	private void processActivities(BasicDBList instance) {

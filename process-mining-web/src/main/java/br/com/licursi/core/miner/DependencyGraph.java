@@ -12,6 +12,7 @@ import org.joda.time.format.DateTimeFormatter;
 
 import br.com.licursi.core.miner.exceptions.InvalidDateException;
 import br.com.licursi.core.miner.exceptions.ParseTimeException;
+import br.com.licursi.core.process.ProcessAndCases;
 import br.com.licursi.core.process.ProcessDetailsEntity;
 import br.com.licursi.core.process.ProcessMongoEntity;
 import br.com.licursi.core.process.activities.ActivityEntity;
@@ -398,12 +399,13 @@ public class DependencyGraph {
 		
 	}
 	
-	public ProcessMongoEntity getProcessedData(String uuid){
+	public ProcessAndCases getProcessedData(String uuid){
 		long startProcessing = System.currentTimeMillis();
 		ProcessDetailsEntity processDetailEntity = getDetails();
 		
 		long lComputeParalellism = computeParalellism();
 		long lComputeDependencyMeasure = computeDependencyMeasure();
+		List<CaseMongoEntity> casesWithTimeProcessed = getCasesWithTimeProcessed(processDetailEntity.getAverageTime(), uuid);
 		
 		ProcessMongoEntity processEntity = new ProcessMongoEntity(uuid);
 		
@@ -421,13 +423,11 @@ public class DependencyGraph {
 		System.out.println("= ");
 		System.out.println("= Total.......: "+ totalProcessing + " ms (" + (Math.floor((lComputeParalellism/totalProcessing)*10000)/100) + " %)");
 		
-		return processEntity;
+		return new ProcessAndCases(processEntity, casesWithTimeProcessed);
+		
 	}
 	
-	public List<CaseMongoEntity> getCasesWithTimeProcessed(ProcessMongoEntity processEntity){
-		
-		Long avgCaseTimes = processEntity.getDetails().getAverageTime();
-		String uuid = processEntity.getUuid();
+	public List<CaseMongoEntity> getCasesWithTimeProcessed(Long avgCaseTimes, String uuid){
 		
 		long startTime = System.currentTimeMillis();
 		long avgCaseTimeOnePercent = (new Double(avgCaseTimes*0.01)).longValue(); 
@@ -449,12 +449,14 @@ public class DependencyGraph {
 			// Compute the initial arc, from the symbol representing the start to the 
 			Long startActivityTime = 0L;
 			{
-				ActivitySimpleEntity activitySimpleEntity = caseEntity.getActivities().get(0);
-				List<ArcEntity> possibleArcs = getPossibleArcs(activitySimpleEntity.getUniqueLetter());
+				ActivitySimpleEntity activitySimple = caseEntity.getActivities().get(0);
+				List<ArcEntity> possibleArcs = getPossibleArcs(activitySimple.getUniqueLetter());
 				for (ArcEntity arc : possibleArcs){
 					if (arc.getSource().toUpperCase().contains("START")){
-						startActivityTime = activitySimpleEntity.getEndTime() - avgCaseTimeOnePercent;
-						caseEntity.putArc(arc.getRef(),startActivityTime, activitySimpleEntity.getEndTime(), activitySimpleEntity.getResource(), 0f);
+						startActivityTime = activitySimple.getEndTime() - avgCaseTimeOnePercent;
+						long duration = avgCaseTimeOnePercent;
+						this.activityMap.get(activitySimple.getUniqueLetter()).addResource(activitySimple.getResource(), duration);
+						caseEntity.putArc(arc.getRef(),startActivityTime, activitySimple.getEndTime(), activitySimple.getResource(), 0f);
 						arcsMap.get(arc.getRef()).addTime(avgCaseTimeOnePercent);
 						caseEntity.setStart(startActivityTime);
 					}
@@ -470,6 +472,8 @@ public class DependencyGraph {
 				for (ArcEntity arc : possibleArcs){
 					ActivitySimpleEntity activity = getValidaArcStartActivity(arc, i, caseEntity.getActivities()); 
 					if (activity != null){
+						long duration = activitySimple.getEndTime() - activity.getEndTime();
+						this.activityMap.get(activitySimple.getUniqueLetter()).addResource(activitySimple.getResource(), duration);
 						caseEntity.putArc(arc.getRef(), activity.getEndTime(), activitySimple.getEndTime(), activitySimple.getResource(), 0f);
 						Long arcDuration = (activitySimple.getEndTime() -  activity.getEndTime());
 						arcsMap.get(arc.getRef()).addTime(arcDuration);

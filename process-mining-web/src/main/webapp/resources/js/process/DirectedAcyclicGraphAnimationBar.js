@@ -23,8 +23,8 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 				 method: "POST",
 				 datatype: "json",
 				 success: function(data) {
-					show();
-					
+					 
+					_barSVG.transition().delay(200).attr("opacity", "1").attr("y", "94%");
 					// Initiate the 
 					_d3SVG.select(".graph").append("g").classed("animations", true);
 					
@@ -44,12 +44,31 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 	
 	function show(){
 		_barSVG.transition().delay(200).attr("opacity", "1").attr("y", "94%");
+		_d3SVG.select(".graph g.animations").transition().duration(200).attr("opactiy", "1").transition().attr("style", "display:block");
+		
+		_acontrol.animation.time = null;
+		
+		if (_acontrol.animation.stop != true){
+			stopAnimate(false);
+		}
+		
+		drawAreaCompletetion(0);
+		drawPointsInTime(0);
+		
+		if (_acontrol.animation.stop != true){
+			animate(false);
+		}
 		
 	}
 	
 	this.hide = function(){
+		if (_acontrol.animation.stop != true){
+			stopAnimate(true);
+		}
+		selectTime(0);
 		_barSVG.transition().delay(200).attr("opacity", "0").attr("y", "115%");
 		_d3SVG.select(".graph g.animations").transition().duration(200).attr("opactiy", "0").transition().attr("style", "display:none");
+		_d3SVG.select(".graph g.animations").selectAll("circles").transition().delay(200).remove();
 	}
 	
 	function adjustData(data){
@@ -520,6 +539,11 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 		};
 		
 		return result;
+	}
+	
+	
+	this.getPointAtMiddle = function(edge){
+		return getPointAtPath(edge, 0.5);
 	}
 	
 	function getPointAtPath(edge, t){

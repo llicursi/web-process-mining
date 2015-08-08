@@ -30,17 +30,18 @@
 				
 				<div class="tab-content">
 					<div role="tabpanel" class="tab-pane fade in active" id="densityControl">
-						<h2>Densidade</h2>
-						<div class="content">
-						
+						<h2>Density</h2>
+						<div class="">
+							<div class="sliders" id="densitySlider"></div>
+							<div class="sliders" id="activitySlider"></div>
 						</div>
 					</div>
 					<div role="tabpanel" class="tab-pane fade" id="activitiesControl">	
-						<h2>Atvidades</h2>
+						<h2>Activities</h2>
 						<div class="content"></div>
 					</div>
 					<div role="tabpanel" class="tab-pane fade" id="statiscticsControl">	
-						<h2>Estatísticas</h2>
+						<h2>Statistics</h2>
 						<div class="content"></div>
 					</div>
 					<div role="tabpanel" class="tab-pane fade" id="animationControl">	
@@ -96,12 +97,13 @@
 		<script type="text/javascript" th:src="@{/js/process/DirectedAcyclicGraph.js}"></script>
 		<script type="text/javascript" th:src="@{/js/process/DirectedAcyclicGraphMinimap.js}"></script>
 		<script type="text/javascript" th:src="@{/js/process/DirectedAcyclicGraphAnimationBar.js}"></script>
-		<script type="text/javascript" th:src="@{/js/process/DirectedAcyclicGraphHistory.js}"></script>
+		<script type="text/javascript" th:src="@{/js/process/DirectedAcyclicGraphActivities.js}"></script>
 		<script type="text/javascript" th:src="@{/js/process/DirectedAcyclicGraphTooltip.js}"></script>
 		<script type="text/javascript" th:src="@{/js/process/DirectedAcyclicGraphContextMenu.js}"></script>
 		<script type="text/javascript" th:src="@{/js/process/utils/MinimapZoom.js}"></script>
 		<script type="text/javascript" th:src="@{/js/process/utils/List.js}"></script>
 		<script type="text/javascript" th:src="@{/js/process/utils/Selectable.js}"></script>
+		<script type="text/javascript" th:src="@{/js/process/utils/SliderHandler.js}"></script>
 		<script type="text/javascript" th:src="@{/js/process/utils/jquery.tipsy.js}"></script>
 		<script type="text/javascript" th:src="@{/js/process/utils/jquery.contextMenu.js}"></script>
 		<script type="text/javascript" th:src="@{/js/process/ProcessMiningUtils.js}"></script>

@@ -48,20 +48,21 @@
 }
 
 .hovering .graph .node.hovered.previous rect {
-	fill: #F4D24C;
-	stroke: #F4A603;
+	fill: #FBF697;
+	stroke: #E4A427;
 }
 
-.hovering .graph .node.hovered.immediate rect {
-	stroke: #325C3F;
-  	fill: #80D79C;
+.hovering .graph .node.hovered.immediate rect,
+.hovering .graph .node.selected.hovered.immediate rect {
+	fill: #C2EFB1;
+    stroke: #80B962;
 }
 
 .graph .node rect {
-	fill: #DAE3F4;
-  	stroke-width: 1px;
-  	stroke: #7E8BB6;
-	box-shadow : 1px 1px solid #333
+    fill: #FBFBFB;
+    stroke-width: 1px;
+    stroke: #8D8D8E;
+	box-shadow : 1px 1px 1px #333;
 }
 
 .graph.graph-main .node rect {
@@ -73,22 +74,23 @@
 	font-family: Verdana;
 }
 
-.graph .node.selected rect,
-.hovering .graph .node.selected rect,
-.hovering .graph .node.selected.hovered.immediate rect{
-	stroke: #0F4BFF;
-	fill: #B3ECFF;
+.graph .node.preview rect,
+.hovering .graph .node.preview rect {
+	fill: #E47F47;
+    stroke-width: 2px;
+    stroke: #9E2C05;
 }
 
-.graph .node.preview rect,.hovering .graph .node.preview rect {
-	fill: #EADAEC;
-	stroke: #9A38A2;
+.graph .node.selected rect,
+.hovering .graph .node.selected rect{
+    stroke: #76ADE4;
+    stroke-width: 3px;
+    fill: #D8E6F4;
 }
 
 .graph .edge {
-	fill: none;
-	stroke: #A7B2AE;
-	opacity: 0;
+    fill: none;
+    stroke: #56799E;
 }
 
 .graph.graph-main .edge {
@@ -98,15 +100,15 @@
 }
 
 .graph .edge.visible.preview {
-	stroke-width: 4px;
-	stroke: #9A38A2;
+    stroke-width: 4px;
+    stroke: #76ADE4;
 }
 
 .graph .edge.visible.selected,
 .hovering .graph .edge.hovered.immediate.selected
 {
-	stroke-width: 6px;
-	stroke: #386AFF;
+    stroke-width: 4px;
+    stroke: #76ADE4;
 }
 
 .graph .edge.visible.preview,

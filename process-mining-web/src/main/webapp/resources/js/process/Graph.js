@@ -185,7 +185,6 @@ Graph.prototype.getColorByDelay = function (ref, interval){
 	if (criteria <= 1){
 		for (var i = menores.length-1, f=8; i >= 0; i--, f--){
 			if (criteria < menores[i]){
-				console.log(menores[i] + f);
 				index = f;
 				break;
 			}
@@ -414,21 +413,21 @@ function getEdgeStroke(dependencyMeasure){
 	if (d > 0 && d <= 0.15){
 		return 1;
 	} else if (d > 0.15 && d <= 0.25){
-		return 1.5;
+		return 2;
 	} else if (d > 0.25 && d <= 0.35){
-		return 2.0;
+		return 3.0;
 	} else if (d > 0.35 && d <= 0.45){
-		return 2.5;
-	} else if (d >= 0.55 && d < 0.65){
-		return 3.5;
-	} else if (d >= 0.65 && d < 0.75){
 		return 4;
+	} else if (d >= 0.55 && d < 0.65){
+		return 6;
+	} else if (d >= 0.65 && d < 0.75){
+		return 7;
 	} else if (d >= 0.75 && d < 0.85){
-		return 4.5;
+		return 8;
 	} else if (d >= 0.85 && d < 1){
-		return 5;
+		return 9;
 	} else {
-		return 3;
+		return 5;
 	}
 }
 

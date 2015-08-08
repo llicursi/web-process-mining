@@ -1,8 +1,19 @@
-var Selectable = function() {
+var Selectable = function(allNodes) {
+	
+	var _self = this;
+    var _selection = null;
     
-    var select = function(selection) {
+    (function init(all){
+    	if (all != null && all !== undefined){
+    		_self.setup(all);
+    	}
+    })(allNodes);
+    
+    this.setup = function(selection) {
         var lastSelected = null;
-        selection.on("click", function(d) {
+        _selection = selection;
+        
+        _selection.on("click", function(d) {
             var node = d3.select(this);
             var selected = !node.classed("selected");
             
@@ -43,7 +54,7 @@ var Selectable = function() {
             }
             d.binded.selected = selected;
             d3.select(d.binded).classed("act-selected", selected);
-            onSelect();
+            onSelect(selection.filter(".selected").data());
         });
         
         // Add the Ctrl-A behavior
@@ -54,25 +65,34 @@ var Selectable = function() {
                     return !d3.select(this).classed("selected");
                 }).empty();
                 selection.classed("selected", !allSelected);
-                onSelect();
+                onSelect(selection.filter(".selected").data());
             }
         });
     };
     
-    select.fireOnSelect = function (){
-    	onSelect();
+    this.fireOnSelect = function (selection){
+    	onSelect(selection);
     };
+    
+    this.select = function (nodes){
+    	for (var i=0; i < nodes.length; i++){
+    		var d = nodes[i];
+    		//d.binded.binded.classed("selected", true);
+    		d.binded.selected = true;
+    		d3.select(d.binded).classed("act-selected", true);
+    	}
+    	onSelect(nodes);
+    }
 
     var getrange = function(a, b) { return [a, b]; };
     var onSelect = function() {};
     
-    select.getrange = function(_) { if (arguments.length==0) return getrange; getrange = _; return select; };
-    select.on = function(event, _) { 
+    this.getrange = function(_) { if (arguments.length==0) return getrange; getrange = _; return _self; };
+    this.on = function(event, _) { 
         if (event!="select") return;
         if (_==null) return onSelect;
         onSelect = _;
-        return select;
+        return _self;
     };
     
-    return select;
 };

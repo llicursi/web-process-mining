@@ -9,4 +9,6 @@ public interface ProcessRepository extends MongoRepository<ProcessMongoEntity, S
 	List<ProcessMongoEntity> findAllById(String id);
 	
 	List<ProcessMongoEntity> findAllByUuid(String uuid);
+
+	Long deleteProcessByUuid(String uuid);
 }

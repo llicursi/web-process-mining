@@ -14,4 +14,5 @@ public interface CaseRepository extends MongoRepository<CaseMongoEntity, String>
 	
 	Page<CaseMongoEntity> findAllByUuid(String uuid, Pageable pageable);
 	
+	Long deleteCaseByUuid(String uuid);
 }

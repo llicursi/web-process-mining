@@ -1,11 +1,11 @@
-DirectedAcyclicGraphHistory = function(placeholder, nodes) {
+DirectedAcyclicGraphActivities = function(placeholder, nodes) {
 	
 	var _nodes, _listActivities, _domList, _select;
 	
 	(function init(nodes, placeholder){
 		
 //		Set up node selection events
-		_select = Selectable();
+		_select = new Selectable();
 		
 		_domList = getListDom(placeholder);
 		_listActivities = {};
@@ -72,6 +72,8 @@ DirectedAcyclicGraphHistory = function(placeholder, nodes) {
 	
 	function clickListItem(){
 		if (!this.isHidden){
+			var result = [];
+			
 			if (this.selected && this.selected == true){
 				this.binded.classed("selected", false);
 				this.selected = false;
@@ -80,13 +82,22 @@ DirectedAcyclicGraphHistory = function(placeholder, nodes) {
 				this.binded.classed("selected", true);
 				this.selected = true;
 				d3.select(this).classed("act-selected", true);
+				result.push(this);
 			}
-			_select.fireOnSelect();
+			
+			for (var key in _listActivities){
+				var node = _listActivities[key];
+				if (node.selected){
+					result.push(node);
+				}
+			}
+			_select.fireOnSelect(result);
 		}
 	}
 	
 	function showHide(e){
-		event.stopPropagation();
+		var ev = e || event;
+		ev.stopPropagation();
 		var liAct = d3.select(this.parentNode);
 		if (liAct.classed("act-hide")){
 			showNode(liAct);
@@ -102,6 +113,24 @@ DirectedAcyclicGraphHistory = function(placeholder, nodes) {
 		var node = li[0][0].binded;
 		node.datum().visible(true);
 		var nodes = [node];
+		fireEventOnChange(nodes, "show");
+	}
+	
+	this.showAllNodes = function(){
+		var nodes = [];
+		for (var key in _listActivities){
+			var li = _listActivities[key];
+			d3.select(li).classed("act-hide", false);
+			li.isHidden = false;
+			var node = li.binded;
+			try {
+				node.datum().visible(true);	
+			} catch (e) {
+				// TODO: handle exception
+			}
+			
+			nodes.push(node);
+		}
 		fireEventOnChange(nodes, "show");
 	}
 	
@@ -140,11 +169,25 @@ DirectedAcyclicGraphHistory = function(placeholder, nodes) {
 		_select.getrange(passed);
 	};
 	
-	this.onSelect = function(event){
-		_select.on("select", event);
+	this.onSelect = function(onSelectFunction){
+		if ( onSelectFunction != null && typeof onSelectFunction == 'function'){
+			var interceptFunction = function (selection, arg2){
+				var selected = {};
+				selection.forEach(function(d) { 
+					selected[d.id]=true; 
+					
+				});
+				onSelectFunction(selected);
+			};
+			_select.on("select", interceptFunction);
+		}
+	};
+
+	this.setup = function(nodes){
+		_select.setup(nodes);
 	};
 	
 	this.select = function(nodes){
-		_select(nodes);
+		_select.select(nodes);
 	};
 }

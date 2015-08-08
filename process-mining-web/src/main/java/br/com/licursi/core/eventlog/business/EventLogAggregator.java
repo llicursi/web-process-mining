@@ -88,6 +88,7 @@ public class EventLogAggregator {
 		
 		List<DBObject> pipeline = new ArrayList<DBObject>();
 		pipeline.add(BasicDBObjectBuilder.start("$match",  BasicDBObjectBuilder.start("uuid", uuid).get()).get());
+		pipeline.add(BasicDBObjectBuilder.start("$limit", 1).get());
 		pipeline.add(BasicDBObjectBuilder.start("$unwind", "$rawData").get());
 		pipeline.add(BasicDBObjectBuilder.start("$sort",BasicDBObjectBuilder.start("ISODATE(rawData." + mVariables.get(VariablesEnum.END_TIME.toString()) + ")", 1).get()).get());
 		pipeline.add(BasicDBObjectBuilder.start("$project", BasicDBObjectBuilder
