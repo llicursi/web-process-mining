@@ -23,6 +23,7 @@ import br.com.licursi.core.process.cases.CaseEntity;
 import br.com.licursi.core.process.cases.CaseMongoEntity;
 import br.com.licursi.core.process.events.BorderEventEntity;
 import br.com.licursi.core.process.events.BorderEventType;
+import br.com.licursi.core.util.GenericUtil;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -130,7 +131,7 @@ public class DependencyGraph {
 				
 			}
 			
-			put(activity.toString(), endTime, (resource != null ? resource.toString() : "!NONE!"));
+			put(activity.toString(), endTime, GenericUtil.formatToValidMongoKey((resource != null ? resource.toString() : "NONE"), ""));
 		}
 	}
 	

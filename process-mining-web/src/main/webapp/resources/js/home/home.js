@@ -13,33 +13,64 @@ Dropzone.options.processDropzone = {
 	, paramName: "rawdata"
 	, maxFiles : 1
 	, maxFilesize : 1048576
-	//, acceptedFiles : ".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+	, acceptedFiles : ".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
 	//, autoProcessQueue : false
-	, dictDefaultMessage: "Arraste arquivos aqui. <span class='dz-sub-message'>( ... ou clique e selecione-o )</span>"
+	, dictDefaultMessage: "Drop your csv file here. <span class='dz-sub-message'>( ... or click and select )</span>"
 	, init: function () {
+		var _percent = null;
+		var get = function (element){
+			if (_percent == null){
+				var div = document.createElement("div");
+				div.className = "dz-percent";
+				div.innerHTML = "0%";
+				div.setAttribute("style", "text-align: left;");
+				element.lastChild.appendChild(div);
+				_percent = div;
+			}
+			
+			var retorno = function (perc){
+				_self = perc;
+				return this;
+			};
+			retorno.prototype.value = function (val ){
+				if (val == undefined || val == null){
+					return ;
+				}
+				_self.innerHTML = Math.floor(100*val)/100 + "%";
+			}
+			
+			retorno.prototype.hide = function (){
+				_self.parentNode.removeChild(_self);
+			}
+			return new retorno(_percent);
+		};
 		
-		this.on("sending", function(file, xhr, formData) {
-				// Will send the filesize along with the file as POST data.
-//								debugger;
-//								formData.append("filesize", file.size);
-//								formData.append("name", file.name);
+		this.on("uploadprogress", function(file,e, a , m) {
+			if (e >= 100){
+				$('#myModal').modal({backdrop:'static', keyboard: false});
+				get(this.element).hide();
+			} else {
+				get(this.element).value(e);
+			}
 		});
-
+		
 		this.on("succes", function(file, xhr, formData){
 			alert("succes");
 		});
 
 		this.on("complete", function(file, xhr, formData){
 			var response = file.xhr.response;
-			debugger;
+			$('#myModal').modal('hide');
 			if (response == CONSTRAINTS.RESPONSE_ERROR_NONUNIQUE){
 				
 			} else if (response == CONSTRAINTS.RESPONSE_ERROR_AT_EVENTO_LOG) {
 				
 			} else if (response == CONSTRAINTS.RESPONSE_ERROR_INVALIDEXTENSION) {
 				
-			} else {
+			} else if (response != '' && response != ' '){
 				window.location.href = "adjust/" + response + "/";
+			} else {
+				
 			}
 				
 		});

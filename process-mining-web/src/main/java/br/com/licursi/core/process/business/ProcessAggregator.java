@@ -30,7 +30,7 @@ public class ProcessAggregator {
 	public DBObject getProcessById(String uuid){
 		//long startTime = System.currentTimeMillis();
 		List<DBObject> find = new ArrayList<DBObject>();
-		// Query condicions
+		// Query conditions
 		DBObject where = BasicDBObjectBuilder.start("uuid",uuid).get();
 		
 		DBCollection collection = mongoTemplate.getCollection(PROCESS_COLLECTION);

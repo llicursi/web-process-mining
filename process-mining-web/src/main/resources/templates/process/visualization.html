@@ -13,6 +13,38 @@
         <link rel="stylesheet" th:href="@{/css/process/visualization.css}"/>
 		<link rel="stylesheet" th:href="@{/css/process/xtrace.css}" type="text/css"/>
 		<link rel="stylesheet" th:href="@{/css/process/tipsy.css}" type="text/css"/>
+		
+		<style type="text/css">
+			.axis text {
+			  font: 10px sans-serif;
+			}
+			
+			.axis path,
+			.axis line {
+			  fill: none;
+			  stroke: #000;
+			  shape-rendering: crispEdges;
+			}
+			
+			.bar rect {
+			  fill: steelblue;
+			  fill-opacity: .9;
+			}
+			.bar text {
+			  fill : white;
+			  font-size: 10px;
+			}
+			.x.axis path {
+			  display: none;
+			}
+			
+			label {
+			  position: absolute;
+			  top: 10px;
+			  right: 10px;
+			}
+						
+		</style>
         
     </head>
     <body>
@@ -75,9 +107,26 @@
             
             </div>
             <div id="graph-container">
-                <div id="graph" ></div>
-            </div>
-            
+				<div class="subtitle">
+					<label>Border Events:</label>
+					<ul>
+						<li><div class="sub-start"></div> <span>Process Start</span></li>
+						<li><div class="sub-end"></div> <span>Process End</span></li>
+	
+					</ul>
+					<div class="sub-divisor"></div>
+					<label>Activities</label>
+					<ul>
+						<li><div class="sub-actvity"></div> <span>Default</span></li>
+						<li><div class="sub-actvity sub-selected"></div> <span>Selected</span></li>
+						<li><div class="sub-actvity sub-next"></div> <span>Next</span></li>
+						<li><div class="sub-actvity sub-previous"></div> <span>Previous</span></li>
+					</ul>
+				</div>
+				<div id="graph"></div>
+	         </div>
+	         <div id="tooltip-hidden-area" style="display:none">
+	         </div>
             
         </div>
         
@@ -102,6 +151,7 @@
 		<script type="text/javascript" th:src="@{/js/process/DirectedAcyclicGraphContextMenu.js}"></script>
 		<script type="text/javascript" th:src="@{/js/process/utils/MinimapZoom.js}"></script>
 		<script type="text/javascript" th:src="@{/js/process/utils/List.js}"></script>
+		<script type="text/javascript" th:src="@{/js/process/utils/barchart.js}"></script>
 		<script type="text/javascript" th:src="@{/js/process/utils/Selectable.js}"></script>
 		<script type="text/javascript" th:src="@{/js/process/utils/SliderHandler.js}"></script>
 		<script type="text/javascript" th:src="@{/js/process/utils/jquery.tipsy.js}"></script>

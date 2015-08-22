@@ -45,7 +45,7 @@ ProcessMiningViewportController = function (attachPoint, data) {
 	//	Create the chart instances
 		DAG = DirectedAcyclicGraph().animate(!lightweight);
 		DAGMinimap = DirectedAcyclicGraphMinimap(DAG).width("85%").height("87%");
-		DAGTooltip = DirectedAcyclicGraphTooltip(undefined, ["name", "count", "type", "avgTime"]);
+		DAGTooltip = DirectedAcyclicGraphTooltip(undefined, ["name", "count", "avgTime", "resources"]);
 		DAGAnimationBar = new DirectedAcyclicGraphAnimationBar(_graph);
 		DAGAnimationBar.build(rootSVG, _d3SVG);
 		
@@ -112,9 +112,9 @@ ProcessMiningViewportController = function (attachPoint, data) {
 	    var display = $graphArea.css('display');
 	    $graphArea
 	        .css('display', 'block')
-	        .css('height', '550px');
+	        .css('height', '510px');
 	    _graphDimensions.width = $graphArea.width() - _graphDimensions.margin.left - _graphDimensions.margin.right;
-	    _graphDimensions.height = $graphArea.height() - _graphDimensions.margin.top - _graphDimensions.margin.bottom;
+	    _graphDimensions.height = $graphArea.height() - _graphDimensions.margin.top - _graphDimensions.margin.bottom ;
 	    $graphArea.css('display', display);
 	    
 	    return _graphDimensions;
@@ -125,7 +125,7 @@ ProcessMiningViewportController = function (attachPoint, data) {
 	function attachContextMenus() {
 	    DAGContextMenu.call(_d3SVG.node(), _d3SVG.selectAll(".node"));
 	    DAGContextMenu.on("open", function() {
-	        DAGTooltip.hide();
+	       // DAGTooltip.hide();
 	    }).on("close", function() {
 	        if (!lightweight) {
 	            _d3SVG.selectAll(".node").classed("preview", false);
@@ -348,9 +348,6 @@ ProcessMiningViewportController = function (attachPoint, data) {
 		
 	}
 	
-	
-	
-
 	$('#doc-menus .nav-tabs a').on('shown.bs.tab', function (e) {
 		var targetElem = e.target;
 		var sourceElem = e.relatedTarget;

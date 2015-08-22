@@ -12,7 +12,9 @@ var timestampToTimeString = function(timestamp) {
 	seconds = seconds < 10 ? '0'+seconds : seconds;
 	var milliseconds = date.getMilliseconds();
 	milliseconds = milliseconds < 10 ? '00'+milliseconds : milliseconds < 100 ? '0'+milliseconds : milliseconds;
-	return hours + "h " + minutes + "m " + seconds + "s " + milliseconds + "ms";
+	return ((hours > 0) ? hours + "h ": "") + 
+			minutes + "m " + seconds + "s " + 
+			((milliseconds > 0) ? milliseconds + "ms" : "");
 };
 
 var DirectedAcyclicGraphTooltip = function(gravity, propertiesToRead) {
@@ -28,6 +30,13 @@ var DirectedAcyclicGraphTooltip = function(gravity, propertiesToRead) {
 			var clearrow = $("<div>").attr("class", "clear");
 			tooltip.append($("<div>").append(keyrow).append(valrow).append(clearrow));
 		}
+		
+		function appendChart(key, values, count, tooltip){
+			var barchart = new BARCHART();
+			var svg = barchart.plot(values, count);
+			tooltip.append($("<div>").append(svg));
+			barchart.clearArea();
+		}
 
 		var tooltip = $("<div>").attr("class", "xtrace-tooltip");
 		var seen = {"Edge": true, "version": true};
@@ -39,6 +48,8 @@ var DirectedAcyclicGraphTooltip = function(gravity, propertiesToRead) {
 				seen[key] = true;
 				if (key.toUpperCase()=="AVGTIME") {
 					appendRow(key, timestampToTimeString(datum[key]), tooltip);
+				} else if (key.toUpperCase()=="RESOURCES"){
+					appendChart(key, datum[key], datum['count'], tooltip);
 				} else {
 					appendRow(key, datum[key], tooltip);
 				}

@@ -169,6 +169,9 @@ ul.list-activities li{
     left: 8px;
 }
 
+/************************
+   Right side tab-menu
+*************************/
 
 .right-options .nav-tabs > li > a {
 	margin-right: 2px;
@@ -198,7 +201,7 @@ ul.list-activities li{
   margin-top: -4px;
   margin-bottom: 10px;
   border-bottom: 1px solid #CCC;
-  font-size: 24px;
+  font-size: 20px;
 }
 
 .right-options button.btn-default.disabled,
@@ -208,6 +211,7 @@ ul.list-activities li{
 .right-options button.btn-default{
 	color: #333;
 }
+
 .right-options button.btn-default.btn-play{
 	color :#49B249;
 }
@@ -240,7 +244,9 @@ ul.list-activities li{
 }
 
 
-/* Activities */
+/*******************************
+ Activities list control        
+ *******************************/
 ul.act-list {
     background: white;
     padding: 0px;
@@ -251,9 +257,9 @@ ul.act-list {
 
 li.act-list-node {
     border-bottom: 1px solid #EEE;
-    padding: 4px;
+    padding: 3px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 11px;
     -webkit-transition: background 300ms,  font-weight 300ms;
     transition: background 300ms,  font-weight 300ms;
 }
@@ -267,8 +273,8 @@ li.act-list-node.act-selected {
 }
 
 .act-icon {
-    width: 17px;
-    height: 17px;
+    width: 14px;
+    height: 14px;
     float: left;
     margin: 0px 5px 0px 0px;
     background-color: #e0e0e4;
@@ -324,6 +330,9 @@ li.act-list-node.act-hide:hover span.glyphicon.glyphicon-eye-close {
     display: none;
 }
 
+/*******************************
+ Context menu        
+ *******************************/
 ul.context-menu{
 	background: #f9f9f9;
 	margin-left: 10px;
@@ -346,4 +355,90 @@ ul.context-menu li a{
 ul.context-menu li a:hover {
     background-color: #fff;
     text-decoration: none;
+}
+
+
+/*******************************
+	 Subtitles        
+ *******************************/
+ .subtitle {
+    height: 26px;
+    background: #E8E8E8;
+    border: 1px solid #D2D2D2;
+    box-shadow: 0px -1px 1px #f0f0f0 inset;
+    font-size: 12px;
+    opacity: 0.95;
+}
+
+.subtitle ul li {
+    list-style-type: none;
+    padding: 4px;
+    margin: 0px;
+    float: left;
+}
+
+.subtitle ul li .sub-start {
+    width: 12px;      
+    height: 12px;      
+    float: left;      
+    margin: 1px 4px 0px 5px;      
+    background-color: #80D79C;      
+    border: 1px solid #325C3F;
+    border-radius: 7px;
+}
+
+.subtitle ul {
+    margin: 0px;
+    padding: 0px;
+}
+
+.subtitle ul li .sub-actvity {
+    width: 12px;      height: 12px;      float: left;      margin: 1px 4px 0px 5px;      background-color: #FBFBFB;      border: 1px solid #BABABA;      border-radius: 2px;
+}
+
+.subtitle ul li .sub-end {
+    width: 12px;      height: 12px;      float: left;      margin: 1px 4px 0px 5px;      
+    background-color: #F7D89F;      
+    border: 1px solid #D37674;      
+    border-radius: 7px;
+}
+
+.subtitle label {
+    position: relative;
+    float: left;
+    margin: 0px;
+    padding: 4px 0px 0px 6px;
+    left: 0px;
+    top: 0px;
+    font-weight: 100;
+    color: #676767;
+    text-shadow: 1px 1px 0px #EEE;
+}
+
+.subtitle .sub-divisor {
+    height: 16px;
+    float: left;
+    width: 1px;
+    border-right: 1px solid #f0f0f0;
+    border-left: 1px solid #A9A9A9;
+    margin-top: 3px;
+    margin-left: 4px;
+}
+
+.subtitle ul li .sub-actvity.sub-next {
+    background-color: #B0E490;
+    border: 1px solid #4CB52C;
+}
+
+.subtitle ul li .sub-actvity.sub-previous {
+    background-color: #FBF17E;      border: 1px solid #E0B608;
+}
+
+.subtitle ul li .sub-actvity.sub-selected {
+    background-color: #D8E6F4;      
+    border: 1px solid #76ADE4;
+}
+
+.subtitle span {
+    color: #848282;
 }

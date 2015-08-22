@@ -66,8 +66,11 @@ public class EventLogBO {
 				try {
 					dataSource.setInputStream(multipartFile.getInputStream());
 					
+					long startTime = System.currentTimeMillis();
 					UUID randomUUID = java.util.UUID.randomUUID();
 					List<EventLogEntity> eventLog = dataSource.getEventLog(randomUUID);
+					long endTime = System.currentTimeMillis();
+					System.out.println("Time processing CSVDataSource : " + (endTime - startTime) + "ms" );
 					List<EventLogEntity> insert = eventLogRepository.insert(eventLog);
 					System.out.println("UUID : " + randomUUID + " Nº of Files : "+ insert.size());	
 					return randomUUID.toString();

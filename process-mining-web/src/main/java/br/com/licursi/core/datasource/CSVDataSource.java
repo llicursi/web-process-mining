@@ -63,13 +63,13 @@ public class CSVDataSource implements DataSource{
 			
 			sizeAccumulated += nextLine.getBytes().length + sizeHeaders;
 			
-			Map<String, String> map = processLine(nextLine, headers);
+			Map<String, String> map = processLineToCSVMap(nextLine, headers);
 			if (map != null){
 				DBObject rawInstance = new BasicDBObject(map);
 				rawData.add(rawInstance);
 			}
 			
-			nextLine =stream.readLine();
+			nextLine = stream.readLine();
 			
 		}
 		
@@ -117,15 +117,52 @@ public class CSVDataSource implements DataSource{
 		//return FileDataSource.NO_HEADER;
 	}
 
-	private Map<String, String> processLine(String nextLine, List<String> headers) {
+	private Map<String, String> processLineToCSVMap(String nextLine, List<String> headers) {
 		
-		String[] sline = nextLine.split(spliterLetter);
+		char[] charArray = nextLine.toCharArray();
+		String nextWord = "";
+		int index = 0;
+		int wordCount = 0;
 		Map<String, String> line = new HashMap<String, String>();
+		int maxWord = headers.size();
 		
-		for (int i=0; i<sline.length && i < headers.size();i++){
-			line.put(headers.get(i), sline[i]);
+		boolean isLastCharSplitter = false;
+		boolean isWaintingForClosureChar = false;
+		
+		while (index < charArray.length){
+			char actual = charArray[index];
+			if (isLastCharSplitter && actual == ' '){
+				isLastCharSplitter = true;
+			} else {	
+				isLastCharSplitter = false;
+				if (actual == this.spliterLetter.charAt(0) && !isWaintingForClosureChar){
+					if (wordCount < maxWord-1){
+						isLastCharSplitter = true;
+						line.put(headers.get(wordCount++), nextWord);
+						nextWord = "";
+					} else {
+						String trunked = "";
+						while (index < charArray.length){
+							trunked += charArray[index];
+							index++;
+						}
+						System.out.println("Line with error, drop exceding text (" + trunked + ")");
+					}
+				} else if (actual == '"' && !isWaintingForClosureChar){
+					isWaintingForClosureChar = true;
+				} else if (actual == '"' && isWaintingForClosureChar){
+					isWaintingForClosureChar = false;
+				} else {
+					nextWord += actual;
+				}
+			}
+			index ++;
 		}
-		
+		line.put(headers.get(wordCount++), nextWord);
+		// Fulfill the missing data with null
+		while (wordCount < headers.size()){
+			line.put(headers.get(wordCount++), "(null)");
+		}
 		return line;
 	}
 

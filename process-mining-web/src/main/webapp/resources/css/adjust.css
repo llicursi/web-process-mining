@@ -175,6 +175,16 @@ ul.list-activities li {
 	border-right: 1px solid #ddd;
 }
 
+table.table-adjust thead tr th, 
+table.table-adjust tr td {
+	font-size:12px;
+	padding:12px;
+}
+
+table.dataTable.table-adjust  tbody td{
+	padding:6px 10px;
+}
+
 .table-adjust tr th.selected {
 	background: #AED581;
 }
@@ -196,4 +206,5 @@ ul.list-activities li {
 .table-adjust tr.odd td.selected {
 	background: #DCEDC8;
 }
+
 

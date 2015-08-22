@@ -9,11 +9,10 @@
     	<div class="head-nav">
 	      	<div class="nav"><a href="#content">Ir para conteudo</a> 	</div>
 	    	<div th:class="'nav fixed ' + ${isHome == true ? 'home' : ''}">
-	  			<div class="nav-title">Web Process <br/><span>Miner</span></div>
+	  			<a href="/" class="nav-title">Web Process <br/><span>Miner</span></a>
 				
-				<a th:class="'nav-button ' + ${active == 1 ? 'active' : ''}" href="#">Adjust Data</a>
-				<a th:class="'nav-button ' + ${active == 2 ? 'active' : ''}" href="#">Analyse Process</a>
-				<a th:class="'nav-button ' + ${active == 3 ? 'active' : ''}" href="#">Estatistic</a>
+				<a th:class="'nav-button ' + ${active == 1 ? 'active' : ''}" th:href="${active == 2 ? #httpServletRequest.requestURL.toString().replace('process', 'adjust') : '#'}">Adjust Data</a>
+				<a th:class="'nav-button ' + ${active == 2 ? 'active' : 'disabled'}" href="#">Analyse Process</a>
 				
 			</div>
 		</div>

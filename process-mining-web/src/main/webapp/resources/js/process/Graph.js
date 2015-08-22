@@ -202,7 +202,7 @@ Graph.prototype.getColorByDelay = function (ref, interval){
 	}
 	var colors = {
 		fill : colorbrewer.RdYlGn[9][index],
-		stroke : colorbrewer.YlGn[9][index]
+		stroke : colorbrewer.RdYlBu[9][index]
 	};
 	
 	return colors;

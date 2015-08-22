@@ -28,6 +28,14 @@ body {
     font-size: 19px;
     text-shadow: 1px 1px 1px #000;
 }
+.head-nav .nav a.disabled:hover{
+	cursor:default;
+}
+
+.head-nav .nav a.nav-title:hover{
+	text-decoration:none;
+	color : #FFF;
+}
 
 .head-nav .nav .nav-title span{
     font-size: 31px;
