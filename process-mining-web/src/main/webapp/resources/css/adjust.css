@@ -167,7 +167,7 @@ ul.list-activities li {
 }
 
 .table-adjust thead tr {
-	height: 60px;
+	height: 51px;
 }
 
 .table-adjust tr th {
@@ -178,7 +178,7 @@ ul.list-activities li {
 table.table-adjust thead tr th, 
 table.table-adjust tr td {
 	font-size:12px;
-	padding:12px;
+	padding:8px;
 }
 
 table.dataTable.table-adjust  tbody td{

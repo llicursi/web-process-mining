@@ -23,13 +23,14 @@ public class MinnerBO {
 	private CaseRepository caseRepository;
 	
 	  
-	public Boolean mine(String uuid, List<DBObject> mappedRawData){
+	public Boolean mine(String uuid, String name, List<DBObject> mappedRawData){
 		
 		try {
 			FlexibleHeuristicMinner minner = new FlexibleHeuristicMinner(uuid);
 			ProcessAndCases processAndCases = minner.process(mappedRawData);
 			
-			ProcessMongoEntity process = processAndCases.getProcessEntity(); 
+			ProcessMongoEntity process = processAndCases.getProcessEntity();
+			process.setName(name);
 			List<CaseMongoEntity> cases = processAndCases.getCases();
 			processRepository.deleteProcessByUuid(uuid);
 			processRepository.save(process);

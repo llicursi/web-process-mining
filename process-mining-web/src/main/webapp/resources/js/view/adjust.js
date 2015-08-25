@@ -69,7 +69,6 @@ ADJUST = function (){
 			}
 			
 			var adjustContainer = document.getElementById("adjust-container");
-			adjustContainer.innerHTML = "";
 			adjustContainer.appendChild(table);
 			
 			_dataTable = $("#" + _refId).DataTable( {
@@ -290,11 +289,11 @@ ADJUST = function (){
 				variablesToProcess.push(variable.name + "|||" + variable.value);
 			}
 		}
-		
+		var analysisName = document.getElementById("analysis-name").value;
 		$.ajax({
 			method: "post", 
 			dataType:'json',
-			data : {variables : variablesToProcess},
+			data : {variables : variablesToProcess, "analysisName" : analysisName},
 			url: "minner/"
 		}).done(function (retorno){
 				

@@ -31,7 +31,7 @@ DirectedAcyclicGraphActivities = function(placeholder, nodes) {
 			placeDom.appendChild(div);
 			
 		}
-		div.className = "content";
+		div.className = "";
 		div.innerHTML = "<ul class=\"act-list\"></ul>";
 		return placeDom.children[placeDom.children.length -1].children[0];
 	}

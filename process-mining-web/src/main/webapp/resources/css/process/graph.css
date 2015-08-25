@@ -90,7 +90,8 @@
 
 .graph .edge {
     fill: none;
-    stroke: #56799E;
+    stroke-width: 2.5px;
+    marker-end: url(#markerArrow);
 }
 
 .graph.graph-main .edge {
@@ -121,6 +122,11 @@
 	opacity: 1;
 }
 
+.graph g.animations circle{
+	stroke: #666;
+    stroke-opacity: 0.5;
+}
+
 .graph.graph-main .edge.visible {
 	transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 0.5s;
 	-webkit-transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity
@@ -130,14 +136,12 @@
 .graph.graph-main .edge.visible.entering {
 	transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 1.5s;
 	transition-delay: 0, 0, 0, 0.5s;
-	-webkit-transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity
-		1.5s;
+	-webkit-transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity	1.5s;
 	-webkit-transition-delay: 0, 0, 0, 0.5s;
 }
 
 .graph.graph-main.animation .edge.visible{
 	stroke-width:2.5px;
-	stroke: #AAB4D1;
 }
 
 .hovering .graph .edge.visible {
@@ -238,4 +242,10 @@ text,tspan,.tipsy {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+}
+
+/* Animation */
+
+.graph .node rect.blink {
+	fill:#E4F79E;
 }

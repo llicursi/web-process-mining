@@ -49,7 +49,7 @@ var DirectedAcyclicGraphTooltip = function(gravity, propertiesToRead) {
 				if (key.toUpperCase()=="AVGTIME") {
 					appendRow(key, timestampToTimeString(datum[key]), tooltip);
 				} else if (key.toUpperCase()=="RESOURCES"){
-					appendChart(key, datum[key], datum['count'], tooltip);
+					//appendChart(key, datum[key], datum['count'], tooltip);
 				} else {
 					appendRow(key, datum[key], tooltip);
 				}

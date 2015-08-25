@@ -217,12 +217,14 @@ var createGraphFromNodes = function(data) {
     // Create nodes
     console.info("Creating graph nodes");
     var nodes = {};
+    var actCount = 0;
     for (var nodeid in data.activities) {
         var datum = data.activities[nodeid];
         var id = nodeid;
         nodes[id] = new Node(id, Node.types.activity);
         nodes[id].datum = datum;
         nodes[id].freq = datum.count/ data.details.totalCases;
+        actCount++;
     }
     
     for (var nodeid in data.borderEvents) {
@@ -244,15 +246,20 @@ var createGraphFromNodes = function(data) {
     
     // Second link the nodes together
     console.info("Linking graph nodes");
+    var arcCount = 0;
     for (var nodeid in nodes) {
         var node = nodes[nodeid];
         node.datum["previous"].forEach(function(parentid) {
             if (nodes[parentid]) {
                 nodes[parentid].addChild(node);
                 node.addParent(nodes[parentid]);
+                arcCount++;
             }
         });
     }
+    
+    data.details.activitiesCount = actCount;
+    data.details.arcsCount = arcCount;
     
     // Create the graph and add the nodes
     var graph = new Graph(data);

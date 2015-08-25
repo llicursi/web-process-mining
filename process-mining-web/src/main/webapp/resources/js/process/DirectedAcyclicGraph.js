@@ -73,7 +73,7 @@ function DirectedAcyclicGraph() {
             new_edges
             	.attr("d", graph.splineGenerator)
             	.classed("visible", true)
-            	.attr("stroke-width", function (d){return d.strokeWidth;});
+            	.attr("stroke", function (d){return d.frequency;});
             existing_nodes.classed("visible", true);
             window.setTimeout(function() {
                 new_edges.classed("entering", false);

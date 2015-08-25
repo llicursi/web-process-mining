@@ -63,8 +63,9 @@ public class ArcEntity {
 		this.dependencyMeasure = dependencyMeasure;
 	}
 
-	public void increment() {
+	public ArcEntity increment() {
 		this.count ++;
+		return this;
 	}
 
 	public DBObject toDBObject(){
@@ -84,8 +85,9 @@ public class ArcEntity {
 	}
 
 
-	public void addTime(long timeExpended) {
+	public ArcEntity addTime(long timeExpended) {
 		this.sumTime += timeExpended;
+		return this;
 	}
 
 	public Long getSumTime() {

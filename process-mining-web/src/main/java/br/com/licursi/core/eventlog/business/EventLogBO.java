@@ -1,12 +1,14 @@
 package br.com.licursi.core.eventlog.business;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -68,10 +70,16 @@ public class EventLogBO {
 					
 					long startTime = System.currentTimeMillis();
 					UUID randomUUID = java.util.UUID.randomUUID();
-					List<EventLogEntity> eventLog = dataSource.getEventLog(randomUUID);
+					List<EventLogEntity> eventLogs = dataSource.getEventLog(randomUUID, name);
+					
+					Timestamp dateTime = new Timestamp(new DateTime().getMillis());
+					for (EventLogEntity e : eventLogs ){
+						e.setName(name);
+						e.setDate(dateTime);
+					}
 					long endTime = System.currentTimeMillis();
 					System.out.println("Time processing CSVDataSource : " + (endTime - startTime) + "ms" );
-					List<EventLogEntity> insert = eventLogRepository.insert(eventLog);
+					List<EventLogEntity> insert = eventLogRepository.insert(eventLogs);
 					System.out.println("UUID : " + randomUUID + " Nº of Files : "+ insert.size());	
 					return randomUUID.toString();
 				} catch (IOException e) {
@@ -84,6 +92,10 @@ public class EventLogBO {
 		
 		return "";
 		
+	}
+	
+	public void updateNameAndSetProcessed(String uuid, String name){
+		eventLogAggregator.updateNameAndData(uuid, name);
 	}
 	
 	private String getAvailablesExtensions() {
@@ -123,6 +135,15 @@ public class EventLogBO {
 			mapped.put(partialVar[0], partialVar[1]);
 		}
 		return mapped;
+	}
+
+	public String getNameFromAnalysis(String processId) {
+		DBObject nameFromAnalysis = eventLogAggregator.getNameFromAnalysis(processId);
+		String name = "";
+		if (nameFromAnalysis != null && nameFromAnalysis.get("name") != null){
+			name = nameFromAnalysis.get("name").toString();
+		}
+		return name;
 	}
 	
 }

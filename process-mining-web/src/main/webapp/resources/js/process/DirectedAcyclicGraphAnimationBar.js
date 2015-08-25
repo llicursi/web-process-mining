@@ -80,6 +80,7 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 			original : data
 		}
 		var index = 1;
+		var startTime = (new Date()).getTime();
 		for ( var key in data.tuples){
 			if (data.tuples[key] != null && data.tuples[key].start){
 				var caseN = jQuery.extend({}, data.tuples[key]);
@@ -94,7 +95,16 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 				index ++;
 			}
 		}
+		console.log("Time adjusting the data :" + ((new Date()).getTime() - startTime) + " ms");
+		
+		var startTime = (new Date()).getTime();
+		preData.cases.sort(function(a, b){return a.start-b.start});
+		
+		console.log("Sorting data ("+ (index-1) +") by startTime :" + ((new Date()).getTime() - startTime)+ " ms");
+		
 		preData.size = index -1;
+		updateTotalNumber(preData.size);
+		updateTuplesStatistics(0, preData.size, 0);
 		
 		// Create a gap, in the start, of 1% of the total
 		if (preData.min > 0){
@@ -108,6 +118,32 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 		
 		return preData;
 	}
+	
+	function updateTotalNumber(value){
+		document.getElementById("ani-control-total").innerHTML = "" + value;
+	}
+	
+	_cachedDOM = {};
+	
+	function updateTuplesStatistics(displaying, waiting, done){
+		if (!_cachedDOM['ani-control-waiting']){
+			_cachedDOM['ani-control-waiting'] = document.getElementById("ani-control-waiting"); 
+		}
+		_cachedDOM['ani-control-waiting'].innerHTML = waiting;
+		
+		if (!_cachedDOM['ani-control-done']){
+			_cachedDOM['ani-control-done'] = document.getElementById("ani-control-done"); 
+		}
+		_cachedDOM['ani-control-done'].innerHTML = done;
+
+		if (!_cachedDOM['ani-control-display']){
+			_cachedDOM['ani-control-display'] = document.getElementById("ani-control-display"); 
+		}
+		_cachedDOM['ani-control-display'].innerHTML = displaying;
+
+		
+	}
+	
 	
 	
 	function createAnimationBarHidden (rootSVG) {
@@ -385,10 +421,15 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 				var caseN = _acontrol.cases.waiting.shift();
 				activateEdges(caseN, currentTime);
 				_acontrol.cases.actives.push(caseN);
+				updateTuplesStatistics(
+						_acontrol.cases.actives.length,
+						_acontrol.cases.waiting.length,
+						_acontrol.cases.completed.length);
 			} else {
 				encontrou = false;
 			}
 		}
+		
 	}
 	
 	
@@ -417,8 +458,13 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 			_acontrol.cases.completed.push( _acontrol.cases.actives[index]);
 			_acontrol.cases.actives.splice(index, 1);
 			
-			console.log("Casos completos : " + _acontrol.cases.completed.length);
-			console.log("Casos ativos : " + _acontrol.cases.actives.length);
+			//console.log("Casos completos : " + _acontrol.cases.completed.length);
+			//console.log("Casos ativos : " + _acontrol.cases.actives.length);
+			updateTuplesStatistics(
+					_acontrol.cases.actives.length,
+					_acontrol.cases.waiting.length,
+					_acontrol.cases.completed.length);
+			
 		}
 		
 	}
@@ -434,12 +480,9 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 			.attr("cx", function (d) { return d.point.x;})
 			.attr("cy", function (d) {	return d.point.y;})
 			.attr("fill", function (d){ return d.colors.fill;})
-			.attr("stroke", function (d){ return d.colors.stroke;});
 		points.transition().duration(50)
 			.attr("cx", function (d) { return d.point.x})
 			.attr("cy", function (d) { return d.point.y})
-			.attr("fill", function (d){ return d.colors.fill;})
-			.attr("stroke", function (d){ return d.colors.stroke;});
 		points.exit().remove();
 		
 	}
@@ -484,7 +527,9 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 			// Remove cases from Actives and put as completed
 			while (edgesIndexToRemove.length > 0){
 				var index = edgesIndexToRemove.pop();
-				caseN.edgesActive.splice(index, 1);
+				var edge = caseN.edgesActive.splice(index, 1);
+				var split = edge[0].ref.split(">");
+				fireEdgeCompleted(split[1], edge);
 			}
 			// Get new edges only if an active edge is removed.
 			// This was made to prevent unnecessary calls and loops, due the fact
@@ -495,7 +540,18 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 		return caseN.edgesActive;
 	}
 	
+	var _onEdgeCompleted = null;
+	this.setOnEdgeCompleted = function (onEdgeCompleted){
+		if (onEdgeCompleted != null && typeof onEdgeCompleted != 'undefined' && typeof onEdgeCompleted == 'function'){
+			_onEdgeCompleted = onEdgeCompleted;
+		}
+	}
 	
+	function fireEdgeCompleted(uniqueLetter, edge){
+		if (_onEdgeCompleted != null){
+			_onEdgeCompleted(uniqueLetter, edge);
+		}
+	}
 	
 	//===============================================
 	// Animation equations

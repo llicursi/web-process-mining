@@ -1,29 +1,38 @@
 package br.com.licursi.home.controller;
 
-import java.util.Date;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import br.com.licursi.core.eventlog.business.EventLogAggregator;
+
+import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.DBObject;
 
 @Controller
 public class HomeController {
 
 	@Autowired
-	private MongoTemplate mongoTemplate;
+	private EventLogAggregator eventLogAgregator;
 
 	@RequestMapping(value={"/","/index","/home"})
 	public String index() {
 		return "home";
 	}
 
-	@RequestMapping("/welcome")
-	public String welcome(Map<String, Object> model) {
-		model.put("time", new Date());
-		model.put("message", "Database name :" + mongoTemplate.getDb().getName());
-
-		return "welcome";
+	@RequestMapping(value="/list", method=RequestMethod.POST,  produces=MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public String list(Map<String, Object> model) {
+		Iterable<DBObject> listAnalysisByTime = eventLogAgregator.listAnalysisByTime();
+		DBObject dbObject = BasicDBObjectBuilder.start("list", listAnalysisByTime).get();
+		return dbObject.toString();
 	}
+	
+	
+	
 }

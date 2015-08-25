@@ -1,5 +1,28 @@
 /* Space out content a bit */
 
+a.analysis-list {
+    display: block;
+    width: 100%;
+    background-color: white;
+    border: 1px solid #eee;
+    margin: 5px 0;
+    color: #64CA42;
+    font-size: 17px;
+    text-align: left;
+    box-shadow: 1px 1px 0px #ccc;
+}
+
+a.analysis-list:hover {
+    text-decoration: none;
+    color: green;
+    background-color: whitesmoke;
+}
+a.analysis-list span{
+	    margin: 0px 12px 0px 20px;
+    color: #496480;
+    font-size: 20px;
+}
+
 
 /* Everything but the jumbotron gets side spacing for mobile first views */
 .header,

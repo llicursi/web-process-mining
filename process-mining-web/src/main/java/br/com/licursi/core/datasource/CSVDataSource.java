@@ -27,7 +27,7 @@ public class CSVDataSource implements DataSource{
 		stream = new BufferedReader(new InputStreamReader(input));
 	}
 	
-	public List<EventLogEntity> getEventLog(UUID randomUUID) throws IOException{
+	public List<EventLogEntity> getEventLog(UUID randomUUID, String fileName) throws IOException{
 		
 		if (stream == null){
 			return null;
@@ -54,6 +54,7 @@ public class CSVDataSource implements DataSource{
 				eventLog.setUuid(uuid);
 				eventLog.setHeaders(headers);
 				eventLog.setRawData(rawData);
+				eventLog.setName(fileName);
 				eventLogs.add(eventLog);
 				
 				// Reset loop variables
@@ -77,6 +78,7 @@ public class CSVDataSource implements DataSource{
 		eventLog.setUuid(uuid);
 		eventLog.setHeaders(headers);
 		eventLog.setRawData(rawData);
+		eventLog.setName(fileName);
 		eventLogs.add(eventLog);
 		
 		return eventLogs;

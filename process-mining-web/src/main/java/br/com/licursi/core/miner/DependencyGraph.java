@@ -199,7 +199,8 @@ public class DependencyGraph {
 			activityEntity = new ActivityEntity(activityName, activityChar.toString());
 			activityMap.put(activityChar, activityEntity);
 		}
-		activityEntity.incrementCounter();
+		// TODO: reverter aqui
+		//activityEntity.incrementCounter();
 		
 		return activityEntity;
 	}
@@ -210,12 +211,12 @@ public class DependencyGraph {
 	 */
 	public Map<String, ActivityEntity> getActivities(){
 		
-		Map<String, ActivityEntity> nameActivity = new HashMap<String, ActivityEntity>();
+		Map<String, ActivityEntity> mapActivity = new HashMap<String, ActivityEntity>();
 		for (ActivityEntity act : activityMap.values()){
 			act.computeAverageTime();
-			nameActivity.put(act.getName(), act);
+			mapActivity.put(act.getName(), act);
 		}
-		return nameActivity;
+		return mapActivity;
 	}
 
 	/**
@@ -313,7 +314,6 @@ public class DependencyGraph {
 				arcEntity.setTarget(to);
 
 			}
-			arcEntity.increment();
 			arcsMap.put(arc, arcEntity);
 		}
 	}
@@ -458,7 +458,7 @@ public class DependencyGraph {
 						long duration = avgCaseTimeOnePercent;
 						this.activityMap.get(activitySimple.getUniqueLetter()).addResource(activitySimple.getResource(), duration);
 						caseEntity.putArc(arc.getRef(),startActivityTime, activitySimple.getEndTime(), activitySimple.getResource(), 0f);
-						arcsMap.get(arc.getRef()).addTime(avgCaseTimeOnePercent);
+						arcsMap.get(arc.getRef()).addTime(avgCaseTimeOnePercent).increment();
 						caseEntity.setStart(startActivityTime);
 					}
 				}
@@ -478,6 +478,7 @@ public class DependencyGraph {
 						caseEntity.putArc(arc.getRef(), activity.getEndTime(), activitySimple.getEndTime(), activitySimple.getResource(), 0f);
 						Long arcDuration = (activitySimple.getEndTime() -  activity.getEndTime());
 						arcsMap.get(arc.getRef()).addTime(arcDuration);
+						arc.increment();
 					}
 				}
 			}
@@ -492,7 +493,7 @@ public class DependencyGraph {
 						if (arcsMap.containsKey(ref)){
 							endActivityTime = caseEntity.getEnd() + avgCaseTimeOnePercent;
 							caseEntity.putArc(ref,lastActivity.getEndTime(), endActivityTime, "NONE", 0f);
-							arcsMap.get(ref).addTime(avgCaseTimeOnePercent);
+							arcsMap.get(ref).addTime(avgCaseTimeOnePercent).increment();
 							caseEntity.setEnd(endActivityTime);
 							break;
 						}
@@ -658,7 +659,6 @@ public class DependencyGraph {
 	
 	//============================================================= 
 	// Computa a medida de dependencia dos arcos
-	//	
 	//============================================================= 
 
 	private long computeDependencyMeasure() {

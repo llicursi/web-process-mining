@@ -36,7 +36,7 @@ public class ProcessMongoEntity {
 	
 	public ProcessMongoEntity(String name, String uuid){
 		this.uuid = uuid;
-		this.name = name;
+		this.setName(name);
 	}
 	
 	public String getUuid() {
@@ -90,8 +90,8 @@ public class ProcessMongoEntity {
 	public DBObject toDBObject(){
 		BasicDBObjectBuilder objeto = BasicDBObjectBuilder.start();
 		objeto.add("_id", this.id);
-		if (this.name != null ){
-			objeto.add("name", this.name);
+		if (this.getName() != null ){
+			objeto.add("name", this.getName());
 		}
 		if (this.uuid != null ){
 			objeto.add("uuid", this.uuid);
@@ -111,6 +111,14 @@ public class ProcessMongoEntity {
 	
 	public ProcessDetailsEntity getDetails(){
 		return details;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }

@@ -77,6 +77,59 @@ Dropzone.options.processDropzone = {
 	}
 };
 
-function createUploadButton(){
+function formatDate(date){
+	var oDate = new Date(date);
+	
+	return "<span>" + (oDate.getMonth() < 10 ? "0": "") + oDate.getMonth()+ "-"  
+		+ (oDate.getDay() < 10 ? "0": "") + oDate.getDay() + "-" +oDate.getFullYear() + "   " 
+		+ (oDate.getHours() < 10 ? "0": "") + oDate.getHours() + ":" 
+		+ (oDate.getMinutes() < 10 ? "0": "") +oDate.getMinutes() + ":" 
+		+ (oDate.getSeconds() < 10 ? "0": "") +oDate.getSeconds() + "</span>"; 
+}
+
+function createListItem(item){
+	if (item.date){
+		var a = document.createElement("a");
+		a.className = "analysis-list";
+		a.href = "/" + ((item.isProcessed != null && item.isProcessed) ? "process" : "adjust" ) + "/" + item._id + "/";
+		a.title = item.name;
+		a.innerHTML = formatDate(item.date.$date) + ' "' + item.name + '"';
+		return a;
+	}
+	return null;
+}
+
+function createListOfLastAnalysis(list){
+	
+	var div = document.createElement("div");
+	div.className = "jumbotron";
+	div.innerHTML = '<h3 style="text-align: left; margin-top: -20px; text-shadow: 1px 1px 1px white;"><span class="glyphicon glyphicon-time" aria-hidden="true" style="margin: 8px;"></span>Recent analysis</h3>';
+	var created = 0;
+	for (var i = 0; i < list.length; i++){
+		var link = createListItem(list[i]);
+		if (link != null){
+			div.appendChild(link);
+			created++;
+		}
+	}
+	
+	if (created > 0){
+		var container = document.getElementById("container-main");
+		container.appendChild(div);
+	}
 	
 }
+
+(function loadLastAnalysis(){
+	$.ajax({
+		 url:"/list/" ,
+		 method: "POST",
+		 datatype: "json",
+		 success: function(data) {
+			 if (data != null && data.list){
+				 createListOfLastAnalysis(data.list);
+			 }
+		 }
+	});
+})();
+

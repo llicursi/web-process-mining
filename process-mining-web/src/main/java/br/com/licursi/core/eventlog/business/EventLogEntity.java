@@ -1,5 +1,6 @@
 package br.com.licursi.core.eventlog.business;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,9 +15,11 @@ public class EventLogEntity {
 	@Id
 	private String id;
 	
+	private String name;
 	private String uuid;
 	private List<String> headers;
 	private List<DBObject> rawData;
+	private Timestamp date;
 	
 	public String getId() {
 		return id;
@@ -60,6 +63,24 @@ public class EventLogEntity {
 	public EventLogEntity(String uuid) {
 		this.uuid = uuid;
 	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Timestamp getDate() {
+		return date;
+	}
+
+	public void setDate(Timestamp date) {
+		this.date = date;
+	}
+
+	
 	
 
 }

@@ -25,12 +25,41 @@ ProcessMiningViewportController = function (attachPoint, data) {
 			.append("svg")
 			.attr("width", _graphDimensions.width)
 			.attr("height", _graphDimensions.height);
+
+		var name = _data.name;
+		if (name != null && name != ""){
+			rootSVG.append("text").classed("title", true).text(name).attr("x", 7).attr("y", 27).attr("style", "font-size: 26px; font-style: italic;fill: #999;text-shadow: 1px 1px 0px white;");
+		}
 		
 		_d3SVG = rootSVG
 			.append("svg")
 			.attr("width", _graphDimensions.width)
 			.attr("height", _graphDimensions.height)
 			.attr("class", "graph-attach");
+		
+		// Apend marker
+		/*
+		<defs>
+		  <marker id="markerArrow" markerWidth="13" markerHeight="13" refX="2" refY="7"
+		          orient="auto">
+		      <path d="M2,2 L2,13 L8,7 L2,2" style="fill: #000000;" />
+		  </marker>
+		</defs>
+		 */
+		_d3SVG.append("defs").append("marker")
+			.attr("id", "markerArrow")
+			.attr("markerWidth", 13)
+			.attr("markerHeight",13)
+			.attr("viewBox", "0 0 35 35")
+			.attr("refX", 8)
+			.attr("refY", 7)
+			.attr("orient", "auto")
+		.append("path")
+			.attr("d", "M2,2 L2,13 L8,7 L2,2")
+			.attr("fill", "#999")
+		
+		
+		
 		
 		_d3SVG.node().oncontextmenu = function(d) { return false; };
 			
@@ -51,8 +80,8 @@ ProcessMiningViewportController = function (attachPoint, data) {
 		
 		DAGContextMenu = DirectedAcyclicGraphContextMenu(_graph, _d3SVG);
 		
-		_sliderHandlers.path = new SliderHandler("densitySlider", "Paths");
-		_sliderHandlers.activity = new SliderHandler("activitySlider", "Activities");
+	/*	_sliderHandlers.path = new SliderHandler("densitySlider", "Paths");
+		_sliderHandlers.activity = new SliderHandler("activitySlider", "Activities");*/
 	} init();
 	
 	
@@ -110,9 +139,13 @@ ProcessMiningViewportController = function (attachPoint, data) {
 		var $graphArea = $('#graph');
 
 	    var display = $graphArea.css('display');
+	    var height = window.innerHeight - 78 - 20;
+	    if (height < 510){
+	    	height = 510
+	    }
 	    $graphArea
 	        .css('display', 'block')
-	        .css('height', '510px');
+	        .css('height',  height + 'px');
 	    _graphDimensions.width = $graphArea.width() - _graphDimensions.margin.left - _graphDimensions.margin.right;
 	    _graphDimensions.height = $graphArea.height() - _graphDimensions.margin.top - _graphDimensions.margin.bottom ;
 	    $graphArea.css('display', display);
@@ -134,7 +167,7 @@ ProcessMiningViewportController = function (attachPoint, data) {
 	    }).on("hidenodes", function(nodes, selectionname) {
 	        if (!lightweight) _d3SVG.classed("hovering", false);
 	        DAGActivities.hideNodes(nodes);
-
+	        debugger;
 	        // REmove the nodes from graph
 	        DAG.removenode(function(d) {
 	            if (lightweight) {
@@ -191,6 +224,41 @@ ProcessMiningViewportController = function (attachPoint, data) {
 		$(".graph .node").unbind("contextmenu");
 	}
 
+	// Draw label at Line when hovered
+	function drawLabelAtLine(d, immediate){
+		
+		function getFrequencyFromArc(d, immediate){
+			if (d.count == 0){
+				return "100%";
+			}
+			var val = d.count / ((immediate) ? d.source : d.target).datum.count;
+			var percent = Math.trunc(val * 10000)/100 + "%";
+			return percent;
+		}
+		
+		if (!d.middlePoint){
+			d.middlePoint = DAGAnimationBar.getPointAtMiddle(d);
+		}
+		var place = _d3SVG.select(".graph").append("g");
+		place.attr("transform", "translate(" +d.middlePoint.x+ ","+d.middlePoint.y+ ")");
+		place.classed("percent-income", true);
+		place.append("rect")
+			.attr("rx", 2)
+			.attr("ry", 2)
+			.attr("width",39)
+			.attr("height", 20)
+			.attr("fill", "white")
+			.attr("stroke", "gray")
+			.attr("x", -2)
+			.attr("y", -15);
+		place.append("text")
+			.attr("x", 0)
+			.attr("y", 0)
+			.attr("fill", "#green")
+			.text(getFrequencyFromArc(d, immediate))
+	}
+	
+	
 //	A function that attaches mouse-click events to nodes to enable node selection
 	function setupEvents(){
 		var nodes = _d3SVG.selectAll(".node");
@@ -226,6 +294,22 @@ ProcessMiningViewportController = function (attachPoint, data) {
 				});
 				DAGTooltip.hide();
 			});
+			
+			DAGAnimationBar.setOnEdgeCompleted(function (uniqueLetter, edge){
+				
+				for (var i = 0; i < _graph.nodelist.length; i ++){
+					var node = _graph.nodelist[i];
+					if (node.datum.uniqueLetter == uniqueLetter){
+						var rect = node.binded.binded.select('rect')
+						rect.classed("blink", true)
+						setTimeout(function() {
+							rect.classed("blink", false);
+						}, 300);
+						
+					}
+				}
+				
+			});
 				
 		}
 		DAGActivities.setup(nodes);
@@ -241,8 +325,9 @@ ProcessMiningViewportController = function (attachPoint, data) {
 				}
 			}).on("mouseout", function(d){
 				_d3SVG.classed("hovering", false);
-				edges.classed("hovered", false).classed("immediate", false);
-				nodes.classed("hovered", false).classed("immediate", false);
+				edges.classed("hovered", false).classed("immediate", false).classed("previous", false);
+				nodes.classed("hovered", false).classed("immediate", false).classed("previous", false);
+				 _d3SVG.select(".graph").selectAll("g.percent-income").remove();
 			});
 		}
 
@@ -277,7 +362,7 @@ ProcessMiningViewportController = function (attachPoint, data) {
 			nodes.classed("hovered", function(d) {
 				return pathnodes[d.id];
 			});
-
+			
 			var immediatenodes = {};
 			var immediatelinks = {};
 			immediatenodes[center.id] = highlightKeys["TARGET"];
@@ -292,14 +377,25 @@ ProcessMiningViewportController = function (attachPoint, data) {
 			});
 
 			edges.classed("immediate", function(d) {
-				return (immediatelinks[d.ref] == highlightKeys["TARGET"]);
+				if  (immediatelinks[d.ref] == highlightKeys["TARGET"]){
+					
+					drawLabelAtLine(d, true);
+					return true;
+				}
 			});
+			
 			nodes.classed("immediate", function(d) {
 				return (immediatenodes[d.id] == highlightKeys["TARGET"]);
 			});
 			
 			edges.classed("previous", function(d) {
-				return (immediatelinks[d.ref] == highlightKeys["SOURCE"]);
+				if ( (immediatelinks[d.ref] == highlightKeys["SOURCE"])){
+					// Draw label at middle of an edge
+					drawLabelAtLine(d, false);
+					
+					return true;
+				}
+				return false;
 			});
 			nodes.classed("previous", function(d) {
 				return (immediatenodes[d.id] == highlightKeys["SOURCE"]);
@@ -359,6 +455,9 @@ ProcessMiningViewportController = function (attachPoint, data) {
 		if (target == "animation"){
 			DAGActivities.showAllNodes();
 			_graph.updateEdges(d3.select(".graph-attach").selectAll("path"));
+			_d3GraphG.selectAll("path.edge").attr("stroke", function (d){
+				return d.delay;
+			});
 			DAGAnimationBar.load("cases/", 0);
 		}
 		

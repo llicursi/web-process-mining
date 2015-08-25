@@ -13,7 +13,7 @@ public interface DataSource {
 
 	public abstract void close();
 	
-	public List<EventLogEntity> getEventLog(UUID randomUUID) throws IOException;
+	public List<EventLogEntity> getEventLog(UUID randomUUID, String filename) throws IOException;
 	
 	public abstract String getExtension();
 	

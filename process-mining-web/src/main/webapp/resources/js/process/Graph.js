@@ -18,7 +18,7 @@ var Node = function(id, type) {
     this.hidden               = false;
     this.child_nodes          = {}; // The immediate child nodes in the graph, regardless of visibility
     this.parent_nodes         = {}; // The immediate parent nodes in the graph, regardless of visibility
-    
+    this.childCount 		  = 0;
     
     function getColorScale(color, scale){
     	return d3.hsl(color).darker(darkness).toString();
@@ -32,6 +32,7 @@ Node.prototype.visible = function(_) {
 };
 
 Node.prototype.addChild = function(child) {
+	this.childCount ++;
     this.child_nodes[child.id] = child;
 };
 
@@ -40,7 +41,10 @@ Node.prototype.addParent = function(parent) {
 };
 
 Node.prototype.removeChild = function(child) {
-    if (child.id in this.child_nodes) delete this.child_nodes[child.id];
+    if (child.id in this.child_nodes) {
+    	delete this.child_nodes[child.id];
+    	this.childCount --;
+    }
 };
 
 Node.prototype.removeParent = function(parent) {
@@ -58,7 +62,7 @@ Node.prototype.getChildren = function() {
 
 Node.prototype.getVisibleParents = function() {   
     var visible_parent_map = {};
-    
+   
     var explore_node = function(node) {
         if (visible_parent_map[node.id]) {
             return;
@@ -201,8 +205,7 @@ Graph.prototype.getColorByDelay = function (ref, interval){
 		debugger;
 	}
 	var colors = {
-		fill : colorbrewer.RdYlGn[9][index],
-		stroke : colorbrewer.RdYlBu[9][index]
+		fill : colorbrewer.RdYlGn[9][index]
 	};
 	
 	return colors;
@@ -213,6 +216,9 @@ Graph.prototype.updateEdges = function(d3Paths){
 	var edges = {};
 	
 	d3Paths.each(function (data){
+		if (!data){
+			return false;
+		}
 		var path = d3.select(this);
 		var d = path.attr("d");
 		var dParts = d.split("C");
@@ -327,7 +333,6 @@ function computePathIntervals(data){
 
 Graph.prototype.getVisibleLinks = function() {
     var visible_parent_map = {};
-    
     var explore_node = function(node) {
         if (visible_parent_map[node.id]) {
             return;
@@ -356,6 +361,7 @@ Graph.prototype.getVisibleLinks = function() {
     var nodes = this.nodes;
     var ret = [];
     var arcs = this._importedData.arcs;
+    var details = this._importedData.details;
     var visible_nodes = this.getVisibleNodes();
     for (var i = 0; i < visible_nodes.length; i++) {
         var node = visible_nodes[i];
@@ -364,7 +370,7 @@ Graph.prototype.getVisibleLinks = function() {
         Object.keys(parentids).forEach(function(pid) {
         	var ref = getRef(nodes[pid],node);
         	var arc = arcs[ref];
-            ret.push(constructEdge(ref, nodes[pid], node, arc));
+            ret.push(constructEdge(ref, nodes[pid], node, arc, details));
         });
     }
     this.edges = ret;
@@ -375,7 +381,7 @@ Graph.prototype.getVisibleLinks = function() {
  * The functions below are just simple utility functions
  */
 
-function constructEdge(ref, nodeStart, nodeEnd, arc){
+function constructEdge(ref, nodeStart, nodeEnd, arc, details){
 	var edgeN =	{
 		ref: ref ,
 		source: nodeStart, 
@@ -395,11 +401,15 @@ function constructEdge(ref, nodeStart, nodeEnd, arc){
 		}
 		
 		// Measure strength
-		var strength = (nodeStart.datum.count > 0 ) ? arc.count / nodeStart.datum.count : 0;
-		edgeN.strokeWidth = getEdgeStroke(strength);
-		
+		var strength = (nodeStart.datum.count > 0 ) ? arc.count / (nodeStart.datum.count/nodeStart.childCount) : 0;
+		edgeN.freq = strength;
+		edgeN.frequency = getEdgeStroke(strength);
+		debugger;
+		edgeN.delay = getEdgeStrokeByTime(edgeN.avgTime, details.averageTime/details.activitiesCount);
 	} else {
+		
 		edgeN.count = nodeStart.datum.count;
+		edgeN.frequency = getEdgeStroke(1);
 		edgeN.avgTime = 1;
 		edgeN.strokeWidth = 3;
 	}
@@ -410,25 +420,45 @@ function constructEdge(ref, nodeStart, nodeEnd, arc){
 
 function getEdgeStroke(dependencyMeasure){
 	var d = parseFloat(dependencyMeasure);
-	if (d > 0 && d <= 0.15){
-		return 1;
-	} else if (d > 0.15 && d <= 0.25){
-		return 2;
-	} else if (d > 0.25 && d <= 0.35){
-		return 3.0;
-	} else if (d > 0.35 && d <= 0.45){
-		return 4;
-	} else if (d >= 0.55 && d < 0.65){
-		return 6;
-	} else if (d >= 0.65 && d < 0.75){
-		return 7;
-	} else if (d >= 0.75 && d < 0.85){
-		return 8;
-	} else if (d >= 0.85 && d < 1){
-		return 9;
-	} else {
-		return 5;
+	var index = 5;
+	 if (d > 0 && d <= 0.25){
+		index = 2;
+	} else if (d > 0.25 && d <= 0.45){
+		index = 2;
+	} else if (d > 0.45 && d <= 0.85){
+		index = 4;
+	} else if (d >= 1.15 && d < 1.55){
+		index = 6;
+	} else if (d >= 1.55 && d < 1.75){
+		index = 7;
+	} else if (d >= 1.75 && d < 1.85){
+		index = 8;
+	} else if (d >= 1.85){
+		index = 9;
+	} 
+	
+	return colorbrewer.PuBu[9][index-1];
+}
+
+function getEdgeStrokeByTime(edgeTime, timePerAct){
+	var d = (edgeTime/timePerAct)
+	var index = 1;
+	if (d < 1.1){
+		index = 1;
+	} else if (d < 1.3){
+		index = 2;
+	} else if (d < 1.3){
+		index = 3;
+	} else if (d < 1.7){
+		index = 4;
+	} else if (d < 2.5){
+		index = 5;
+	} else if (d < 3){
+		index = 6;
+	} else if (d < 3.7){
+		index = 7;
 	}
+	return colorbrewer.YlOrRd[9][index];
 }
 
 function getNodesBetween(a, b) {
