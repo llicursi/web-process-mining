@@ -76,9 +76,17 @@ a.analysis-list span{
 .jumbotron h2{
   color: #333;
   text-shadow: 2px 2px 1px white;
-  font-size: 40px;
+  font-size: 44px;
+}
+.jumbotron h4{
+  color: #777;
+  font-size: 17px;
 }
 
+.jumbotron h4 span{
+	color : #427FCE;
+    font-weight: bold;
+}
 /* Supporting marketing content */
 .marketing {
   margin: 40px 0;

@@ -404,7 +404,6 @@ function constructEdge(ref, nodeStart, nodeEnd, arc, details){
 		var strength = (nodeStart.datum.count > 0 ) ? arc.count / (nodeStart.datum.count/nodeStart.childCount) : 0;
 		edgeN.freq = strength;
 		edgeN.frequency = getEdgeStroke(strength);
-		debugger;
 		edgeN.delay = getEdgeStrokeByTime(edgeN.avgTime, details.averageTime/details.activitiesCount);
 	} else {
 		

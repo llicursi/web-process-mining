@@ -37,6 +37,13 @@ var DirectedAcyclicGraphTooltip = function(gravity, propertiesToRead) {
 			tooltip.append($("<div>").append(svg));
 			barchart.clearArea();
 		}
+		
+		function appendChartWithDelay(key, values, count, tooltip){
+			var barchart = new BARCHART();
+			var svg = barchart.plot(values, count, true);
+			tooltip.append($("<div>").append(svg));
+			barchart.clearArea();
+		}
 
 		var tooltip = $("<div>").attr("class", "xtrace-tooltip");
 		var seen = {"Edge": true, "version": true};
@@ -49,7 +56,8 @@ var DirectedAcyclicGraphTooltip = function(gravity, propertiesToRead) {
 				if (key.toUpperCase()=="AVGTIME") {
 					appendRow(key, timestampToTimeString(datum[key]), tooltip);
 				} else if (key.toUpperCase()=="RESOURCES"){
-					//appendChart(key, datum[key], datum['count'], tooltip);
+					appendChart(key, datum[key], datum['count'], tooltip);
+					appendChartWithDelay(key, datum[key], datum['count'], tooltip);
 				} else {
 					appendRow(key, datum[key], tooltip);
 				}
@@ -59,8 +67,9 @@ var DirectedAcyclicGraphTooltip = function(gravity, propertiesToRead) {
 
 		// Do the label
 		//appendRow("(hash)", hash_report(datum), tooltip);
-
-		return tooltip.outerHTML();
+		document.getElementById("teste2").innerHTML = tooltip.outerHTML();
+		
+		return "";
 	});
 
 	return tooltip;
@@ -81,8 +90,7 @@ var CompareTooltip = function() {
 		appendRow("ID", d.get_id(), tooltip);
 		appendRow("NumReports", d.get_node_ids().length, tooltip);
 		appendRow("NumLabels", Object.keys(d.get_labels()).length, tooltip);
-
-		return tooltip.outerHTML();
+		return "";
 	});
 
 	return tooltip;

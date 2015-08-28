@@ -40,6 +40,7 @@ public class DependencyGraph {
 	private Map<String, ActivityEntity> activityMap = null;
 	private Map<String, BorderEventEntity> borderEventMap = null;
 	
+	private List<String> parallelArcs = null;
 	private Map<String, ArcEntity> arcsMap = null;
 	private Map<String, List<ArcEntity>> arcsEndedWith = null;
 	
@@ -199,7 +200,7 @@ public class DependencyGraph {
 			activityEntity = new ActivityEntity(activityName, activityChar.toString());
 			activityMap.put(activityChar, activityEntity);
 		}
-		// TODO: reverter aqui
+		// TODO: reverter aqui? Esse contador esta mais preciso que o outro?
 		//activityEntity.incrementCounter();
 		
 		return activityEntity;
@@ -338,67 +339,9 @@ public class DependencyGraph {
 	
 	/////////////////////// Tables
 	
-	public void printRelationalTable(){
-		
-		// Line 1
-		String line1 = "  |";
-		Set<Character> activitySetChars = activityAlias.values();
-		List<Character> activityChars = new ArrayList<Character>();
-		activityChars.addAll(activitySetChars);
-		Collections.sort(activityChars);
-
-		for (Character c : activityChars){
-			line1 += " " + c + "  |";
-		}
-		System.out.println("" + line1);
-		
-		// Other lines
-		String middleLines = "";
-		for (Character c1 : activityChars){
-			middleLines = c1 + " |";
-			for (Character c2 : activityChars){
-				middleLines += " " + activityRelation(c1, c2) + " |";  
-			}
-			System.out.println(middleLines);
-		}
-		
-	}
 	
-	private String activityRelation(Character c1, Character c2){
-		return arcsMap.containsKey(c1 + ArcEntity.SPLIT_CHAR + c2) ? ">>" : "  "; 
-	}
 	
-	public void printOcurrancyTable(){
-		
-		// Line 1
-		String line1 = "  |";
-		Set<Character> activitySetChars = activityAlias.values();
-		List<Character> activityChars = new ArrayList<Character>();
-		activityChars.addAll(activitySetChars);
-		Collections.sort(activityChars);
-
-		for (Character c : activityChars){
-			line1 += " " + c + "  |";
-		}
-		System.out.println("" + line1);
-		
-		// Other lines
-		String middleLines = "";
-		for (Character c1 : activityChars){
-			middleLines = c1 + " |";
-			for (Character c2 : activityChars){
-				ArcEntity arcEntity = arcsMap.get(c1 + ArcEntity.SPLIT_CHAR + c2);
-				if (arcEntity != null){
-					Integer count = arcEntity.getCount();
-					middleLines += " " + count + (count > 9 ? "" : " ") + " |";
-				} else{
-					middleLines += "    |";
-				} 
-			}
-			System.out.println(middleLines);
-		}
-		
-	}
+	
 	
 	public ProcessAndCases getProcessedData(String uuid){
 		long startProcessing = System.currentTimeMillis();
@@ -409,6 +352,8 @@ public class DependencyGraph {
 		List<CaseMongoEntity> casesWithTimeProcessed = getCasesWithTimeProcessed(processDetailEntity.getAverageTime(), uuid);
 		
 		ProcessMongoEntity processEntity = new ProcessMongoEntity(uuid);
+		processEntity.setActivityAlias(this.activityAlias);
+		processEntity.setParallelArcs(this.parallelArcs);
 		
 		processEntity.setBorderEvents(this.getBorderEvents());
 		processEntity.setActivities(this.getActivities());
@@ -458,14 +403,13 @@ public class DependencyGraph {
 						long duration = avgCaseTimeOnePercent;
 						this.activityMap.get(activitySimple.getUniqueLetter()).addResource(activitySimple.getResource(), duration);
 						caseEntity.putArc(arc.getRef(),startActivityTime, activitySimple.getEndTime(), activitySimple.getResource(), 0f);
-						arcsMap.get(arc.getRef()).addTime(avgCaseTimeOnePercent).increment();
 						caseEntity.setStart(startActivityTime);
 					}
 				}
 			}
 		
 			// Recover the list of activities, avoiding the first one, 
-			// for the purpouse of calculating of arcs time
+			// for calculating the arcs time
 			for (int i = 1 ; i < caseEntity.getActivities().size(); i++){
 				ActivitySimpleEntity activitySimple = caseEntity.getActivities().get(i);
 				List<ArcEntity> possibleArcs = getPossibleArcs(activitySimple.getUniqueLetter());
@@ -477,8 +421,7 @@ public class DependencyGraph {
 						this.activityMap.get(activitySimple.getUniqueLetter()).addResource(activitySimple.getResource(), duration);
 						caseEntity.putArc(arc.getRef(), activity.getEndTime(), activitySimple.getEndTime(), activitySimple.getResource(), 0f);
 						Long arcDuration = (activitySimple.getEndTime() -  activity.getEndTime());
-						arcsMap.get(arc.getRef()).addTime(arcDuration);
-						arc.increment();
+						arcsMap.get(arc.getRef()).addTime(arcDuration).increment();
 					}
 				}
 			}
@@ -493,7 +436,6 @@ public class DependencyGraph {
 						if (arcsMap.containsKey(ref)){
 							endActivityTime = caseEntity.getEnd() + avgCaseTimeOnePercent;
 							caseEntity.putArc(ref,lastActivity.getEndTime(), endActivityTime, "NONE", 0f);
-							arcsMap.get(ref).addTime(avgCaseTimeOnePercent).increment();
 							caseEntity.setEnd(endActivityTime);
 							break;
 						}
@@ -591,7 +533,7 @@ public class DependencyGraph {
 	//============================================================= 
 	private long computeParalellism() {
 		long startTime = System.currentTimeMillis();
-		
+		this.parallelArcs = new ArrayList<String>();
 		Set<Character> activitySetChars = activityAlias.values();
 		BiMap<Character, String> inverse = activityAlias.inverse();
 		List<Character> activityChars = new ArrayList<Character>();
@@ -624,6 +566,10 @@ public class DependencyGraph {
 								// Remove Arcs
 								arcsMap.remove(c1 + ArcEntity.SPLIT_CHAR + c2);
 								arcsMap.remove(c2 + ArcEntity.SPLIT_CHAR + c1);
+								
+								// Add in parallel list
+								this.parallelArcs.add(c1 + ArcEntity.SPLIT_CHAR + c2);
+								this.parallelArcs.add(c2 + ArcEntity.SPLIT_CHAR + c1);
 							}
 							
 						}

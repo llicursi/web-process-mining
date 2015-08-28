@@ -4,8 +4,8 @@ BARCHART = function (){
 	var _tooltipArea = null;
 	var margin = {top: 20, right: 10, bottom: 30, left: 30};
 	var dimensions = {
-	    width : 300 - margin.left - margin.right,
-	    height : 100 - margin.top - margin.bottom
+	    width : 200 - margin.left - margin.right,
+	    height : 120 - margin.top - margin.bottom
 	};
 
 	var formatPercent = d3.format(".0%");
@@ -18,13 +18,27 @@ BARCHART = function (){
 	
 	
 	
-	this.plot = function (dataObject, count){
+	this.plot = function (dataObject, count, delay){
 		var data = [];
+		var sum = function (ob){
+			if (ob == null){
+				return 0;
+			}
+			var soma  =  0;
+			for (var i = 0;i< ob.length; i ++){
+				var inte = parseFloat(ob[i]);
+				soma = soma + inte;
+			}
+			
+			return soma;
+		}
+		
+		
 		for (var key in dataObject){
 			data.push({
 				"letter" : key,
 				"values": dataObject[key],
-				"frequency" : dataObject[key].length/count
+				"frequency" : delay ? (sum(dataObject[key])/count) : (dataObject[key].length/count)
 			});
 		}
 		
@@ -58,7 +72,7 @@ BARCHART = function (){
 		var gs = g.selectAll(".bar")
 			.data(data)
 			.enter().append("g")
-			.attr("class", "bar")
+			.attr("class", "bar " + (delay? " cor" : ""))
 		gs.append("rect")
 			.attr("x", function(d) { return x(d.letter); })
 			.attr("width", x.rangeBand())
@@ -70,16 +84,16 @@ BARCHART = function (){
 			
 		
 		text.append("tspan")
-			.text(function(d) { return formatPercent(d.frequency);})
+			.text(function(d) { return (delay) ? timestampToTimeString(d.frequency) : formatPercent(d.frequency);})
 			.attr("fill", "steelblue")
 			.attr("x",  function (d) {return x(d.letter) +  x.rangeBand() / 2 ; })
 			.attr("dy", -2);
-
+if (!delay){
 		text.append("tspan")
 			.text(function(d) { return d.values.length;})
 			.attr("x",  function (d) {return x(d.letter) +  x.rangeBand() / 2 ; })
 			.attr("dy", "15");
-		
+}
 		return svg[0][0];
 	};
 	

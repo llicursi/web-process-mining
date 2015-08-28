@@ -4,8 +4,6 @@ import java.util.List;
 
 import br.com.licursi.core.miner.exceptions.InvalidDateException;
 import br.com.licursi.core.process.ProcessAndCases;
-import br.com.licursi.core.process.ProcessMongoEntity;
-import br.com.licursi.core.process.cases.CaseMongoEntity;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.DBObject;
@@ -28,11 +26,15 @@ public class FlexibleHeuristicMinner {
 		for (DBObject instance : mappedData){
 			processActivities((BasicDBList) instance.get(ACTIVITIES));
 		}
-		dependencyGraph.printRelationalTable();
-		System.out.println("========================================================");
-		dependencyGraph.printOcurrancyTable();
 		
-		return dependencyGraph.getProcessedData(this.uuid);
+		ProcessAndCases processedData = dependencyGraph.getProcessedData(this.uuid);
+		processedData.printRelationalTable(false);
+		System.out.println("========================================================");
+		processedData.printRelationalTable(true);
+		System.out.println("========================================================");
+		processedData.printOcurrancyTable();
+		
+		return processedData;
 				
 	}
 

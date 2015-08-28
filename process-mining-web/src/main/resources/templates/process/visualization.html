@@ -14,38 +14,6 @@
 		<link rel="stylesheet" th:href="@{/css/process/graph.css}" type="text/css"/>
 		<link rel="stylesheet" th:href="@{/css/process/tipsy.css}" type="text/css"/>
 		
-		<style type="text/css">
-			.axis text {
-			  font: 10px sans-serif;
-			}
-			
-			.axis path,
-			.axis line {
-			  fill: none;
-			  stroke: #000;
-			  shape-rendering: crispEdges;
-			}
-			
-			.bar rect {
-			  fill: steelblue;
-			  fill-opacity: .9;
-			}
-			.bar text {
-			  fill : white;
-			  font-size: 10px;
-			}
-			.x.axis path {
-			  display: none;
-			}
-			
-			label {
-			  position: absolute;
-			  top: 10px;
-			  right: 10px;
-			}
-						
-		</style>
-        
     </head>
     <body>
     	<span th:include="commun/header :: process-menu (active=2)"></span>
@@ -62,22 +30,53 @@
 				
 				<div class="tab-content">
 					<div role="tabpanel" class="tab-pane fade in active" id="densityControl">
-						<h2>Info</h2>
-						<div class="subtitle">
-							<label>Border Events:</label>
-							<ul>
-								<li><div class="sub-start"></div> <span>Process Start</span></li>
-								<li><div class="sub-end"></div> <span>Process End</span></li>
-			
-							</ul>
-							<label>Activities :</label>
-							<ul>
-								<li><div class="sub-actvity"></div> <span>Default</span></li>
-								<li><div class="sub-actvity sub-selected"></div> <span>Selected</span></li>
-								<li style="width: 68px;"><div class="sub-actvity sub-next"></div> <span>Next</span></li>
-								<li><div class="sub-actvity sub-previous"></div> <span>Previous</span></li>
-							</ul>
-						</div>
+					<h2>Info</h2>
+
+					<span title="BuPu" class="palette" style="margin-left: 46px;">
+						<span
+						style="margin-left: 56px; float: left; font-weight: bolder; margin-top: -3px;">Lower
+							Trafic</span> <span
+						style="margin-left: 58px; float: left; color: #B56104; font-size: 12px; margin-top: -3px;">Mostly
+							unused</span> <span
+						style="background-color: rgb(224, 236, 244); width: 30px;"
+						class="swatch"></span> <span
+						style="background-color: rgb(191, 211, 230); width: 31px;"
+						class="swatch"></span><span
+						style="background-color: rgb(158, 188, 218); width: 32px;"
+						class="swatch"></span><span
+						style="background-color: rgb(140, 150, 198); width: 33px;"
+						class="swatch"></span><span
+						style="background-color: rgb(140, 107, 177); width: 34px;"
+						class="swatch"></span><span
+						style="background-color: rgb(136, 65, 157); width: 35px;"
+						class="swatch"></span><span
+						style="background-color: rgb(129, 15, 124); width: 36px;"
+						class="swatch"></span> <span
+						style="margin-left: 56px; float: left; font-weight: bolder; margin-top: -3px;">Higher
+							Trafic</span> <span
+						style="margin-left: 58px; float: left; color: #B56104; font-size: 12px; margin-top: -3px;">Commom
+							paths</span> <span
+						style="background-color: rgb(77, 0, 75); width: 37px;"
+						class="swatch"></span>
+					</span>
+					<h2>Subtitle</h2>
+					<div class="subtitle">
+						<label>Border Events:</label>
+						<ul>
+							<li><div class="sub-start"></div> <span>Process Start</span></li>
+							<li><div class="sub-end"></div> <span>Process End</span></li>
+
+						</ul>
+						<label>Activities display states:</label>
+						<ul>
+							<li><div class="sub-actvity sub-selected"></div> <span>Selected</span></li>
+							<li style="width: 68px;"><div class="sub-actvity sub-next"></div>
+								<span>Next</span></li>
+							<li><div class="sub-actvity sub-previous"></div> <span>Previous</span></li>
+						</ul>
+						<div style="clear: both"></div>
+
+					</div>
 					</div>
 					<div role="tabpanel" class="tab-pane fade" id="activitiesControl">	
 						<h2>Activities</h2>
@@ -85,7 +84,7 @@
 					</div>
 					<div role="tabpanel" class="tab-pane fade" id="statiscticsControl">	
 						<h2>Statistics</h2>
-						<div class="content"></div>
+						<div class="" id="teste2"></div>
 					</div>
 					<div role="tabpanel" class="tab-pane fade" id="animationControl">	
 						<h2>Replay</h2>
@@ -106,12 +105,33 @@
 						  		<span class="glyphicon glyphicon-forward"></span>
 						  	</button>
 						</div>
-						<div class="content">
+						<div class="replay">
+						<span class="palette" title="YlOrRd" style="margin: 23px 42px;">
+							<span
+							style="float: left; margin-left: 40px; font-size: 12px; font-weight: bolder; text-align: center; line-height: 12px;">HIGHEST<span
+								style="display: block;"> avg time</span></span><span class="swatch"
+							style="background-color: rgb(189, 0, 38); width: 30px; height: 21px;"></span>
+							<span class="swatch"
+							style="background-color: rgb(227, 26, 28); width: 28px; height: 21px;"></span>
+							<span class="swatch"
+							style="background-color: rgb(252, 78, 42); width: 26px; height: 21px;"></span>
+							<span class="swatch"
+							style="background-color: rgb(253, 141, 60); width: 24px; height: 21px;"></span>
+							<span class="swatch"
+							style="background-color: rgb(254, 178, 76); width: 22px; height: 21px;"></span>
+							<span class="swatch"
+							style="background-color: rgb(254, 217, 118); width: 20px; height: 21px;"></span>
+							<span
+							style="float: left; margin-left: 40px; font-size: 12px; font-weight: bolder; text-align: center; line-height: 12px;">LOWEST<span
+								style="display: block;"> avg time</span></span><span class="swatch"
+							style="background-color: rgb(255, 237, 160); width: 18px; height: 21px;"></span>
+						</span>
+
+						<h2>Displaying</h2>
 							<ul>
-								<li>Current displaying: <span id="ani-control-display">0</span></li>
-								<li>Waiting : <span id="ani-control-waiting">0</span></li>
+								<li>Current: <span id="ani-control-display">0</span></li>
+								<li>Waiting: <span id="ani-control-waiting">0</span></li>
 								<li>Done: <span id="ani-control-done">0</span></li>
-								<li>&nbsp;</li>
 								<li>Total: <span id="ani-control-total">0</span></li>
 							</ul>
 						</div>

@@ -463,6 +463,9 @@ ProcessMiningViewportController = function (attachPoint, data) {
 		
 		if (source == "animation"){
 			DAGAnimationBar.hide();
+			_d3GraphG.selectAll("path.edge").attr("stroke", function (d){
+				return d.frequency;
+			});
 		}
 		
 		

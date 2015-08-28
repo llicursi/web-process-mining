@@ -4,7 +4,39 @@ html.lt-ie9, html.lt-ie9 body {
     height: 100px;
 }
 
+.axis text {
+  font: 10px sans-serif;
+}
 
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.bar.cor rect {
+  fill: rgb(253, 141, 60);
+  fill-opacity: .9;
+}
+
+.bar rect {
+  fill: steelblue;
+  fill-opacity: .9;
+}
+.bar text {
+  fill : white;
+  font-size: 10px;
+}
+.x.axis path {
+  display: none;
+}
+
+label {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
 .unsupported-browser {
     height: 30px;
     line-height: 30px;
@@ -425,4 +457,32 @@ ul.context-menu li a:hover {
 
 .subtitle span {
     color: #848282;
+}
+
+
+
+.palette {
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: bottom;
+    margin: 4px 0px 4px 6px;
+    padding: 4px;
+    background: #FFF none repeat scroll 0% 0%;
+}
+
+.swatch {
+    display: block;
+    vertical-align: middle;
+    height: 24px;
+}
+
+.replay ul li{
+	list-style-type : none;
+	padding:0px;
+	margin:0px;	
+}
+.replay ul {
+	font-size: 12px;
+	padding:0px;
+	margin:0px;	
 }

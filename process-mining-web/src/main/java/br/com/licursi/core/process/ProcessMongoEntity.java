@@ -1,17 +1,19 @@
 package br.com.licursi.core.process;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DBObject;
 
 import br.com.licursi.core.process.activities.ActivityEntity;
 import br.com.licursi.core.process.arcs.ArcEntity;
-import br.com.licursi.core.process.cases.CaseEntity;
 import br.com.licursi.core.process.events.BorderEventEntity;
+
+import com.google.common.collect.BiMap;
+import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.DBObject;
 
 @Document(collection="process")
 public class ProcessMongoEntity {
@@ -25,6 +27,15 @@ public class ProcessMongoEntity {
 	private Map<String, ActivityEntity> activities;
 	private Map<String, BorderEventEntity> borderEvents;
 	private ProcessDetailsEntity details;
+	
+	// Used at console output, displaying parallelism and occurrence
+	@Transient
+	private BiMap<String, Character> activityAlias = null;
+
+	// Used at console output, displaying parallelism and occurrence
+	@Transient
+	private List<String> parallelArcs = null;
+	
 	
 	public ProcessMongoEntity(){
 		this.details = new ProcessDetailsEntity();
@@ -119,6 +130,26 @@ public class ProcessMongoEntity {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	@Transient
+	public BiMap<String, Character> getActivityAlias() {
+		return activityAlias;
+	}
+
+	@Transient
+	public void setActivityAlias(BiMap<String, Character> activityAlias) {
+		this.activityAlias = activityAlias;
+	}
+
+	@Transient
+	public List<String> getParallelArcs() {
+		return parallelArcs;
+	}
+
+	@Transient
+	public void setParallelArcs(List<String> parallelArcs) {
+		this.parallelArcs = parallelArcs;
 	}
 
 }
