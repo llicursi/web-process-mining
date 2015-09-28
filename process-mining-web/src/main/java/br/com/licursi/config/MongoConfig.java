@@ -8,11 +8,11 @@ import com.mongodb.DB;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 
-@Configuration
+//@Configuration
 public class MongoConfig {
-	private static final String DATABASE_NAME = "process-mining";
+/*	private static final String DATABASE_NAME = "process-mining";
 	private Mongo mongo;
-	
+
 	public @Bean Mongo mongo() throws Exception {
 		if (mongo == null){
 			MongoClient mongoClient = new MongoClient("localhost");
@@ -26,5 +26,5 @@ public class MongoConfig {
 	public @Bean MongoTemplate mongoTemplate() throws Exception {
 		return new MongoTemplate(mongo(), DATABASE_NAME);
 	}
-
+*/
 }
