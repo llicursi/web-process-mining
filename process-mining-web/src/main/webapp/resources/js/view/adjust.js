@@ -19,7 +19,7 @@ ADJUST = function (){
 		name:"Resource",
 		desc:"Selecione a coluna que represente o executor responsável pela atividade.",
 		optional:false
-	},{
+	}/*,{
 		name:"Start Time",
 		desc:"Selecione a coluna que represente o término da atividade.",
 		optional:true
@@ -27,7 +27,7 @@ ADJUST = function (){
 		name:"Cost",
 		desc:"Selecione que represente o custo do recurso na atividade executada.",
 		optional:true
-	}];
+	}*/];
 	
 	var _selectedVariable = null;
 	

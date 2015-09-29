@@ -15,6 +15,13 @@
 	<build>
 		<plugins>
 			<plugin>
+			  <artifactId>maven-compiler-plugin</artifactId>
+			  <configuration>
+			    <target>1.5</target>
+			    <source>1.5</source>
+			  </configuration>
+			</plugin>
+			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>

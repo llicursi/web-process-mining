@@ -1,68 +1,17 @@
 /* Space out content a bit */
-
-a.analysis-list {
-    display: block;
-    width: 100%;
-    background-color: white;
-    border: 1px solid #eee;
-    margin: 5px 0;
-    color: #64CA42;
-    font-size: 17px;
-    text-align: left;
-    box-shadow: 1px 1px 0px #ccc;
-}
-
-a.analysis-list:hover {
-    text-decoration: none;
-    color: green;
-    background-color: whitesmoke;
-}
-a.analysis-list span{
-	    margin: 0px 12px 0px 20px;
-    color: #496480;
-    font-size: 20px;
-}
-
-.row.reduce {
-	padding: 45px;
-}
-.row.reduce img {
-	width:84px;
-	padding: 5px;
-}
-
-.row.reduce div {
+.jumbotron .links{
 	line-height:20px;
-    font-size: 14px;
+	font-size:14px;
 }
 
 
-/* Everything but the jumbotron gets side spacing for mobile first views */
-.header,
-.marketing,
-.footer {
-  padding-right: 15px;
-  padding-left: 15px;
+.jumbotron img.img-thumbnail{
+	width: 168px;
+    float: left;
+    margin: 24px 10px;
 }
 
-/* Custom page header */
-.header {
-  padding-bottom: 20px;
-  border-bottom: 1px solid #e5e5e5;
-}
-/* Make the masthead heading the same height as the navigation */
-.header h3 {
-  margin-top: 0;
-  margin-bottom: 0;
-  line-height: 40px;
-}
 
-/* Custom page footer */
-.footer {
-  padding-top: 19px;
-  color: #777;
-  border-top: 1px solid #e5e5e5;
-}
 
 /* Customize container */
 @media (min-width: 768px) {
@@ -76,7 +25,6 @@ a.analysis-list span{
 
 /* Main marketing message and sign up button */
 .jumbotron {
-  text-align: center;
   background: #f9f9f9;
   box-shadow: 2px 2px 1px #444;
   border: 1px solid #999;

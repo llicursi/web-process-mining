@@ -83,6 +83,34 @@ body {
  font-size: inherit;
 }
 
+.head-nav .nav .nav-title img{
+    width: 68px;
+    margin-top: 1px;
+    float: left;
+}
+
+
+.head-nav .nav.home .nav-title img{
+    width: 68px;
+    margin-top: -8px;
+    float: none;
+}
+
+.head-nav .info{
+    position: absolute;
+    right: 0px;
+    margin: 12px;
+    width: 32px;
+}
+
+body div.footer{
+    text-align: center;
+    border-top: 0px;
+    color: #222;
+    margin: 9px;
+    padding: 0px;
+}
+
 .tab-content{
 	background-color: #FFF;
 	height: 379px;

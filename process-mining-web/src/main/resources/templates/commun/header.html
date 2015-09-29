@@ -1,23 +1,28 @@
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org">
+	xmlns:th="http://www.thymeleaf.org">
 
-  <body>
-  
+<body>
+
     <div th:fragment="process-menu" >
     	<div class="head-nav">
 	      	<div class="nav"><a href="#content">Ir para conteudo</a> 	</div>
 	    	<div th:class="'nav fixed ' + ${isHome == true ? 'home' : ''}">
-	  			<a href="/" class="nav-title">Web Process <br/><span>Miner</span></a>
+	  			<a href="/" class="nav-title" >
+	  				<img th:src="@{/img/mining-48.png}"/> Web Process <br/><span> Miner </span>
+	  			</a>
 				
 				<a th:class="'nav-button ' + ${active == 1 ? 'active' : ''}" th:href="${active == 2 ? #httpServletRequest.requestURL.toString().replace('process', 'adjust') : '#'}">Adjust Data</a>
 				<a th:class="'nav-button ' + ${active == 2 ? 'active' : 'disabled'}" href="#">Analyse Process</a>
 				
+				<a href="/info" class="info" title="About this site.. and me, Lucas Licursi">
+	  				<img th:src="@{/img/info.png}"/>
+	  			</a>
 			</div>
 		</div>
     </div>
-  
-  </body>
-  
+
+</body>
+
 </html>

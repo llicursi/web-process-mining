@@ -39,10 +39,10 @@ var DirectedAcyclicGraphTooltip = function(gravity, propertiesToRead) {
 		}
 		
 		function appendChartWithDelay(key, values, count, tooltip){
-			var barchart = new BARCHART();
-			var svg = barchart.plot(values, count, true);
-			tooltip.append($("<div>").append(svg));
-			barchart.clearArea();
+//			var barchart = new BARCHART();
+//			var svg = barchart.plot(values, count, true);
+//			tooltip.append($("<div>").append(svg));
+//			barchart.clearArea();
 		}
 
 		var tooltip = $("<div>").attr("class", "xtrace-tooltip");

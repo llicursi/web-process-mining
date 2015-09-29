@@ -24,6 +24,10 @@ public class HomeController {
 	public String index() {
 		return "home";
 	}
+	@RequestMapping(value="/info")
+	public String info() {
+		return "info";
+	}
 
 	@RequestMapping(value="/list", method=RequestMethod.POST,  produces=MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody

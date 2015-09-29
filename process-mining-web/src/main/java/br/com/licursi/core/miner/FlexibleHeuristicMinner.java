@@ -46,7 +46,7 @@ public class FlexibleHeuristicMinner {
 				dependencyGraph.start();
 				for (Object oActivity : instance){
 					DBObject activity = (DBObject) oActivity;
-					System.out.println(activity);
+			//		System.out.println(activity);
 					dependencyGraph.put(
 						activity.get(VariablesEnum.CASE_ID.p()),
 						activity.get(VariablesEnum.ACTIVITY.p()), 
@@ -56,7 +56,7 @@ public class FlexibleHeuristicMinner {
 				
 				}
 				String end = dependencyGraph.end(caseId);
-				System.out.println("tuple : " + end);
+			//	System.out.println("tuple : " + end);
 			
 			} catch (InvalidDateException e) {
 				System.out.println(e.getLocalizedMessage());
