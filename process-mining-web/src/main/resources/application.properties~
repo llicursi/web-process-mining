@@ -1,16 +1,14 @@
-server.port=8070
+server.port=80
 
 #spring.view.prefix:/WEB-INF/jsp/
 #spring.view.suffix:.jsp
 
-application.message: Hello Lucas Licursi
+application.message: Hello Phil
 
 # MONGODB (MongoProperties)
-spring.data.mongodb.host=ds045037.mongolab.com
-spring.data.mongodb.port=45037
-spring.data.mongodb.database=IbmCloud_kfk4tsro_e88bkhmu
-spring.data.mongodb.username=llicursi
-spring.data.mongodb.password=123456
+#spring.data.mongodb.host=localhost
+#spring.data.mongodb.port=27017
+#spring.data.mongodb.database=process-mining
 
 # TODO : Lembrar de reativar isso
 spring.thymeleaf.cache=false
@@ -19,4 +17,3 @@ spring.thymeleaf.cache=false
 multipart.file-size-threshold=0
 multipart.max-file-size=60Mb
 multipart.max-request-size=80Mb
-

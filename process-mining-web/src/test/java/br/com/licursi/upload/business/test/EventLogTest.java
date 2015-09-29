@@ -56,7 +56,7 @@ public class EventLogTest {
 		
 	}
 	
-	@Test
+	/*@Test
 	public void validRegexNameExtensionXLS() throws UniqueFileException, InvalidExtensionException, EventLogNotAcceptedException{
 		MultipartFile mockMultipartFile = mock(MultipartFile.class);
 		when(mockMultipartFile.getOriginalFilename()).thenReturn("teste-xls.xls"); 
@@ -65,5 +65,5 @@ public class EventLogTest {
 		mockListMultiPart.add(mockMultipartFile); 
 		eventLogBO.generateEventoLogFromFiles(mockListMultiPart);
 		Assert.assertTrue(true);
-	}
+	}*/
 }
