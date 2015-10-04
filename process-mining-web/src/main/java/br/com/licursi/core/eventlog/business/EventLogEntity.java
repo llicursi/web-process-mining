@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.joda.time.DateTime;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -19,7 +20,7 @@ public class EventLogEntity {
 	private String uuid;
 	private List<String> headers;
 	private List<DBObject> rawData;
-	private Timestamp date;
+	private DateTime date;
 	
 	public String getId() {
 		return id;
@@ -72,11 +73,11 @@ public class EventLogEntity {
 		this.name = name;
 	}
 
-	public Timestamp getDate() {
+	public DateTime getDate() {
 		return date;
 	}
 
-	public void setDate(Timestamp date) {
+	public void setDate(DateTime date) {
 		this.date = date;
 	}
 

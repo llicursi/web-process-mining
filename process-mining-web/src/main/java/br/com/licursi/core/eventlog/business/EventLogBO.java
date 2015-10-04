@@ -1,7 +1,6 @@
 package br.com.licursi.core.eventlog.business;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -72,7 +71,7 @@ public class EventLogBO {
 					UUID randomUUID = java.util.UUID.randomUUID();
 					List<EventLogEntity> eventLogs = dataSource.getEventLog(randomUUID, name);
 					
-					Timestamp dateTime = new Timestamp(new DateTime().getMillis());
+					DateTime dateTime = new DateTime();
 					for (EventLogEntity e : eventLogs ){
 						e.setName(name);
 						e.setDate(dateTime);
@@ -80,7 +79,7 @@ public class EventLogBO {
 					long endTime = System.currentTimeMillis();
 					System.out.println("Time processing CSVDataSource : " + (endTime - startTime) + "ms" );
 					List<EventLogEntity> insert = eventLogRepository.insert(eventLogs);
-					System.out.println("UUID : " + randomUUID + " Nº of Files : "+ insert.size());	
+					System.out.println("UUID : " + randomUUID + " Nï¿½ of Files : "+ insert.size());	
 					return randomUUID.toString();
 				} catch (IOException e) {
 					e.printStackTrace();

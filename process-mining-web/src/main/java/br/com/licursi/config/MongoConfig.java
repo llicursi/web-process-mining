@@ -2,6 +2,7 @@ package br.com.licursi.config;
 
 import java.util.Arrays;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.MongoDbFactory;
@@ -14,8 +15,24 @@ import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 
 @Configuration
+@EnableMongoRepositories(basePackages="br.com.licursi.core.*")
 public class MongoConfig {
 
+	@Value("${spring.data.mongodb.username}")
+	private String username;
+	
+	@Value("${spring.data.mongodb.database}")
+	private String database;
+	
+	@Value("${spring.data.mongodb.password}")
+	private String password;
+	
+	@Value("${spring.data.mongodb.host}")
+	private String host;
+	
+	@Value("${spring.data.mongodb.port}")
+	private Integer port;
+	
 	/**
 	 * DB connection Factory
 	 * 
@@ -23,26 +40,17 @@ public class MongoConfig {
 	 */
 	@Bean
 	public MongoDbFactory mongoDbFactory() throws Exception {
-/*
- * spring.data.mongodb.host=ds045037.mongolab.com
-spring.data.mongodb.port=45037
-spring.data.mongodb.database=IbmCloud_kfk4tsro_e88bkhmu
-spring.data.mongodb.username=llicursi
-spring.data.mongodb.password=123456
- * 
- * 
- */
-		
+
 	    // Set credentials      
-	    MongoCredential credential = MongoCredential.createCredential("llicursi", "IbmCloud_kfk4tsro_e88bkhmu", "123456".toCharArray());
-	    ServerAddress serverAddress = new ServerAddress("ds045037.mongolab.com", 45037);
+	    MongoCredential credential = MongoCredential.createCredential(this.username,this.database, this.password.toCharArray());
+	    ServerAddress serverAddress = new ServerAddress(this.host, this.port);
 
 	    // Mongo Client
 	    MongoClient mongoClient = new MongoClient(serverAddress,Arrays.asList(credential)); 
 
 	    // Mongo DB Factory
 	    SimpleMongoDbFactory simpleMongoDbFactory = new SimpleMongoDbFactory(
-	            mongoClient, "IbmCloud_kfk4tsro_e88bkhmu");
+	            mongoClient, this.database);
 
 	    return simpleMongoDbFactory;
 	}
@@ -57,21 +65,4 @@ spring.data.mongodb.password=123456
 	    return new MongoTemplate(mongoDbFactory());
 	}
 	
-	/*private static final String DATABASE_NAME = "process-mining";
-	private Mongo mongo;
-	
-	public @Bean Mongo mongo() throws Exception {
-		if (mongo == null){
-			MongoClient mongoClient = new MongoClient("localhost");
-			DB db = mongoClient.getDB(DATABASE_NAME);
-			mongo = db.getMongo();
-		}
-
-		return mongo;
-	}
-
-	public @Bean MongoTemplate mongoTemplate() throws Exception {
-		return new MongoTemplate(mongo(), DATABASE_NAME);
-	}*/
-
 }
