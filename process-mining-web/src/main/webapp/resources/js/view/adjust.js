@@ -6,18 +6,18 @@ ADJUST = function (){
 	var _variables = [{
 		name:"Case Id",
 		optional:false,
-		desc:"Este &eacute; um indicador &uacute;nico que representa a instancia do	processo.<br/><br/>"
+		desc:"Case unique identifier or process indentifier.<br/><br/>"
 	},{
 		name:"Activity",
-		desc:"Selecione a coluna representando as atividades do	processo.",
+		desc:"Name that represents the process activity, non ambiguous.",
 		optional:false
 	},{
 		name:"End Time",
-		desc:"Selecione a coluna que represente o término da atividade.",
+		desc:"Activity end time.",
 		optional:false
 	},{
 		name:"Resource",
-		desc:"Selecione a coluna que represente o executor responsável pela atividade.",
+		desc:"Responsable for executing the activity",
 		optional:false
 	}/*,{
 		name:"Start Time",
