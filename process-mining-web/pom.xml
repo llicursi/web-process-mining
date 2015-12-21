@@ -40,6 +40,44 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>com.samaxes.maven</groupId>
+				<artifactId>minify-maven-plugin</artifactId>
+				<version>1.7.4</version>
+				<executions>
+					<execution>
+						<id>process-minify</id>
+						<configuration>
+							<webappSourceDir>${basedir}/src/main/webapp/resources/</webappSourceDir>
+							<jsSourceIncludes>
+								<jsSourceInclude>**/process/utils/*.js</jsSourceInclude>
+								<jsSourceInclude>**/process/*.js</jsSourceInclude>
+							</jsSourceIncludes>
+							<jsFinalFile>process.js</jsFinalFile>
+						</configuration>
+						<goals>
+							<goal>minify</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>general-minify</id>
+						<configuration>
+							<webappSourceDir>${basedir}/src/main/webapp/resources/</webappSourceDir>
+							<jsSourceIncludes>
+								<jsSourceInclude>**/js/*.js</jsSourceInclude>
+							</jsSourceIncludes>
+							<jsSourceExcludes>
+								<jsSourceExclude>**/script.js</jsSourceExclude>
+								<jsSourceExclude>**/*.min.js</jsSourceExclude>
+							</jsSourceExcludes>
+							<jsFinalFile>general.js</jsFinalFile>
+						</configuration>
+						<goals>
+							<goal>minify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
@@ -112,7 +150,7 @@
 			<artifactId>spring-data-commons</artifactId>
 			<version>1.11.0.RELEASE</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>

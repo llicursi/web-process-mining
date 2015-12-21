@@ -1,3 +1,4 @@
+
 function DirectedAcyclicGraphMinimap(DAG) {
     /*
      * Specifies the draw function for the Minimap class, for a DAG

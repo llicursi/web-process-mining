@@ -291,15 +291,19 @@ var createJSONFromVisibleGraph = function(graph) {
 
 //Javascript impl of java's string hashcode:
 //http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
-String.prototype.hashCode = function(){
- var hash = 0, i, char;
- if (this.length == 0) return hash;
- for (i = 0; i < this.length; i++) {
-     char = this.charCodeAt(i);
-     hash = ((hash<<5)-hash)+char;
-     hash = hash & hash; // Convert to 32bit integer
- }
- return hash;
+String.prototype.hashCode = function() {
+	var self = this;
+	
+	var hashcode = 0; 
+	if (self.length == 0){
+		return hashcode;
+	}
+	for (var i = 0; i < self.length; i++) {
+		var character = self.charCodeAt(i);
+		hashcode = ((hashcode << 5) - hashcode) + character;
+		hashcode = hashcode & hashcode; // Convert to 32bit integer
+	}
+	return hash;
 };
 
 function hash_report(report) {

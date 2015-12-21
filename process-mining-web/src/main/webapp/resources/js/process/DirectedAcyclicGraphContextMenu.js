@@ -1,3 +1,4 @@
+;
 var DirectedAcyclicGraphContextMenu = function(graph, graphSVG) {
     
     var onMenuOpen = function(d) {

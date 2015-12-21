@@ -167,7 +167,7 @@ ProcessMiningViewportController = function (attachPoint, data) {
 	    }).on("hidenodes", function(nodes, selectionname) {
 	        if (!lightweight) _d3SVG.classed("hovering", false);
 	        DAGActivities.hideNodes(nodes);
-	        debugger;
+	        /*debugger;*/
 	        // REmove the nodes from graph
 	        DAG.removenode(function(d) {
 	            if (lightweight) {
@@ -266,7 +266,7 @@ ProcessMiningViewportController = function (attachPoint, data) {
 		if (DAGActivities == null){
 			DAGActivities = new DirectedAcyclicGraphActivities("activitiesControl", nodes);
 			DAGActivities.getRange(function(a, b) {
-				debugger;
+				/*debugger;*/
 				var path = getNodesBetween(a, b).concat(getNodesBetween(b, a));
 				return nodes.data(path, DAG.nodeid());
 			});

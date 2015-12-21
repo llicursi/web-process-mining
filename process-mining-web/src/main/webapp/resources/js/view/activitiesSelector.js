@@ -18,7 +18,7 @@ ActivitiesSelector = function (graph){
 	        .data(d3.values(_activities))
 	        .enter().append('li')
 	        .on('click', function (d, e, o){
-	        	debugger;
+	        	/*debugger;*/
 	        })
 	        .attr('class', 'activity')
 		    .text(function(d) {

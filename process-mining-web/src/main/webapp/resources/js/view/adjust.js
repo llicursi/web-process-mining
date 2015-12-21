@@ -87,11 +87,11 @@ ADJUST = function (){
 	}
 	
 	function noData(){
-		debugger;
+		/*debugger;*/
 	}
 	
 	function invalidProcessId(){
-		debugger;
+		/*debugger;*/
 	}
 	
 	// Table construct

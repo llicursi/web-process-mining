@@ -202,7 +202,7 @@ Graph.prototype.getColorByDelay = function (ref, interval){
 		}
 	}
 	if (index > 8 || index < 0){
-		debugger;
+		/*debugger;*/
 	}
 	var colors = {
 		fill : colorbrewer.RdYlGn[9][index]

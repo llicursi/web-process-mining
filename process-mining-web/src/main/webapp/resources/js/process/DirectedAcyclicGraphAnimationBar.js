@@ -517,7 +517,7 @@ DirectedAcyclicGraphAnimationBar = function(graph){
 				edge.point = getPointAtPath(_graph.edges[edge.ref], edge.t);
 				edge.colors = _graph.getColorByDelay(edge.ref, (edge.end - edge.start));
 				if (edge.point == null || isNaN(edge.point.y)){
-						debugger;
+					/*debugger;*/
 				}
 			}
 		}
