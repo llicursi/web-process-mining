@@ -12,6 +12,22 @@ Inspired on Wil van der Aalst coursera training and developed for my Bachelor co
  * D3.js
  * [Dagre](https://github.com/dagrejs/dagre) (2015 version)
  * Mongodb
+## Preview
+Some screenshots from this application
+ 
+ **Upload preview** - Only supports CSV data format
+ 
+![upload preview of a csv file](https://github.com/llicursi/web-process-mining/blob/master/preview/upload.png)
+--
+ **Data adjustment before processing** - Drag and Drop feature
+ 
+![data adjustment with drag and drop](https://github.com/llicursi/web-process-mining/blob/master/preview/drag-and-drop-data-adjust.png)
+--
+ **Animation preview** - Replay the data history over the *mined* process workflow
+ 
+![animation preview](https://github.com/llicursi/web-process-mining/blob/master/preview/animation-preview.png)
+--
+View more preview screenshots at `preview` folder
 
 ## Contribution 
 
