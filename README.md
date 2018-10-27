@@ -31,4 +31,6 @@ View more preview screenshots at `preview` folder
 
 ## Contribution 
 
-Fork it and be happy. Contact me /llicursi if you need any suport on setting this up
+Fork it and be happy. Contact me /llicursi if you need any suport on setting this up.
+
+You may notice some wording in portuguese `pt-BR`. Sorry about that, but except for the commit history, the source code can be adjusted and update to english, just notify me
