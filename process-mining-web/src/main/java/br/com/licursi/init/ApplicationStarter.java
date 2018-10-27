@@ -15,11 +15,9 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 import br.com.licursi.config.ServerCustomization;
 
 @SpringBootApplication
-@EnableMongoRepositories("br.com.licursi.core")
 @ComponentScan(basePackages={"br.com.licursi.*", "br.com.licursi.core.*"})
 public class ApplicationStarter extends SpringBootServletInitializer {
 	
-	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
 		return application.sources(ApplicationStarter.class);
 	}

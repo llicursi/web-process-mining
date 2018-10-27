@@ -1,22 +1,40 @@
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org">
+	xmlns:th="http://www.thymeleaf.org">
 
-  <body>
-  
+<body>
+
     <div th:fragment="process-menu" >
-      	<div class="nav"><a href="#content">Ir para conteudo</a> 	</div>
-    	<div th:class="'nav fixed ' + ${isHome == true ? 'home' : ''}">
-  			<div class="nav-title">Web Process <br/><span>Miner</span></div>
-			
-			<a th:class="'nav-button ' + ${active == 1 ? 'active' : ''}" href="#">Adjust Data</a>
-			<a th:class="'nav-button ' + ${active == 2 ? 'active' : ''}" href="#">Analyse Process</a>
-			<a th:class="'nav-button ' + ${active == 3 ? 'active' : ''}" href="#">Estatistic</a>
-			
+         
+        <script>
+		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		
+		  ga('create', 'UA-68280124-1', 'auto');
+		  ga('send', 'pageview');
+		
+		</script>
+    
+    	<div class="head-nav">
+	      	<div class="nav"><a href="#content">Ir para conteudo</a> 	</div>
+	    	<div th:class="'nav fixed ' + ${isHome == true ? 'home' : ''}">
+	  			<a href="/" class="nav-title" >
+	  				<img th:src="@{/img/mining-48.png}"/> Web Process <br/><span> Miner </span>
+	  			</a>
+				
+				<a th:class="'nav-button ' + ${active == 1 ? 'active' : ''}" th:href="${active == 2 ? #httpServletRequest.requestURL.toString().replace('process', 'adjust') : '#'}">Adjust Data</a>
+				<a th:class="'nav-button ' + ${active == 2 ? 'active' : 'disabled'}" href="#">Analyse Process</a>
+				
+				<a href="/info" class="info" title="About this site.. and me, Lucas Licursi">
+	  				<img th:src="@{/img/info.png}"/>
+	  			</a>
+			</div>
 		</div>
     </div>
-  
-  </body>
-  
+
+</body>
+
 </html>

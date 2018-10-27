@@ -1,29 +1,36 @@
 package br.com.licursi.core.miner;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import br.com.licursi.core.process.ActivityEntity;
-import br.com.licursi.core.process.ActivityType;
-import br.com.licursi.core.process.ArcEntity;
-import br.com.licursi.core.process.BorderEventEntity;
-import br.com.licursi.core.process.BorderEventType;
-import br.com.licursi.core.process.ProcessEntity;
-import br.com.licursi.core.process.TupleEntity;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
+import br.com.licursi.core.miner.exceptions.InvalidDateException;
+import br.com.licursi.core.miner.exceptions.ParseTimeException;
+import br.com.licursi.core.process.ProcessAndCases;
+import br.com.licursi.core.process.ProcessDetailsEntity;
+import br.com.licursi.core.process.ProcessMongoEntity;
+import br.com.licursi.core.process.activities.ActivityEntity;
+import br.com.licursi.core.process.activities.ActivitySimpleEntity;
+import br.com.licursi.core.process.activities.ActivityType;
+import br.com.licursi.core.process.arcs.ArcEntity;
+import br.com.licursi.core.process.cases.CaseEntity;
+import br.com.licursi.core.process.cases.CaseMongoEntity;
+import br.com.licursi.core.process.events.BorderEventEntity;
+import br.com.licursi.core.process.events.BorderEventType;
+import br.com.licursi.core.util.GenericUtil;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 public class DependencyGraph {
 	
-	private SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm");
+	private DateTimeFormatter dateFormat = null;
 	
 	// Character used to compute the next Char alias for Activity
 	private char aliasCharActivity = 64; // 'A'
@@ -32,81 +39,117 @@ public class DependencyGraph {
 	private BiMap<String, Character> activityAlias = null;
 	private Map<String, ActivityEntity> activityMap = null;
 	private Map<String, BorderEventEntity> borderEventMap = null;
+	
+	private List<String> parallelArcs = null;
 	private Map<String, ArcEntity> arcsMap = null;
+	private Map<String, List<ArcEntity>> arcsEndedWith = null;
+	
 	private Map<String, Integer> tupleOcurrency = null;
-	private Map<String, TupleEntity> tuplesMap = null;
+	private Map<String, CaseEntity> caseMap = null;
+	
 
 	private ActivityEntity lastActivity = null;
-	private TupleEntity currentTuple = null;
+	private CaseEntity currentCase = null;
 	private long lastActivityEndTime = 0L;
-	private int caseIndex = 1;
+	private long firstActivityEndTime = 0L;
+	private long caseTimeCounter = 0L;
 	private String textTuple = "";
 
 	public DependencyGraph(){
-		activityAlias = HashBiMap.create();
-		arcsMap = new HashMap<String, ArcEntity>();
-		tupleOcurrency = new HashMap<String, Integer>();
-		activityMap = new HashMap<String, ActivityEntity>();
-		borderEventMap = new HashMap<String, BorderEventEntity>();
-		tuplesMap = new HashMap<String, TupleEntity>();
+		this.activityAlias = HashBiMap.create();
+		this.arcsMap = new HashMap<String, ArcEntity>();
+		this.tupleOcurrency = new HashMap<String, Integer>();
+		this.activityMap = new HashMap<String, ActivityEntity>();
+		this.borderEventMap = new HashMap<String, BorderEventEntity>();
+		this.caseMap = new HashMap<String, CaseEntity>();
 	}
 
+	public void start(String caseId){
+		start();
+		this.currentCase.setCaseId(caseId);
+	}
+	
 	public void start(){
-		lastActivity = null;
-		currentTuple = new TupleEntity();
-		textTuple = "";
-		lastActivityEndTime = 0L;
+		this.lastActivity = null;
+		this.currentCase = new CaseEntity();
+		this.textTuple = "";
+		this.lastActivityEndTime = 0L;
+		this.firstActivityEndTime = 0L;
+		
 	}
 	
 	/////////////////////// ACTIVITIES
+	
+	private Long parseDate(String dateTime) throws ParseTimeException{
+		
+		if (this.dateFormat != null){
+			try{
+				return dateFormat.parseDateTime(dateTime).getMillis();
+			} catch (IllegalArgumentException e) {
+				throw new ParseTimeException(e);
+			}
+		} else {
+			// If no parser is found, then register the last one to avoid the rework of this code snippet  
+			String[] possibles = {"YYYY-MM-dd HH:mm:ss.SSS", "dd-MM-YYYY HH:mm", "dd-MM-YYYY hh:mm:ss.SSS", "dd-MM-YYYY HH:mm:ss"};
+			
+			// Last ParseException
+			ParseTimeException p = null;
+			
+			for (String possibleParser : possibles){
+				try {
+					DateTimeFormatter formattter = DateTimeFormat.forPattern(possibleParser);
+					long parseMillis = formattter.parseMillis(dateTime);
+					this.dateFormat = formattter;
+					return parseMillis;
+					
+				} catch (IllegalArgumentException e) {
+					p = new ParseTimeException(e);
+				}
+			}
+			// Throws the last error only
+			throw p;
+		}
+	}
 
 	/**
 	 * Put the activity and it's resource to process and compute in activityList 
 	 * @param activity As the name says
 	 * @param resource As the name says
+	 * @throws InvalidDateException when any data passed is invalid
 	 */
-	public void put(Object activity, Object time, Object resource) {
+	public void put(Object caseId, Object activity, Object time, Object resource) throws InvalidDateException {
 		if (activity != null){
 			
 			// Converts data if possible
-			Date newTime = null;
+			Long endTime = null;
 			if (time != null){
 				try {
-					newTime = dateFormat.parse(time.toString());
-				} catch (ParseException e) {
-					e.printStackTrace();
+					endTime = parseDate(time.toString());
+				} catch (ParseTimeException e) {
+					String message = "The current process, \"" + caseId.toString() + "\" at " + this.textTuple +", was interrupted due date time conversion error";
+					throw new InvalidDateException(message);
 				}
+				
 			}
 			
-			put(activity.toString(), newTime.getTime(), (resource != null ? resource.toString() : "!NONE!"));
+			put(activity.toString(), endTime, GenericUtil.formatToValidMongoKey((resource != null ? resource.toString() : "NONE"), ""));
 		}
 	}
 	
+
 	/**
 	 * Put the activity and it's resource to process and compute in activityList 
-	 * @param activity As the name says
+	 * @param activityName As the name says
 	 * @param endTime Activity end time
 	 * @param resource As the name says
 	 */
-	private void put(String activity, long endTime, String resource) {
-		activity = activity.toUpperCase();
-		Character activityChar = getActivityAlias(activity);
-		ActivityEntity activityEntity = activityMap.get(activityChar + "");
-		
-		// Creates activity if not found
-		if (activityEntity == null){
-			activityEntity = new ActivityEntity(activity, activityChar.toString());
-			activityMap.put(activityChar+"", activityEntity);
-		}
-		
-		long activityDuration = (lastActivityEndTime != 0L) ? endTime - lastActivityEndTime : 0L;
+	private void put(String activityName, long endTime, String resource) {
+		activityName = activityName.toUpperCase();
+		Character activityChar = getActivityAlias(activityName);
+		ActivityEntity activityEntity = getActivity(activityChar + "", activityName);
+				
 		lastActivityEndTime = endTime;
-		if (activityDuration < 0){
-			activityDuration *= -1;
-		}
-		
-		// Adds the resource and increments counter
-		activityEntity.addResource(resource, activityDuration);
+		currentCase.putActivity(activityChar, activityName, endTime, resource);
 		
 		if (lastActivity != null){
 			appendArc(lastActivity.getUniqueLetter() + ArcEntity.SPLIT_CHAR + activityChar);
@@ -114,42 +157,67 @@ public class DependencyGraph {
 			// Updates previous Activity dependences
 			activityEntity.addPrev(lastActivity.getName());
 			// Updates last Activity dependences
-			lastActivity.addNext(activity);
+			lastActivity.addNext(activityName);
 			
 		} else {
+			this.firstActivityEndTime = endTime;
 			appendEventBorder(activityEntity, BorderEventType.START);
-			currentTuple.setStart(endTime);
+			currentCase.setStart(endTime);
 		} 
 		
 		lastActivity = activityEntity;
 		textTuple += activityChar;
 	}
 
-	public String end(){
-		appendEventBorder(lastActivity, BorderEventType.END);
-		appendTuple(textTuple);
+	public String end(String caseId){
+		appendEventBorder(this.lastActivity, BorderEventType.END);
+		appendTuple(this.textTuple);
 		
-		currentTuple.setName(textTuple);
-		currentTuple.setEnd(lastActivityEndTime);
+		this.currentCase.setCaseId("a" + caseId);
+		this.currentCase.setTuple(this.textTuple);
+		this.currentCase.setEnd(this.lastActivityEndTime);
 		
-		tuplesMap.put("case " + caseIndex, currentTuple);
-		caseIndex++;
+		Long caseTotalTime = (this.lastActivityEndTime - this.firstActivityEndTime);
+		this.caseTimeCounter += caseTotalTime;
+		
+		this.caseMap.put(this.currentCase.getCaseId(), this.currentCase);
 		
 		return textTuple;
 	}
 
+	
+	/**
+	 * Gets an existing activity in the pool, if does not exist, creates a new one.
+	 * @param activityChar Character that represents the activity
+	 * @param activityName Activity name
+	 * @return Activity
+	 */
+	private ActivityEntity getActivity(String activityChar, String activityName) {
+		ActivityEntity activityEntity = activityMap.get(activityChar);
+		
+		// Creates activity if not found
+		if (activityEntity == null){
+			activityEntity = new ActivityEntity(activityName, activityChar.toString());
+			activityMap.put(activityChar, activityEntity);
+		}
+		// TODO: reverter aqui? Esse contador esta mais preciso que o outro?
+		//activityEntity.incrementCounter();
+		
+		return activityEntity;
+	}
+	
 	/**
 	 * Loads the processed activities to a List
 	 * @return List of activites
 	 */
 	public Map<String, ActivityEntity> getActivities(){
 		
-		Map<String, ActivityEntity> nameActivity = new HashMap<String, ActivityEntity>();
+		Map<String, ActivityEntity> mapActivity = new HashMap<String, ActivityEntity>();
 		for (ActivityEntity act : activityMap.values()){
 			act.computeAverageTime();
-			nameActivity.put(act.getName(), act);
+			mapActivity.put(act.getName(), act);
 		}
-		return nameActivity;
+		return mapActivity;
 	}
 
 	/**
@@ -217,7 +285,6 @@ public class DependencyGraph {
 				borderEventEntity.addPrev(activityEntity.getName());
 	
 			}
-			arcEntity.increment();
 			arcsMap.put(arcRef, arcEntity);
 		}
 	}
@@ -248,7 +315,6 @@ public class DependencyGraph {
 				arcEntity.setTarget(to);
 
 			}
-			arcEntity.increment();
 			arcsMap.put(arc, arcEntity);
 		}
 	}
@@ -273,87 +339,188 @@ public class DependencyGraph {
 	
 	/////////////////////// Tables
 	
-	public void printRelationalTable(){
-		
-		// Line 1
-		String line1 = "  |";
-		Set<Character> activitySetChars = activityAlias.values();
-		List<Character> activityChars = new ArrayList<Character>();
-		activityChars.addAll(activitySetChars);
-		Collections.sort(activityChars);
-
-		for (Character c : activityChars){
-			line1 += " " + c + "  |";
-		}
-		System.out.println("" + line1);
-		
-		// Other lines
-		String middleLines = "";
-		for (Character c1 : activityChars){
-			middleLines = c1 + " |";
-			for (Character c2 : activityChars){
-				middleLines += " " + activityRelation(c1, c2) + " |";  
-			}
-			System.out.println(middleLines);
-		}
-		
-	}
 	
-	private String activityRelation(Character c1, Character c2){
-		return arcsMap.containsKey(c1 + ArcEntity.SPLIT_CHAR + c2) ? ">>" : "  "; 
-	}
 	
-	public void printOcurrancyTable(){
-		
-		// Line 1
-		String line1 = "  |";
-		Set<Character> activitySetChars = activityAlias.values();
-		List<Character> activityChars = new ArrayList<Character>();
-		activityChars.addAll(activitySetChars);
-		Collections.sort(activityChars);
-
-		for (Character c : activityChars){
-			line1 += " " + c + "  |";
-		}
-		System.out.println("" + line1);
-		
-		// Other lines
-		String middleLines = "";
-		for (Character c1 : activityChars){
-			middleLines = c1 + " |";
-			for (Character c2 : activityChars){
-				ArcEntity arcEntity = arcsMap.get(c1 + ArcEntity.SPLIT_CHAR + c2);
-				if (arcEntity != null){
-					Integer count = arcEntity.getCount();
-					middleLines += " " + count + (count > 9 ? "" : " ") + " |";
-				} else{
-					middleLines += "    |";
-				} 
-			}
-			System.out.println(middleLines);
-		}
-		
-	}
 	
-	public ProcessEntity getProcessedData(String id){
-		computeParalellism();
-		computeDependencyMeasure();
-		computeArcsTimes();
+	
+	public ProcessAndCases getProcessedData(String uuid){
+		long startProcessing = System.currentTimeMillis();
+		ProcessDetailsEntity processDetailEntity = getDetails();
 		
-		ProcessEntity processEntity = new ProcessEntity(id);
+		long lComputeParalellism = computeParalellism();
+		long lComputeDependencyMeasure = computeDependencyMeasure();
+		List<CaseMongoEntity> casesWithTimeProcessed = getCasesWithTimeProcessed(processDetailEntity.getAverageTime(), uuid);
+		
+		ProcessMongoEntity processEntity = new ProcessMongoEntity(uuid);
+		processEntity.setActivityAlias(this.activityAlias);
+		processEntity.setParallelArcs(this.parallelArcs);
 		
 		processEntity.setBorderEvents(this.getBorderEvents());
 		processEntity.setActivities(this.getActivities());
 		processEntity.setArcs(this.getArcs());
+		processEntity.setDetails(processDetailEntity);
 		
-		return processEntity;
+		long endProcessing = System.currentTimeMillis();
+		long totalProcessing = (endProcessing - startProcessing)+1;
+		System.out.println("=============================================");
+		System.out.println("= Tempo processando :                       ");
+		System.out.println("= Paralelismo.......: "+ lComputeParalellism + " ms (" + (Math.floor((lComputeParalellism/totalProcessing)*10000)/100) + " %)");
+		System.out.println("= Dependencia.......: "+ lComputeDependencyMeasure + " ms (" + (Math.floor((lComputeDependencyMeasure/totalProcessing)*10000)/100) + " %)");
+		System.out.println("= ");
+		System.out.println("= Total.......: "+ totalProcessing + " ms (" + (Math.floor((lComputeParalellism/totalProcessing)*10000)/100) + " %)");
+		
+		return new ProcessAndCases(processEntity, casesWithTimeProcessed);
+		
+	}
+	
+	public List<CaseMongoEntity> getCasesWithTimeProcessed(Long avgCaseTimes, String uuid){
+		
+		long startTime = System.currentTimeMillis();
+		long avgCaseTimeOnePercent = (new Double(avgCaseTimes*0.01)).longValue(); 
+		
+		List<CaseMongoEntity> tuplesToAdd = new ArrayList<CaseMongoEntity>();
+		
+		CaseMongoEntity currentCasesMongoEntity = new CaseMongoEntity();
+		List<Long> startTimes = new ArrayList<Long>();
+		List<Long> endTimes = new ArrayList<Long>();
+		
+		Long accumulatedSize = 0L;
+		
+		buildListOfArcsEndedWithSomeLetter();
+		
+		for (String key : caseMap.keySet()){
+			
+			CaseEntity caseEntity = caseMap.get(key);
+			
+			// Compute the initial arc, from the symbol representing the start to the 
+			Long startActivityTime = 0L;
+			{
+				ActivitySimpleEntity activitySimple = caseEntity.getActivities().get(0);
+				List<ArcEntity> possibleArcs = getPossibleArcs(activitySimple.getUniqueLetter());
+				for (ArcEntity arc : possibleArcs){
+					if (arc.getSource().toUpperCase().contains("START")){
+						startActivityTime = activitySimple.getEndTime() - avgCaseTimeOnePercent;
+						long duration = avgCaseTimeOnePercent;
+						this.activityMap.get(activitySimple.getUniqueLetter()).addResource(activitySimple.getResource(), duration);
+						caseEntity.putArc(arc.getRef(),startActivityTime, activitySimple.getEndTime(), activitySimple.getResource(), 0f);
+						caseEntity.setStart(startActivityTime);
+					}
+				}
+			}
+		
+			// Recover the list of activities, avoiding the first one, 
+			// for calculating the arcs time
+			for (int i = 1 ; i < caseEntity.getActivities().size(); i++){
+				ActivitySimpleEntity activitySimple = caseEntity.getActivities().get(i);
+				List<ArcEntity> possibleArcs = getPossibleArcs(activitySimple.getUniqueLetter());
+				
+				for (ArcEntity arc : possibleArcs){
+					ActivitySimpleEntity activity = getValidaArcStartActivity(arc, i, caseEntity.getActivities()); 
+					if (activity != null){
+						long duration = activitySimple.getEndTime() - activity.getEndTime();
+						this.activityMap.get(activitySimple.getUniqueLetter()).addResource(activitySimple.getResource(), duration);
+						caseEntity.putArc(arc.getRef(), activity.getEndTime(), activitySimple.getEndTime(), activitySimple.getResource(), 0f);
+						Long arcDuration = (activitySimple.getEndTime() -  activity.getEndTime());
+						arcsMap.get(arc.getRef()).addTime(arcDuration).increment();
+					}
+				}
+			}
+			
+			// Compute the last Activity to the borderEvent, using 1% of average time. 
+			Long endActivityTime = 0L;
+			{
+				ActivitySimpleEntity lastActivity = caseEntity.getActivities().get(caseEntity.getActivities().size()-1);
+				for (BorderEventEntity border : borderEventMap.values()){
+					if (border.getType().equals(BorderEventType.END.toString())){
+						String ref = lastActivity.getUniqueLetter() + ">" + border.getRef();
+						if (arcsMap.containsKey(ref)){
+							endActivityTime = caseEntity.getEnd() + avgCaseTimeOnePercent;
+							caseEntity.putArc(ref,lastActivity.getEndTime(), endActivityTime, "NONE", 0f);
+							caseEntity.setEnd(endActivityTime);
+							break;
+						}
+					}
+				}
+			}
+		
+			accumulatedSize += caseEntity.getSize();
+			if (accumulatedSize > 15000000){
+				
+				currentCasesMongoEntity.setEndingTimes(endTimes);
+				currentCasesMongoEntity.setStartingTimes(startTimes);
+				currentCasesMongoEntity.setUuid(uuid);
+				tuplesToAdd.add(currentCasesMongoEntity);
+				
+				// Restart
+				currentCasesMongoEntity = new CaseMongoEntity();
+				startTimes = new ArrayList<Long>();
+				endTimes = new ArrayList<Long>();
+				
+				accumulatedSize = caseEntity.getSize();
+			}
+			
+			currentCasesMongoEntity.putTuple(key, caseEntity);
+			endTimes.add(endActivityTime);
+			startTimes.add(startActivityTime);
+						
+		}
+		
+		currentCasesMongoEntity.setEndingTimes(endTimes);
+		currentCasesMongoEntity.setStartingTimes(startTimes);
+		currentCasesMongoEntity.setUuid(uuid);
+		tuplesToAdd.add(currentCasesMongoEntity);
+		
+		long endTime = System.currentTimeMillis();
+		System.out.println("= ");
+		System.out.println("= Case Times..: " + (endTime - startTime) + " ms");
+		System.out.println("=============================================");
+		return tuplesToAdd;
+		
+	}
+	
+	
+	private ProcessDetailsEntity getDetails() {
+		
+		Float avgTime = (this.caseTimeCounter/ (new Integer(this.caseMap.size())).floatValue());
+		ProcessDetailsEntity procesDetail = new ProcessDetailsEntity();
+		procesDetail.setAverageTime(avgTime.longValue());
+		procesDetail.setTotalCases(this.caseMap.size());
+		
+		return procesDetail;
 	}
 
-	
-	
-	private void computeArcsTimes() {
+
+	private void buildListOfArcsEndedWithSomeLetter() {
+		arcsEndedWith = new HashMap<String, List<ArcEntity>>();
+		for (ArcEntity arc : arcsMap.values()){
+			 String uniqueLetter = activityAlias.get(arc.getTarget()) + "";
+			 List<ArcEntity> list = arcsEndedWith.get(uniqueLetter);
+			 if (list == null){
+				 list = new ArrayList<ArcEntity>();
+			 }
+			 if (!list.contains(arc)){
+				list.add(arc); 
+			 }
+			 arcsEndedWith.put(uniqueLetter, list);
+		}
 		
 		
+	}
+
+	private ActivitySimpleEntity getValidaArcStartActivity(ArcEntity arc,int i, List<ActivitySimpleEntity> activities) {
+		for (int f = i-1; f >= 0; f--){
+			ActivitySimpleEntity activitySimpleEntity = activities.get(f);
+			String source = activitySimpleEntity.getName();
+			if (source != null && source.toUpperCase().equals(arc.getSource())){
+				return activitySimpleEntity;
+			}
+		}
+		return null;
+	}
+
+	private List<ArcEntity> getPossibleArcs(String activitiyUniqueLetter) {
+		String uniqueLetter = activitiyUniqueLetter;
+		return arcsEndedWith.get(uniqueLetter);
 	}
 
 	//============================================================= 
@@ -364,9 +531,9 @@ public class DependencyGraph {
 	//		   \   /
 	//			 C
 	//============================================================= 
-	public void computeParalellism() {
+	private long computeParalellism() {
 		long startTime = System.currentTimeMillis();
-		
+		this.parallelArcs = new ArrayList<String>();
 		Set<Character> activitySetChars = activityAlias.values();
 		BiMap<Character, String> inverse = activityAlias.inverse();
 		List<Character> activityChars = new ArrayList<Character>();
@@ -399,6 +566,10 @@ public class DependencyGraph {
 								// Remove Arcs
 								arcsMap.remove(c1 + ArcEntity.SPLIT_CHAR + c2);
 								arcsMap.remove(c2 + ArcEntity.SPLIT_CHAR + c1);
+								
+								// Add in parallel list
+								this.parallelArcs.add(c1 + ArcEntity.SPLIT_CHAR + c2);
+								this.parallelArcs.add(c2 + ArcEntity.SPLIT_CHAR + c1);
 							}
 							
 						}
@@ -407,7 +578,7 @@ public class DependencyGraph {
 			}
 		}
 		long endTime = System.currentTimeMillis();
-		System.out.println("Tempo computando Paralelismos : " + (endTime - startTime) + " ms");
+		return (endTime - startTime);
 	}
 
 	private Character getMutualPredecessor(Character c1, Character c2, List<Character> activityChars) {
@@ -433,12 +604,10 @@ public class DependencyGraph {
 	}
 	
 	//============================================================= 
-	// Computa a medida de dependencia
-	//	
-	//
+	// Computa a medida de dependencia dos arcos
 	//============================================================= 
 
-	public void computeDependencyMeasure() {
+	private long computeDependencyMeasure() {
 		long startTime = System.currentTimeMillis();
 		for (ArcEntity arc : arcsMap.values()){
 			Integer inverseCount = getOppositeCount(arc); 
@@ -448,7 +617,7 @@ public class DependencyGraph {
 			arc.setDependencyMeasure(dividendus != 0f ? divisor/dividendus : dividendus);
 		}
 		long endTime = System.currentTimeMillis();
-		System.out.println("Tempo computando medida de dependencia : " + (endTime - startTime) + " ms");
+		return (endTime - startTime);
 	}
 
 	private Integer getOppositeCount(ArcEntity arc) {

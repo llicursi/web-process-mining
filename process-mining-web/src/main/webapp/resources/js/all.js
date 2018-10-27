@@ -46,3 +46,4 @@ function getPreviousSibling(node, tag){
 	}
 	return node.previousSibling;
 }
+

@@ -24,7 +24,19 @@ public class GenericUtil {
 			key = key.substring(1);
 		}
 		
-		return key.replace(".", "°");
+		return key.replace(".", "ï¿½");
+	}
+	
+	public static String formatToValidMongoKey(String key, String value){
+		if (key == null){
+			return "";
+		}
+		
+		if (key.length() > 0 && key.charAt(0) == '$'){
+			key = key.substring(1);
+		}
+		
+		return key.replace(".", value);
 	}
 
 }

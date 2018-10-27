@@ -2,6 +2,9 @@ package br.com.licursi.adjust.controller;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +38,9 @@ public class AdjustController {
 	private MinnerBO minnerBO;
 
 	@RequestMapping(value={"/{processId}/"})
-	public String adjust(@PathVariable("processId") String processId) {
+	public String adjust(@PathVariable("processId") String processId, HttpServletRequest request) {
+		String name = eventLogBO.getNameFromAnalysis(processId);
+		request.setAttribute("filename", name);
 		return "adjust";
 	}
 	
@@ -48,11 +53,16 @@ public class AdjustController {
 	
 	@RequestMapping(value={"/{processId}/minner/"})
 	@ResponseBody
-	public String processEventLog(@PathVariable("processId") String processId,@RequestParam("variables[]") String[] variables) throws JSONException {
+	public String processEventLog(@PathVariable("processId") String processId, @RequestParam("analysisName") String analysisName,  @RequestParam("variables[]") String[] variables) throws JSONException {
 		
+		if (analysisName!=null){
+			analysisName.replace("\"", "&amp;");
+			analysisName.replace("'", "&amp;");
+		}
 		
+		eventLogBO.updateNameAndSetProcessed(processId, analysisName);
 		List<DBObject> mappedRawData = eventLogBO.getMappedRawData(processId, variables);
-		Boolean mine = minnerBO.mine(processId, mappedRawData);
+		Boolean mine = minnerBO.mine(processId,analysisName, mappedRawData);
 		
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.put("status",true);

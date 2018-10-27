@@ -2,7 +2,7 @@ body {
   background: url(../img/background.png) repeat;
 }
 
-.nav {
+.head-nav .nav {
 	width: 100%;
     height: 60px;
     background: #555;
@@ -11,13 +11,13 @@ body {
     margin-bottom: 20px;
 }
 
-.nav.fixed {
+.head-nav .nav.fixed {
 	position:fixed;
 	top: 0px;
   	z-index: 10;
 }
 
-.nav .nav-title{
+.head-nav .nav .nav-title{
     text-align: center;
     float: left;
     padding: 6px 11px;
@@ -28,12 +28,20 @@ body {
     font-size: 19px;
     text-shadow: 1px 1px 1px #000;
 }
+.head-nav .nav a.disabled:hover{
+	cursor:default;
+}
 
-.nav .nav-title span{
+.head-nav .nav a.nav-title:hover{
+	text-decoration:none;
+	color : #FFF;
+}
+
+.head-nav .nav .nav-title span{
     font-size: 31px;
 }
 
-.nav .nav-button{
+.head-nav .nav .nav-button{
     margin-left: 5px;
     padding: 19px 29px;
     float: left;
@@ -44,33 +52,72 @@ body {
     text-shadow: 1px 1px 0px #000;
 }
 
-.nav .nav-button:hover,
-.nav .nav-button:active, 
-.nav .nav-button:visited, 
-.nav .nav-button:focus{
+.head-nav .nav .nav-button:hover,
+.head-nav .nav .nav-button:active, 
+.head-nav .nav .nav-button:visited, 
+.head-nav .nav .nav-button:focus{
 	text-decoration: none;
 }
 
-.nav .nav-button.active{
+.head-nav .nav .nav-button.active{
 	color: #fff;
 	background: #666;
 }
 
-.nav.home .nav-button{
+.head-nav .nav.home .nav-button{
   display: none;
   position: absolute;
 }
 
-.nav.home .nav-title{
+.head-nav .nav.home .nav-title{
   display: block;
   font-size: 40px;
   line-height: normal;
   width:100%;
 }
-.nav.home .nav-title br{
+.head-nav .nav.home .nav-title br{
 	display:none;
 }
 
-.nav.home  .nav-title span{
+.head-nav .nav.home  .nav-title span{
  font-size: inherit;
+}
+
+.head-nav .nav .nav-title img{
+    width: 68px;
+    margin-top: 1px;
+    float: left;
+}
+
+
+.head-nav .nav.home .nav-title img{
+    width: 68px;
+    margin-top: -8px;
+    float: none;
+}
+
+.head-nav .info{
+    position: absolute;
+    right: 0px;
+    margin: 12px;
+    width: 32px;
+}
+
+body div.footer{
+    text-align: center;
+    border-top: 0px;
+    color: #222;
+    margin: 9px;
+    padding: 0px;
+}
+
+.tab-content{
+	background-color: #FFF;
+	height: 379px;
+	border: 1px solid #DDD;
+	box-shadow: 1px 1px 1px #444;
+	background: #FFF;
+	margin: -1px 0 0 0;
+	padding: 1em 1em;
+	min-width: 250px;
 }

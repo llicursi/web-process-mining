@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
@@ -15,6 +14,7 @@ import br.com.licursi.core.miner.VariablesEnum;
 import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
 @Component
@@ -25,10 +25,33 @@ public class EventLogAggregator {
 	@Autowired
 	private MongoTemplate mongoTemplate;
 	
-	public List<DBObject> getTop100RecordsFromEventLogRawData(String id){
+	public DBObject getNameFromAnalysis(String uuid){
+		long startTime = System.currentTimeMillis();
+		
+		DBCollection collection = mongoTemplate.getCollection(COLLECTION);
+		DBCursor limit = collection.find(BasicDBObjectBuilder.start("uuid", uuid).get(), BasicDBObjectBuilder.start("name", 1).get()).limit(1);
+		DBObject one = limit.one();
+		long endTime = System.currentTimeMillis();
+		System.out.println("Time reading and unwinding the eventLog : " + (endTime - startTime));
+		
+		return one;
+				
+	}
+	
+	public void updateNameAndData(String uuid, String name){
+		DBCollection collection = mongoTemplate.getCollection(COLLECTION);
+		DBCursor limit = collection.find(BasicDBObjectBuilder.start("uuid", uuid).get()).limit(1);
+		DBObject one = limit.one();
+		one.put("name", name);
+		one.put("isProcessed", true);
+		collection.save(one);
+	}
+	
+	public List<DBObject> getTop100RecordsFromEventLogRawData(String uuid){
 		long startTime = System.currentTimeMillis();
 		List<DBObject> pipeline = new ArrayList<DBObject>();
-		pipeline.add(BasicDBObjectBuilder.start("$match",  BasicDBObjectBuilder.start("_id",new ObjectId(id)).get()).get());
+		pipeline.add(BasicDBObjectBuilder.start("$match",  BasicDBObjectBuilder.start("uuid", uuid).get()).get());
+		pipeline.add(BasicDBObjectBuilder.start("$limit", 1).get());
 		pipeline.add(BasicDBObjectBuilder.start("$unwind", "$rawData").get());
 		pipeline.add(BasicDBObjectBuilder.start("$limit", 100).get());
 		pipeline.add(BasicDBObjectBuilder.start("$project", BasicDBObjectBuilder.start("rawData", 1).get()).get());
@@ -83,10 +106,11 @@ public class EventLogAggregator {
 	 * @return
 	 */
 	
-	public List<DBObject> getActivitiesFromRowData(String id, Map<String, String> mVariables){
+	public List<DBObject> getActivitiesFromRowData(String uuid, Map<String, String> mVariables){
 		
 		List<DBObject> pipeline = new ArrayList<DBObject>();
-		pipeline.add(BasicDBObjectBuilder.start("$match",  BasicDBObjectBuilder.start("_id",new ObjectId(id)).get()).get());
+		pipeline.add(BasicDBObjectBuilder.start("$match",  BasicDBObjectBuilder.start("uuid", uuid).get()).get());
+		pipeline.add(BasicDBObjectBuilder.start("$limit", 1).get());
 		pipeline.add(BasicDBObjectBuilder.start("$unwind", "$rawData").get());
 		pipeline.add(BasicDBObjectBuilder.start("$sort",BasicDBObjectBuilder.start("ISODATE(rawData." + mVariables.get(VariablesEnum.END_TIME.toString()) + ")", 1).get()).get());
 		pipeline.add(BasicDBObjectBuilder.start("$project", BasicDBObjectBuilder
@@ -107,26 +131,32 @@ public class EventLogAggregator {
 		System.out.println("json: " + pipeline.toString());
 		
 		DBCollection collection = mongoTemplate.getCollection(COLLECTION);
+		System.out.println(collection.aggregate(pipeline).toString());
 		Iterable<DBObject> results = collection.aggregate(pipeline).results();
 		
 		return Lists.newArrayList(results);
 		
 	}
-	
-	
-//	public EventLogDao() throws UnknownHostException {
-//			MongoClient mongoClient = new MongoClient("localhost");
-//			DB db = mongoClient.getDB("process-mining");
-//			Mongo mongo = db.getMongo();
-//			mongoTemplate = new MongoTemplate(mongo, "process-mining");
-//	}
-//	
-//	public static void main(String[] args) throws UnknownHostException {
-//		EventLogDao event = new EventLogDao();
-//		List<DBObject> top100RecordsFromEventLogRawData = event.getTop100RecordsFromEventLogRawData("5521e1b6d4990101279fbe24");
-//		
-//		System.out.println(top100RecordsFromEventLogRawData.size());
-//	}
-	
+
+	public Iterable<DBObject> listAnalysisByTime() {
+
+		List<DBObject> pipeline = new ArrayList<DBObject>();
+		pipeline.add(
+			BasicDBObjectBuilder.start("$group",  
+				BasicDBObjectBuilder.start("_id", "$uuid")
+					.add("date", BasicDBObjectBuilder.start("$max", "$date").get())
+					.add("name", BasicDBObjectBuilder.start("$first", "$name").get())
+					.add("isProcessed", BasicDBObjectBuilder.start("$first", "$isProcessed").get())
+				.get())
+			.get());
+		pipeline.add(BasicDBObjectBuilder.start("$sort", BasicDBObjectBuilder.start("date", -1).get()).get());
+		
+		DBCollection collection = mongoTemplate.getCollection(COLLECTION);
+		System.out.println(collection.aggregate(pipeline).toString());
+		Iterable<DBObject> results = collection.aggregate(pipeline).results();
+		
+		return results;
+		
+	}
 	
 }

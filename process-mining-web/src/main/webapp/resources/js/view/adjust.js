@@ -6,20 +6,20 @@ ADJUST = function (){
 	var _variables = [{
 		name:"Case Id",
 		optional:false,
-		desc:"Este &eacute; um indicador &uacute;nico que representa a instancia do	processo.<br/><br/>"
+		desc:"Case unique identifier or process indentifier.<br/><br/>"
 	},{
 		name:"Activity",
-		desc:"Selecione a coluna representando as atividades do	processo.",
+		desc:"Name that represents the process activity, non ambiguous.",
 		optional:false
 	},{
 		name:"End Time",
-		desc:"Selecione a coluna que represente o término da atividade.",
+		desc:"Activity end time.",
 		optional:false
 	},{
 		name:"Resource",
-		desc:"Selecione a coluna que represente o executor responsável pela atividade.",
+		desc:"Responsable for executing the activity",
 		optional:false
-	},{
+	}/*,{
 		name:"Start Time",
 		desc:"Selecione a coluna que represente o término da atividade.",
 		optional:true
@@ -27,7 +27,7 @@ ADJUST = function (){
 		name:"Cost",
 		desc:"Selecione que represente o custo do recurso na atividade executada.",
 		optional:true
-	}];
+	}*/];
 	
 	var _selectedVariable = null;
 	
@@ -69,7 +69,6 @@ ADJUST = function (){
 			}
 			
 			var adjustContainer = document.getElementById("adjust-container");
-			adjustContainer.innerHTML = "";
 			adjustContainer.appendChild(table);
 			
 			_dataTable = $("#" + _refId).DataTable( {
@@ -88,11 +87,11 @@ ADJUST = function (){
 	}
 	
 	function noData(){
-		debugger;
+		/*debugger;*/
 	}
 	
 	function invalidProcessId(){
-		debugger;
+		/*debugger;*/
 	}
 	
 	// Table construct
@@ -290,11 +289,11 @@ ADJUST = function (){
 				variablesToProcess.push(variable.name + "|||" + variable.value);
 			}
 		}
-		
+		var analysisName = document.getElementById("analysis-name").value;
 		$.ajax({
 			method: "post", 
 			dataType:'json',
-			data : {variables : variablesToProcess},
+			data : {variables : variablesToProcess, "analysisName" : analysisName},
 			url: "minner/"
 		}).done(function (retorno){
 				

@@ -4,7 +4,11 @@ import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface ProcessRepository extends MongoRepository<ProcessEntity, String>{
+public interface ProcessRepository extends MongoRepository<ProcessMongoEntity, String>{
 	
-	List<ProcessEntity> findAllById(String id);
+	List<ProcessMongoEntity> findAllById(String id);
+	
+	List<ProcessMongoEntity> findAllByUuid(String uuid);
+
+	Long deleteProcessByUuid(String uuid);
 }

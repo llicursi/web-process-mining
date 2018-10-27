@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta charset="utf-8" />
+<title>About me</title>
+<link rel="stylesheet" th:href="@{/css/bootstrap.css}" />
+<link rel="stylesheet" th:href="@{/css/all.css}" />
+<link rel="stylesheet" th:href="@{/css/info.css}" />
+
+</head>
+<body>
+	<span th:include="commun/header :: process-menu (isHome=true)"></span>
+
+	<div class="container" id="container-main">
+		<div class="jumbotron">
+			<img th:src="@{/img/lucaslicursi.jpg}" class="img-thumbnail" alt="Lucas Licursi" style="width: 168px;" /> 
+			<h2>About </h2>
+			<h4 class="second-title">
+				<span>LUCAS LICURSI</span>
+			</h4>
+			<div class="links">
+				<a href="https://br.linkedin.com/pub/lucas-licursi/50/385/914" target="_NEW" title="">https://br.linkedin.com/pub/lucas-licursi/50/385/914</a><br/>
+				<a href="mailto:llicursi@gmail.com" target="_NEW" title="Please, mail me.">llicursi at gmail dot com</a>
+			</div>
+			
+			<div>
+				I will write more details of my work soon...
+			</div>
+		</div>
+		
+	</div>
+
+
+	<span th:include="commun/footer :: footer"></span>
+
+	<script th:src="@{/js/jquery-1.10.2.min.js}"></script>
+	<script th:src="@{/js/bootstrap.min.js}"></script>
+
+</body>
+</html>

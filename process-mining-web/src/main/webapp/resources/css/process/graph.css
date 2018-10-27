@@ -1,0 +1,251 @@
+.graph,.list {
+	cursor: default
+}
+
+.graph.graph-main .node {
+	opacity: 0;
+	transition: fill 0.5s, stroke 0.5s, opacity 1s;
+	-webkit-transition: fill 0.5s, stroke 0.5s, opacity 1s;
+}
+
+.graph.graph-main .node rect.node-end-event {
+	fill:#F7D89F;
+  	stroke-width: 4px;
+  	stroke: #CF6A6A;
+}
+
+.graph.graph-main .node rect.node-start-event {
+	stroke: #325C3F;
+  	fill: #80D79C;
+  	stroke-width: 2px;
+}
+
+
+.graph.graph-main .node.visible {
+	opacity: 1;
+	transition: fill 0.5s, stroke 0.5s, opacity 0.5s;
+	-webkit-transition: fill 0.5s, stroke 0.5s, opacity 0.5s;
+}
+
+.graph.graph-main .node.visible.entering {
+	transition: fill 0.5s, stroke 0.5s, opacity 1.5s;
+	-webkit-transition: fill 0.5s, stroke 0.5s, opacity 1.5s;
+}
+
+.hovering .graph .node.visible {
+	opacity: 0.2;
+}
+
+.hovering .graph.graph-main .node.visible {
+	transition: fill 0.5s, stroke 0.5s, opacity 0.4s;
+	-webkit-transition: fill 0.5s, stroke 0.5s, opacity 0.4s;
+}
+
+.hovering .graph .node.visible.hovered,
+.hovering .graph .node.visible.selected{
+	opacity: 1;
+	fill: #F4D24C;
+}
+
+.hovering .graph .node.hovered.previous rect {
+	fill: #FBF697;
+	stroke: #E4A427;
+}
+
+.hovering .graph .node.hovered.immediate rect,
+.hovering .graph .node.selected.hovered.immediate rect {
+	fill: #C2EFB1;
+    stroke: #80B962;
+}
+
+.graph .node rect {
+    fill: #FBFBFB;
+    stroke-width: 1px;
+    stroke: #8D8D8E;
+	box-shadow : 1px 1px 1px #333;
+}
+
+.graph.graph-main .node rect {
+	transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s;
+	-webkit-transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s;
+}
+
+.graph .node text {
+	font-family: Verdana;
+}
+
+.graph .node.preview rect,
+.hovering .graph .node.preview rect {
+	fill: #E47F47;
+    stroke-width: 2px;
+    stroke: #9E2C05;
+}
+
+.graph .node.selected rect,
+.hovering .graph .node.selected rect{
+    stroke: #76ADE4;
+    stroke-width: 3px;
+    fill: #D8E6F4;
+}
+
+.graph .edge {
+    fill: none;
+    stroke-width: 2.5px;
+    marker-end: url(#markerArrow);
+}
+
+.graph.graph-main .edge {
+	transition: fill 0.1s, stroke 0.1s, stroke-width 0.1s, opacity 0.3s;
+	-webkit-transition: fill 0.1s, stroke 0.1s, stroke-width 0.1s, opacity
+		0.3s;
+}
+
+.graph .edge.visible.preview {
+    stroke-width: 4px;
+    stroke: #76ADE4;
+}
+
+.graph .edge.visible.selected,
+.hovering .graph .edge.hovered.immediate.selected
+{
+    stroke-width: 4px;
+    stroke: #76ADE4;
+}
+
+.graph .edge.visible.preview,
+.hovering .graph .edge.hovered.immediate.preview
+{
+	stroke: #325C3F;
+}
+
+.graph .edge.visible {
+	opacity: 1;
+}
+
+.graph g.animations circle{
+	stroke: #666;
+    stroke-opacity: 0.5;
+}
+
+.graph.graph-main .edge.visible {
+	transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 0.5s;
+	-webkit-transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity
+		0.5s;
+}
+
+.graph.graph-main .edge.visible.entering {
+	transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 1.5s;
+	transition-delay: 0, 0, 0, 0.5s;
+	-webkit-transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity	1.5s;
+	-webkit-transition-delay: 0, 0, 0, 0.5s;
+}
+
+.graph.graph-main.animation .edge.visible{
+	stroke-width:2.5px;
+}
+
+.hovering .graph .edge.visible {
+	opacity: 0.1;
+}
+
+.hovering .graph.graph-main .edge.visible {
+	transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity 0.4s;
+	-webkit-transition: fill 0.5s, stroke 0.5s, stroke-width 0.5s, opacity
+		0.4s;
+}
+
+.hovering .graph .edge.visible.hovered,
+.hovering .graph .edge.selected {
+	opacity: 1;
+}
+
+.hovering .graph .edge.hovered.immediate {
+	stroke: #325C3F;
+	stroke-width: 4px;
+}
+
+.hovering .graph .edge.hovered.previous {
+	stroke: #F4A603;
+	stroke-width: 4px;
+}
+
+.minimap .edge {
+	stroke-width: 2px;
+	stroke: black;
+	fill-opacity: 0;
+}
+
+.minimap .node rect {
+	fill: #ddd;
+	stroke-width: 2px;
+	stroke: black;
+}
+
+.list .item rect {
+	stroke: #0F4BFF;
+	fill: #B3ECFF;
+	fill-opacity: 0.5;
+	stroke-width: 1;
+	transition: fill 0.5s, stroke 0.5s;
+	-webkit-transition: fill 0.5s, stroke 0.5s;
+}
+
+.list .item:hover rect {
+	fill: #FFF2CC;
+	stroke: #A16D00;
+}
+
+.list .item text {
+	x: 50%;
+	dy: 1em;
+	text-anchor: middle;
+	dominant-baseline: central;
+}
+
+.xtrace-tooltip {
+	text-align: left;
+	font-size : 13px;
+}
+
+.xtrace-tooltip .key {
+	display: inline-block;
+	float: left;
+	width: 70px;
+	font-weight: bold;
+}
+
+.xtrace-tooltip .value {
+	display: inline-block;
+	float: left;
+	word-wrap: break-word;
+	max-width: 410px;
+	font-size : 12px;
+	
+}
+
+.xtrace-tooltip .clear {
+	clear: both;
+}
+
+.context-menu .highlight {
+	color: #7F2389;
+}
+
+.context-menu a:hover .highlight {
+	color: #CA78D2;
+}
+
+text,tspan,.tipsy {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+/* Animation */
+
+.graph .node rect.blink {
+	fill:#E4F79E;
+}

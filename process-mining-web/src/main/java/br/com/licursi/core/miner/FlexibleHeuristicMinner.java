@@ -2,7 +2,8 @@ package br.com.licursi.core.miner;
 
 import java.util.List;
 
-import br.com.licursi.core.process.ProcessEntity;
+import br.com.licursi.core.miner.exceptions.InvalidDateException;
+import br.com.licursi.core.process.ProcessAndCases;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.DBObject;
@@ -11,51 +12,56 @@ public class FlexibleHeuristicMinner {
 
 	private final static String ACTIVITIES = "activities";
 	
-	private String _id;
+	private String uuid;
 	private DependencyGraph dependencyGraph;
 	
-	public FlexibleHeuristicMinner(String id) {
-		this._id = id;
+	public FlexibleHeuristicMinner(String uuid) {
+		this.uuid = uuid;
 		this.dependencyGraph = new DependencyGraph();
 	}
 	
-	public ProcessEntity process(List<DBObject> mappedData){
-		
+	public ProcessAndCases process(List<DBObject> mappedData){
 		
 		// Process Tuple per Tuple
 		for (DBObject instance : mappedData){
-			String tuple = processActivities((BasicDBList) instance.get(ACTIVITIES));
+			processActivities((BasicDBList) instance.get(ACTIVITIES));
 		}
-		dependencyGraph.printRelationalTable();
+		
+		ProcessAndCases processedData = dependencyGraph.getProcessedData(this.uuid);
+		processedData.printRelationalTable(false);
 		System.out.println("========================================================");
-		dependencyGraph.printOcurrancyTable();
+		processedData.printRelationalTable(true);
+		System.out.println("========================================================");
+		processedData.printOcurrancyTable();
 		
-		ProcessEntity processEntity = dependencyGraph.getProcessedData(this._id);
-		
-		
-		return processEntity;
-		
+		return processedData;
+				
 	}
 
-	private String processActivities(BasicDBList activityList) {
+	private void processActivities(BasicDBList instance) {
 		System.out.println("========================================================");
-		if (activityList != null){
-			dependencyGraph.start();
-			for (Object oActivity : activityList){
-				DBObject activity = (DBObject) oActivity;
-				System.out.println(activity);
-				dependencyGraph.put(
+		if (instance != null){
+			try {
+				String caseId = "";
+				dependencyGraph.start();
+				for (Object oActivity : instance){
+					DBObject activity = (DBObject) oActivity;
+			//		System.out.println(activity);
+					dependencyGraph.put(
+						activity.get(VariablesEnum.CASE_ID.p()),
 						activity.get(VariablesEnum.ACTIVITY.p()), 
 						activity.get(VariablesEnum.END_TIME.p()), 
 						activity.get(VariablesEnum.RESOURCE.p()));
-			}
-			String end = dependencyGraph.end();
+					caseId = (String) activity.get(VariablesEnum.CASE_ID.p());
+				
+				}
+				String end = dependencyGraph.end(caseId);
+			//	System.out.println("tuple : " + end);
 			
-			System.out.println("tuple : " + end);
-			return end;
+			} catch (InvalidDateException e) {
+				System.out.println(e.getLocalizedMessage());
+			}
 		}
-		return null;
-		
 	}
 	
 }
